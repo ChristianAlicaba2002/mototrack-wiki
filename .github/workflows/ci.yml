@@ -22,16 +22,16 @@ jobs:
     timeout-minutes: 20
 
     steps:
+      # Actions are pinned to full commit SHAs (tags can be moved); the comment
+      # notes the release. pnpm's exact version comes from "packageManager" in package.json.
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
 
       - name: Set up pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 11
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
 
       - name: Set up Node.js
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
         with:
           node-version: 22
           cache: pnpm
@@ -46,9 +46,9 @@ jobs:
         run: pnpm typecheck
 
       # Reports dependency/config issues without failing the build: some checks
-      # query the network and can be flaky.
+      # query the network and can be flaky. Runs the lockfile-pinned devDependency.
       - name: Expo Doctor
-        run: pnpm dlx expo-doctor
+        run: pnpm doctor
         continue-on-error: true
 
       # Bundles the JS for Android (no native build) to catch broken imports
