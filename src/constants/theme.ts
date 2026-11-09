@@ -14,6 +14,15 @@ export const Colors = {
     backgroundElement: '#F0F0F3',
     backgroundSelected: '#E0E1E6',
     textSecondary: '#60646C',
+    /** School colors. Blue = primary actions; red = brand marks. */
+    accent: '#1D4ED8',
+    onAccent: '#ffffff',
+    accentSoft: '#E6EEFF',
+    brand: '#C8102E',
+    onBrand: '#ffffff',
+    brandSoft: '#FDE8EB',
+    danger: '#B4141F',
+    success: '#218358',
   },
   dark: {
     text: '#ffffff',
@@ -21,6 +30,14 @@ export const Colors = {
     backgroundElement: '#212225',
     backgroundSelected: '#2E3135',
     textSecondary: '#B0B4BA',
+    accent: '#5B9BFF',
+    onAccent: '#06142E',
+    accentSoft: '#0F1E3D',
+    brand: '#E5323F',
+    onBrand: '#ffffff',
+    brandSoft: '#3A1015',
+    danger: '#FF8A8A',
+    success: '#3DD68C',
   },
 } as const;
 
