@@ -13,6 +13,8 @@ function loadGoogleSignIn(): GoogleSignInLib | null {
     lib = null;
     return lib;
   }
+  // Lazy require on purpose: a static import throws in Expo Go (no native module).
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   lib = require('@react-native-google-signin/google-signin') as GoogleSignInLib;
   lib.GoogleSignin.configure({
     webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
