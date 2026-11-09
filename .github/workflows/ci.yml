@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [develop, main]
+  push:
+    branches: [develop, main]
+  workflow_dispatch:
+
+# Cancel an in-progress run when new commits are pushed to the same branch/PR.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    name: Lint, typecheck & bundle
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      # Reports dependency/config issues without failing the build: some checks
+      # query the network and can be flaky.
+      - name: Expo Doctor
+        run: pnpm dlx expo-doctor
+        continue-on-error: true
+
+      # Bundles the JS for Android (no native build) to catch broken imports
+      # and Metro resolution errors. Firebase values aren't needed to bundle.
+      - name: Bundle Android
+        run: pnpm exec expo export --platform android --output-dir dist
