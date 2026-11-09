@@ -1,5 +1,5 @@
 import * as Device from 'expo-device';
-import { Platform, StyleSheet } from 'react-native';
+import { Platform, Pressable, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AnimatedIcon } from '@/components/animated-icon';
@@ -8,6 +8,9 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { WebBadge } from '@/components/web-badge';
 import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
+import { useAuth } from '@/hooks/use-auth';
+import { useTheme } from '@/hooks/use-theme';
+import { signOut } from '@/lib/firebase/google-sign-in';
 
 function getDevMenuHint() {
   if (Platform.OS === 'web') {
@@ -55,13 +58,42 @@ export default function HomeScreen() {
           />
         </ThemedView>
 
+        <SignedInAs />
+
         {Platform.OS === 'web' && <WebBadge />}
       </SafeAreaView>
     </ThemedView>
   );
 }
 
+function SignedInAs() {
+  const { user } = useAuth();
+  const theme = useTheme();
+  return (
+    <ThemedView style={styles.signedInRow}>
+      <ThemedText type="small" themeColor="textSecondary" numberOfLines={1} style={styles.signedInText}>
+        {user?.email ?? user?.displayName ?? 'Signed in'}
+      </ThemedText>
+      <Pressable onPress={() => signOut()} accessibilityRole="button" hitSlop={8}>
+        <ThemedText type="smallBold" style={{ color: theme.accent }}>
+          Sign out
+        </ThemedText>
+      </Pressable>
+    </ThemedView>
+  );
+}
+
 const styles = StyleSheet.create({
+  signedInRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.three,
+    alignSelf: 'stretch',
+    justifyContent: 'space-between',
+  },
+  signedInText: {
+    flexShrink: 1,
+  },
   container: {
     flex: 1,
     justifyContent: 'center',
