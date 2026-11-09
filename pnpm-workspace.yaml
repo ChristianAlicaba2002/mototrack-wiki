@@ -1,0 +1,5 @@
+# Dependency build scripts reviewed for pnpm's strictDepBuilds check.
+# Neither postinstall is needed to run the app, so they're skipped.
+allowBuilds:
+  '@firebase/util': false
+  protobufjs: false
