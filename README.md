@@ -94,6 +94,39 @@ Source files are bind-mounted, so edits on the host reload live. `node_modules` 
 
 For cloud builds, configure the same `EXPO_PUBLIC_*` values as build environment variables. `.env` is ignored by Git.
 
+## Data model and security rules
+
+All user data lives under the signed-in user's own document. Firestore and Storage rules only let the owner read or write it, and reject writes with missing, extra, or invalid fields.
+
+| Path | Contents | Access |
+| --- | --- | --- |
+| `users/{uid}` | Profile (created on first sign-in) | Owner |
+| `users/{uid}/bikes/{bikeId}` | Make, model, year, plate, odometer, photo path | Owner |
+| `users/{uid}/services/{serviceId}` | Maintenance log entry for one of the owner's bikes | Owner |
+| `users/{uid}/documents/{documentId}` | Vault file metadata (registration, insurance, license, receipt) | Owner |
+| `users/{uid}/chats/{chatId}` | AI Mechanic conversation | Owner |
+| `users/{uid}/chats/{chatId}/messages/{messageId}` | Messages; append-only, the app writes only `user` messages | Owner |
+| `wiki/{articleId}` | Reference articles, managed outside the app | Read-only, signed-in users |
+
+Files in Cloud Storage use the same ids: bike photos go under `users/{uid}/bikes/{bikeId}/` (images, up to 5 MB) and vault files under `users/{uid}/documents/{documentId}/` (PDF or images, up to 10 MB). Wiki images go under `wiki/` and are read-only.
+
+- Rules: [`firestore.rules`](firestore.rules), [`storage.rules`](storage.rules); indexes: [`firestore.indexes.json`](firestore.indexes.json)
+- TypeScript types and typed collection references: [`src/lib/firestore/`](src/lib/firestore/)
+- Timestamps (`createdAt`, `updatedAt`) must be written with `serverTimestamp()`, and optional fields are stored as `null`, never omitted.
+
+Test the rules locally with the Firebase emulators. This needs Java 21 or newer. It uses a `demo-` project, so no Firebase login is needed:
+
+```bash
+pnpm test:rules
+```
+
+Deploy rules and indexes to the Firebase project:
+
+```bash
+pnpm dlx firebase-tools@15.36.0 login
+pnpm dlx firebase-tools@15.36.0 deploy --only firestore:rules,firestore:indexes,storage
+```
+
 ## Available scripts
 
 | Script | Command | Description |
@@ -103,8 +136,9 @@ For cloud builds, configure the same `EXPO_PUBLIC_*` values as build environment
 | `lint` | `expo lint` | Run ESLint through Expo |
 | `typecheck` | `tsc --noEmit` | Typecheck the project |
 | `doctor` | `expo-doctor` | Check dependencies and config |
+| `test:rules` | `firebase emulators:exec …` | Test Firestore and Storage security rules |
 
-CI runs lint, typecheck, Expo Doctor, and an Android JS bundle on every pull request to `develop` and `main`.
+CI runs lint, typecheck, Expo Doctor, an Android JS bundle, and the security rules tests on every pull request to `develop` and `main`.
 
 ## Project structure
 
