@@ -1,0 +1,210 @@
+rules_version = '2';
+
+// MotoTrack Firestore security rules.
+//
+// Data model (TypeScript types: src/lib/firestore/types.ts):
+//   users/{uid}                              profile, owner only
+//   users/{uid}/bikes/{bikeId}               owner only
+//   users/{uid}/services/{serviceId}         owner only, bikeId must be one of the owner's bikes
+//   users/{uid}/documents/{documentId}       owner only, file lives in Storage under the same ids
+//   users/{uid}/chats/{chatId}               owner only
+//   users/{uid}/chats/{chatId}/messages/{id} owner only, append-only
+//   wiki/{articleId}                         read-only for signed-in users
+//
+// Anything not matched below is denied.
+// Tests: tests/rules/firestore.test.mjs (pnpm test:rules).
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---------- Helpers ----------
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    function data() {
+      return request.resource.data;
+    }
+
+    // The document has exactly these fields: no missing, no extra.
+    function hasExactly(fields) {
+      return data().keys().hasAll(fields) && data().keys().hasOnly(fields);
+    }
+
+    // createdAt and updatedAt must be serverTimestamp() on create.
+    function validCreateTimestamps() {
+      return data().createdAt == request.time && data().updatedAt == request.time;
+    }
+
+    // createdAt can't change; updatedAt must be serverTimestamp().
+    function validUpdateTimestamps() {
+      return data().createdAt == resource.data.createdAt && data().updatedAt == request.time;
+    }
+
+    function isText(value, maxLength) {
+      return value is string && value.size() > 0 && value.size() <= maxLength;
+    }
+
+    function isOptionalText(value, maxLength) {
+      return value == null || (value is string && value.size() <= maxLength);
+    }
+
+    function isNonNegative(value) {
+      return value is number && value >= 0;
+    }
+
+    function isOptionalNonNegative(value) {
+      return value == null || isNonNegative(value);
+    }
+
+    function isOptionalTimestamp(value) {
+      return value == null || value is timestamp;
+    }
+
+    function bikeExists(uid, bikeId) {
+      return bikeId is string
+        && exists(/databases/$(database)/documents/users/$(uid)/bikes/$(bikeId));
+    }
+
+    function isOptionalBike(uid, bikeId) {
+      return bikeId == null || bikeExists(uid, bikeId);
+    }
+
+    // ---------- users/{uid} ----------
+
+    match /users/{uid} {
+      function validProfile() {
+        return hasExactly(['displayName', 'email', 'photoURL', 'createdAt', 'updatedAt'])
+          && isOptionalText(data().displayName, 100)
+          // Must match the signed-in account's email (null for accounts without one).
+          && data().email == request.auth.token.get('email', null)
+          && isOptionalText(data().photoURL, 2048);
+      }
+
+      allow read: if isOwner(uid);
+      allow create: if isOwner(uid) && validProfile() && validCreateTimestamps();
+      allow update: if isOwner(uid) && validProfile() && validUpdateTimestamps();
+      // Deleting a profile would orphan its subcollections; account deletion
+      // belongs in a backend function using the Admin SDK.
+      allow delete: if false;
+
+      // ---------- bikes ----------
+
+      match /bikes/{bikeId} {
+        function validBike() {
+          return hasExactly([
+              'make', 'model', 'year', 'nickname', 'plateNumber',
+              'odometerKm', 'photoPath', 'createdAt', 'updatedAt'
+            ])
+            && isText(data().make, 60)
+            && isText(data().model, 60)
+            && data().year is int && data().year >= 1885 && data().year <= 2100
+            && isOptionalText(data().nickname, 60)
+            && isOptionalText(data().plateNumber, 20)
+            && isNonNegative(data().odometerKm)
+            // Photo must be stored under this bike's Storage folder.
+            && (data().photoPath == null
+              || (data().photoPath is string
+                && data().photoPath.matches('users/' + uid + '/bikes/' + bikeId + '/[^/]{1,200}')));
+        }
+
+        allow read, delete: if isOwner(uid);
+        allow create: if isOwner(uid) && validBike() && validCreateTimestamps();
+        allow update: if isOwner(uid) && validBike() && validUpdateTimestamps();
+      }
+
+      // ---------- services (maintenance log) ----------
+
+      match /services/{serviceId} {
+        function validService() {
+          return hasExactly([
+              'bikeId', 'type', 'title', 'date', 'odometerKm', 'cost', 'notes',
+              'nextDueKm', 'nextDueDate', 'createdAt', 'updatedAt'
+            ])
+            && bikeExists(uid, data().bikeId)
+            && data().type in [
+              'oil_change', 'tires', 'brakes', 'chain', 'battery',
+              'inspection', 'repair', 'other'
+            ]
+            && isText(data().title, 120)
+            && data().date is timestamp
+            && isNonNegative(data().odometerKm)
+            && isOptionalNonNegative(data().cost)
+            && isOptionalText(data().notes, 2000)
+            && isOptionalNonNegative(data().nextDueKm)
+            && isOptionalTimestamp(data().nextDueDate);
+        }
+
+        allow read, delete: if isOwner(uid);
+        allow create: if isOwner(uid) && validService() && validCreateTimestamps();
+        allow update: if isOwner(uid) && validService() && validUpdateTimestamps();
+      }
+
+      // ---------- documents (vault) ----------
+
+      match /documents/{documentId} {
+        function validDocument() {
+          return hasExactly([
+              'bikeId', 'type', 'title', 'storagePath', 'contentType',
+              'sizeBytes', 'expiresAt', 'createdAt', 'updatedAt'
+            ])
+            && isOptionalBike(uid, data().bikeId)
+            && data().type in ['registration', 'insurance', 'license', 'receipt', 'other']
+            && isText(data().title, 120)
+            // File must be stored under this document's Storage folder.
+            && data().storagePath is string
+            && data().storagePath.matches('users/' + uid + '/documents/' + documentId + '/[^/]{1,200}')
+            // Keep in sync with storage.rules.
+            && data().contentType in [
+              'application/pdf', 'image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'
+            ]
+            && data().sizeBytes is int && data().sizeBytes > 0 && data().sizeBytes <= 10 * 1024 * 1024
+            && isOptionalTimestamp(data().expiresAt);
+        }
+
+        allow read, delete: if isOwner(uid);
+        allow create: if isOwner(uid) && validDocument() && validCreateTimestamps();
+        allow update: if isOwner(uid) && validDocument() && validUpdateTimestamps();
+      }
+
+      // ---------- chats (AI mechanic) ----------
+
+      match /chats/{chatId} {
+        function validChat() {
+          return hasExactly(['title', 'bikeId', 'createdAt', 'updatedAt'])
+            && isText(data().title, 120)
+            && isOptionalBike(uid, data().bikeId);
+        }
+
+        allow read, delete: if isOwner(uid);
+        allow create: if isOwner(uid) && validChat() && validCreateTimestamps();
+        allow update: if isOwner(uid) && validChat() && validUpdateTimestamps();
+
+        // Append-only. The app only writes the user's own messages; assistant
+        // replies are written by a backend with the Admin SDK, which bypasses
+        // these rules. Messages can be deleted, e.g. when the chat is deleted.
+        match /messages/{messageId} {
+          allow read, delete: if isOwner(uid);
+          allow create: if isOwner(uid)
+            && hasExactly(['role', 'text', 'createdAt'])
+            && data().role == 'user'
+            && isText(data().text, 4000)
+            && data().createdAt == request.time;
+          allow update: if false;
+        }
+      }
+    }
+
+    // ---------- wiki (reference content) ----------
+
+    // Managed from the Firebase console or an admin script, never from the app.
+    match /wiki/{document=**} {
+      allow read: if signedIn();
+      allow write: if false;
+    }
+  }
+}
