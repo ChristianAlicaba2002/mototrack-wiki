@@ -1,0 +1,37 @@
+# Docker dev sandbox. See "Docker sandbox" in README.md.
+#   docker compose up --build              # start Metro on port 8081
+#   docker compose run --rm app pnpm lint  # run any command in the sandbox
+services:
+  app:
+    build: .
+    image: mototrack-wiki-dev
+    ports:
+      - '8081:8081'
+    # .env holds the EXPO_PUBLIC_* Firebase / Google values (copy .env.example).
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      # The address your phone uses to reach Metro: set it to this computer's
+      # LAN IP, e.g. `REACT_NATIVE_PACKAGER_HOSTNAME=192.168.1.20 docker compose up`.
+      # Without it, Metro advertises the container's internal IP, which a phone can't reach.
+      REACT_NATIVE_PACKAGER_HOSTNAME: ${REACT_NATIVE_PACKAGER_HOSTNAME:-}
+    volumes:
+      # Live-edit the source from the host. ":z" relabels for SELinux (Fedora); harmless elsewhere.
+      - .:/app:z
+      # Keep the container's Linux node_modules separate from the host's.
+      - node_modules:/app/node_modules
+      # Metro / Expo cache between runs.
+      - expo_cache:/app/.expo
+    # Keeps Expo's interactive keys (r = reload, j = debugger) usable with `docker compose run`.
+    stdin_open: true
+    tty: true
+    # Sandbox hardening: no extra Linux capabilities, no privilege escalation.
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+
+volumes:
+  node_modules:
+  expo_cache:

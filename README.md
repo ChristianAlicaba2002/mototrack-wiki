@@ -20,7 +20,7 @@ MotoTrack Wiki is an Android app for motorcycle owners: track your bikes, keep t
 - **Themed components** — `ThemedText` and `ThemedView` read colors from shared design tokens
 - **Animations** with `react-native-reanimated` (animated splash overlay)
 - **React Compiler** enabled through Expo experiments
-- **Path aliases** — `@/*` maps to `src/*` and `@/assets/*` maps to `assets/*`
+- **Path aliases**: `@/*` maps to `src/*` and `@/assets/*` maps to `assets/*`
 
 ## Tech stack
 
@@ -88,7 +88,7 @@ Source files are bind-mounted, so edits on the host reload live. `node_modules` 
 ## Firebase setup
 
 1. Create a Firebase project and register a Web app in Project settings.
-2. Copy `.env.example` to `.env` and fill in the Firebase values from the Web app config. These client identifiers are bundled into the app; access control belongs in Firebase Authentication and your Firestore and Storage security rules.
+2. Copy `.env.example` to `.env` and fill in the Firebase values from the Web app config. These client identifiers are bundled into the app. Access control belongs in Firebase Authentication and your Firestore and Storage security rules.
 3. In Firebase Console, enable Email/Password and Google under **Authentication > Sign-in method**. Create a Firestore database and enable Storage before using those services.
 4. For Google sign-in, set `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` to the OAuth Web client ID for this Firebase project. Native Google sign-in requires a development build and does not work in Expo Go.
 

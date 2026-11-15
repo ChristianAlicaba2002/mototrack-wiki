@@ -1,0 +1,22 @@
+# Keep the build context small and keep secrets/config out of the image.
+node_modules
+.git
+.expo
+dist
+web-build
+ios
+android
+.env
+.env*.local
+**/google-services.json
+**/GoogleService-Info.plist
+*.jks
+*.p8
+*.p12
+*.key
+*.pem
+*.mobileprovision
+.vscode
+.claude
+npm-debug.*
+.DS_Store
