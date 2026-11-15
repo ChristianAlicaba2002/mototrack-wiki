@@ -2,6 +2,7 @@ import { onAuthStateChanged, type User } from 'firebase/auth';
 import { createContext, type PropsWithChildren, use, useEffect, useState } from 'react';
 
 import { auth } from '@/lib/firebase';
+import { ensureUserProfile } from '@/lib/firestore/user-profile';
 
 type AuthState = {
   user: User | null;
@@ -18,7 +19,16 @@ export function AuthProvider({ children }: PropsWithChildren) {
   });
 
   useEffect(
-    () => onAuthStateChanged(auth, (user) => setState({ user, initializing: false })),
+    () =>
+      onAuthStateChanged(auth, (user) => {
+        setState({ user, initializing: false });
+        if (user) {
+          // Not awaited: the app works without the profile doc, and this retries on next sign-in.
+          ensureUserProfile(user).catch((e) =>
+            console.warn('[firestore] Could not create user profile:', e)
+          );
+        }
+      }),
     []
   );
 
