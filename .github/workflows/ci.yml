@@ -55,3 +55,36 @@ jobs:
       # and Metro resolution errors. Firebase values aren't needed to bundle.
       - name: Bundle Android
         run: pnpm exec expo export --platform android --output-dir dist
+
+  rules:
+    name: Firestore & Storage rules
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version: 22
+          cache: pnpm
+
+      # The Firebase emulators need Java 21 or newer.
+      - name: Set up Java
+        uses: actions/setup-java@d1374f8ac74474200d16ef8ecee22c7ae7a51880 # v6.3.0
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # Starts the Firestore and Storage emulators (demo project, no credentials)
+      # and runs tests/rules against firestore.rules and storage.rules.
+      - name: Test security rules
+        run: pnpm test:rules
