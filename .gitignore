@@ -42,3 +42,9 @@ example
 # generated native folders
 /ios
 /android
+
+# Firebase emulators
+firebase-debug.log
+firestore-debug.log
+storage-debug.log
+ui-debug.log

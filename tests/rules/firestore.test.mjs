@@ -1,0 +1,319 @@
+// Firestore security rules tests. Run with `pnpm test:rules` (starts the emulator).
+import { readFileSync } from 'node:fs';
+import { after, before, beforeEach, describe, test } from 'node:test';
+
+import {
+  assertFails,
+  assertSucceeds,
+  initializeTestEnvironment,
+} from '@firebase/rules-unit-testing';
+import {
+  addDoc,
+  collection,
+  deleteDoc,
+  doc,
+  getDoc,
+  serverTimestamp,
+  setDoc,
+  Timestamp,
+  updateDoc,
+} from 'firebase/firestore';
+
+let env;
+
+const ALICE = 'alice';
+const BOB = 'bob';
+const now = () => serverTimestamp();
+
+before(async () => {
+  env = await initializeTestEnvironment({
+    projectId: 'demo-mototrack',
+    firestore: { rules: readFileSync('firestore.rules', 'utf8') },
+  });
+});
+
+after(async () => {
+  await env?.cleanup();
+});
+
+beforeEach(async () => {
+  await env.clearFirestore();
+});
+
+const asAlice = () => env.authenticatedContext(ALICE, { email: 'alice@example.com' }).firestore();
+const asBob = () => env.authenticatedContext(BOB, { email: 'bob@example.com' }).firestore();
+const asGuest = () => env.unauthenticatedContext().firestore();
+
+/** Writes data as an admin (rules disabled), for test setup. */
+async function seed(path, data) {
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    await setDoc(doc(ctx.firestore(), path), data);
+  });
+}
+
+const profile = (overrides = {}) => ({
+  displayName: 'Alice',
+  email: 'alice@example.com',
+  photoURL: null,
+  createdAt: now(),
+  updatedAt: now(),
+  ...overrides,
+});
+
+const bike = (overrides = {}) => ({
+  make: 'Honda',
+  model: 'Click 125i',
+  year: 2022,
+  nickname: null,
+  plateNumber: 'ABC 1234',
+  odometerKm: 12500,
+  photoPath: null,
+  createdAt: now(),
+  updatedAt: now(),
+  ...overrides,
+});
+
+const service = (overrides = {}) => ({
+  bikeId: 'bike1',
+  type: 'oil_change',
+  title: 'Oil change',
+  date: Timestamp.fromDate(new Date('2026-11-01')),
+  odometerKm: 12000,
+  cost: 450,
+  notes: null,
+  nextDueKm: 15000,
+  nextDueDate: null,
+  createdAt: now(),
+  updatedAt: now(),
+  ...overrides,
+});
+
+const vaultDoc = (overrides = {}) => ({
+  bikeId: null,
+  type: 'license',
+  title: "Driver's license",
+  storagePath: `users/${ALICE}/documents/doc1/license.pdf`,
+  contentType: 'application/pdf',
+  sizeBytes: 204800,
+  expiresAt: null,
+  createdAt: now(),
+  updatedAt: now(),
+  ...overrides,
+});
+
+async function seedBike(uid = ALICE, bikeId = 'bike1') {
+  const t = Timestamp.now();
+  await seed(`users/${uid}/bikes/${bikeId}`, bike({ createdAt: t, updatedAt: t }));
+}
+
+describe('users/{uid}', () => {
+  test('owner can create and read their profile', async () => {
+    await assertSucceeds(setDoc(doc(asAlice(), 'users/alice'), profile()));
+    await assertSucceeds(getDoc(doc(asAlice(), 'users/alice')));
+  });
+
+  test('guests and other users cannot read or write it', async () => {
+    await assertFails(setDoc(doc(asBob(), 'users/alice'), profile()));
+    await assertFails(setDoc(doc(asGuest(), 'users/alice'), profile()));
+    await assertFails(getDoc(doc(asBob(), 'users/alice')));
+    await assertFails(getDoc(doc(asGuest(), 'users/alice')));
+  });
+
+  test('rejects extra fields, a wrong email and client timestamps', async () => {
+    const db = asAlice();
+    await assertFails(setDoc(doc(db, 'users/alice'), profile({ role: 'admin' })));
+    await assertFails(setDoc(doc(db, 'users/alice'), profile({ email: 'bob@example.com' })));
+    await assertFails(setDoc(doc(db, 'users/alice'), profile({ createdAt: Timestamp.now() })));
+  });
+
+  test('update keeps createdAt; delete is not allowed', async () => {
+    const t = Timestamp.fromDate(new Date('2026-01-01'));
+    await seed('users/alice', profile({ createdAt: t, updatedAt: t }));
+    const ref = doc(asAlice(), 'users/alice');
+    await assertSucceeds(updateDoc(ref, { displayName: 'Ally', updatedAt: now() }));
+    await assertFails(updateDoc(ref, { createdAt: now(), updatedAt: now() }));
+    await assertFails(deleteDoc(ref));
+  });
+});
+
+describe('users/{uid}/bikes', () => {
+  test('owner can create, read, update and delete bikes', async () => {
+    const db = asAlice();
+    const ref = await assertSucceeds(addDoc(collection(db, 'users/alice/bikes'), bike()));
+    await assertSucceeds(getDoc(ref));
+    await assertSucceeds(updateDoc(ref, { odometerKm: 13000, updatedAt: now() }));
+    await assertSucceeds(deleteDoc(ref));
+  });
+
+  test('other users cannot touch them', async () => {
+    await seedBike();
+    await assertFails(getDoc(doc(asBob(), 'users/alice/bikes/bike1')));
+    await assertFails(setDoc(doc(asBob(), 'users/alice/bikes/bike2'), bike()));
+    await assertFails(deleteDoc(doc(asBob(), 'users/alice/bikes/bike1')));
+  });
+
+  test('validates fields', async () => {
+    const col = collection(asAlice(), 'users/alice/bikes');
+    await assertFails(addDoc(col, bike({ year: 1800 })));
+    await assertFails(addDoc(col, bike({ year: 2022.5 })));
+    await assertFails(addDoc(col, bike({ make: '' })));
+    await assertFails(addDoc(col, bike({ odometerKm: -1 })));
+    const { plateNumber: _omitted, ...missingField } = bike();
+    await assertFails(addDoc(col, missingField));
+  });
+
+  test('photoPath must point at this bike in Storage', async () => {
+    const db = asAlice();
+    await assertSucceeds(
+      setDoc(doc(db, 'users/alice/bikes/b1'), bike({ photoPath: 'users/alice/bikes/b1/photo.jpg' }))
+    );
+    await assertFails(
+      setDoc(doc(db, 'users/alice/bikes/b2'), bike({ photoPath: 'users/bob/bikes/b2/photo.jpg' }))
+    );
+    await assertFails(
+      setDoc(doc(db, 'users/alice/bikes/b3'), bike({ photoPath: 'users/alice/bikes/b1/photo.jpg' }))
+    );
+  });
+});
+
+describe('users/{uid}/services', () => {
+  test('owner can log a service for one of their bikes', async () => {
+    await seedBike();
+    await assertSucceeds(addDoc(collection(asAlice(), 'users/alice/services'), service()));
+  });
+
+  test('bikeId must be an existing bike of the owner', async () => {
+    await seedBike(BOB, 'bobsBike');
+    const col = collection(asAlice(), 'users/alice/services');
+    await assertFails(addDoc(col, service({ bikeId: 'missing' })));
+    await assertFails(addDoc(col, service({ bikeId: 'bobsBike' })));
+  });
+
+  test('validates type and numbers', async () => {
+    await seedBike();
+    const col = collection(asAlice(), 'users/alice/services');
+    await assertFails(addDoc(col, service({ type: 'wash' })));
+    await assertFails(addDoc(col, service({ cost: -5 })));
+    await assertFails(addDoc(col, service({ date: '2026-11-01' })));
+  });
+
+  test('other users cannot read them', async () => {
+    await seedBike();
+    const t = Timestamp.now();
+    await seed('users/alice/services/s1', service({ createdAt: t, updatedAt: t }));
+    await assertFails(getDoc(doc(asBob(), 'users/alice/services/s1')));
+  });
+});
+
+describe('users/{uid}/documents', () => {
+  test('owner can store document metadata', async () => {
+    await assertSucceeds(setDoc(doc(asAlice(), 'users/alice/documents/doc1'), vaultDoc()));
+  });
+
+  test('storagePath must match the owner and document id', async () => {
+    const db = asAlice();
+    await assertFails(
+      setDoc(
+        doc(db, 'users/alice/documents/doc1'),
+        vaultDoc({ storagePath: 'users/bob/documents/doc1/license.pdf' })
+      )
+    );
+    await assertFails(setDoc(doc(db, 'users/alice/documents/doc2'), vaultDoc()));
+  });
+
+  test('can be linked to one of the owner\'s bikes', async () => {
+    await seedBike();
+    await assertSucceeds(
+      setDoc(doc(asAlice(), 'users/alice/documents/doc1'), vaultDoc({ bikeId: 'bike1', type: 'registration' }))
+    );
+    await assertSucceeds(
+      setDoc(doc(asAlice(), 'users/alice/chats/c1'), {
+        title: 'Brakes squeal',
+        bikeId: 'bike1',
+        createdAt: now(),
+        updatedAt: now(),
+      })
+    );
+  });
+
+  test('validates content type, size and bike', async () => {
+    const ref = doc(asAlice(), 'users/alice/documents/doc1');
+    await assertFails(setDoc(ref, vaultDoc({ contentType: 'application/zip' })));
+    await assertFails(setDoc(ref, vaultDoc({ sizeBytes: 10 * 1024 * 1024 + 1 })));
+    await assertFails(setDoc(ref, vaultDoc({ bikeId: 'missing' })));
+  });
+});
+
+describe('users/{uid}/chats and messages', () => {
+  test('owner can create a chat and send user messages', async () => {
+    const db = asAlice();
+    await assertSucceeds(
+      setDoc(doc(db, 'users/alice/chats/c1'), {
+        title: 'Engine noise',
+        bikeId: null,
+        createdAt: now(),
+        updatedAt: now(),
+      })
+    );
+    await assertSucceeds(
+      addDoc(collection(db, 'users/alice/chats/c1/messages'), {
+        role: 'user',
+        text: 'It ticks at idle.',
+        createdAt: now(),
+      })
+    );
+  });
+
+  test('the app cannot write assistant messages or edit messages', async () => {
+    const db = asAlice();
+    const messages = collection(db, 'users/alice/chats/c1/messages');
+    await assertFails(addDoc(messages, { role: 'assistant', text: 'Check the valves.', createdAt: now() }));
+
+    await seed('users/alice/chats/c1/messages/m1', {
+      role: 'user',
+      text: 'Hi',
+      createdAt: Timestamp.now(),
+    });
+    await assertFails(updateDoc(doc(db, 'users/alice/chats/c1/messages/m1'), { text: 'Edited' }));
+    await assertSucceeds(deleteDoc(doc(db, 'users/alice/chats/c1/messages/m1')));
+  });
+
+  test('other users cannot read or post', async () => {
+    await seed('users/alice/chats/c1/messages/m1', {
+      role: 'user',
+      text: 'Hi',
+      createdAt: Timestamp.now(),
+    });
+    await assertFails(getDoc(doc(asBob(), 'users/alice/chats/c1/messages/m1')));
+    await assertFails(
+      addDoc(collection(asBob(), 'users/alice/chats/c1/messages'), {
+        role: 'user',
+        text: 'Hi',
+        createdAt: now(),
+      })
+    );
+  });
+});
+
+describe('wiki', () => {
+  test('signed-in users can read; nobody can write', async () => {
+    await seed('wiki/chain-maintenance', {
+      title: 'Chain maintenance',
+      category: 'maintenance',
+      summary: 'Clean and lube every 500 km.',
+      body: '# Chain maintenance',
+      tags: ['chain'],
+      coverImagePath: null,
+      updatedAt: Timestamp.now(),
+    });
+    await assertSucceeds(getDoc(doc(asAlice(), 'wiki/chain-maintenance')));
+    await assertFails(getDoc(doc(asGuest(), 'wiki/chain-maintenance')));
+    await assertFails(setDoc(doc(asAlice(), 'wiki/new'), { title: 'Mine' }));
+    await assertFails(deleteDoc(doc(asAlice(), 'wiki/chain-maintenance')));
+  });
+});
+
+test('collections not in the rules are denied', async () => {
+  await assertFails(setDoc(doc(asAlice(), 'admin/settings'), { open: true }));
+  await assertFails(getDoc(doc(asAlice(), 'admin/settings')));
+});
