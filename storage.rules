@@ -1,0 +1,52 @@
+rules_version = '2';
+
+// MotoTrack Cloud Storage security rules.
+//
+//   users/{uid}/bikes/{bikeId}/{fileName}          bike photos, owner only, images up to 5 MB
+//   users/{uid}/documents/{documentId}/{fileName}  vault files, owner only, PDF or images up to 10 MB
+//   wiki/**                                        read-only for signed-in users
+//
+// The ids match the Firestore documents that point at these files
+// (bikes.photoPath, documents.storagePath). Anything else is denied.
+// Tests: tests/rules/storage.test.mjs (pnpm test:rules).
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    function isImage() {
+      return request.resource.contentType.matches('image/(jpeg|png|webp|heic|heif)');
+    }
+
+    function isPdf() {
+      return request.resource.contentType == 'application/pdf';
+    }
+
+    function isUnderMB(megabytes) {
+      return request.resource.size <= megabytes * 1024 * 1024;
+    }
+
+    match /users/{uid}/bikes/{bikeId}/{fileName} {
+      allow read, delete: if isOwner(uid);
+      allow create, update: if isOwner(uid) && isImage() && isUnderMB(5);
+    }
+
+    // Keep the allowed types and size in sync with firestore.rules (documents).
+    match /users/{uid}/documents/{documentId}/{fileName} {
+      allow read, delete: if isOwner(uid);
+      allow create, update: if isOwner(uid) && (isPdf() || isImage()) && isUnderMB(10);
+    }
+
+    // Managed from the Firebase console or an admin script, never from the app.
+    match /wiki/{allPaths=**} {
+      allow read: if signedIn();
+      allow write: if false;
+    }
+  }
+}
