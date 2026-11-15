@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "454985584750",
+    "project_id": "mototrack-wiki",
+    "storage_bucket": "mototrack-wiki.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:454985584750:android:b6a3ee28d0c7a150bfd67f",
+        "android_client_info": {
+          "package_name": "com.mototrack.wiki"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "454985584750-nagfm7d6f9k7osadvti2oku9v5bbeaa4.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBNKxl8wDZbB4zWKT7fzMRw5exQZn0h4Wc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "454985584750-nagfm7d6f9k7osadvti2oku9v5bbeaa4.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "454985584750-ibk2ltp6lohvceuecc5scnes7170cmor.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.mototrack.wiki"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
