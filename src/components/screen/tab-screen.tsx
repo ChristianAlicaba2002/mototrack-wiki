@@ -10,21 +10,26 @@ import { useTheme } from '@/hooks/use-theme';
 type TabScreenProps = {
   title: string;
   subtitle?: string;
+  /** Shown to the right of the title, e.g. an "Add" button. */
+  headerAction?: ReactNode;
   children?: ReactNode;
 };
 
 /** Shared layout for top-level tab screens: safe-area aware, scrollable, with a title header. */
-export function TabScreen({ title, subtitle, children }: TabScreenProps) {
+export function TabScreen({ title, subtitle, headerAction, children }: TabScreenProps) {
   const theme = useTheme();
 
   return (
     <SafeAreaView edges={['top', 'left', 'right']} style={[styles.safeArea, { backgroundColor: theme.background }]}>
       <ScrollView contentContainerStyle={styles.content}>
-        <ThemedView style={styles.header}>
-          <ThemedText type="subtitle" accessibilityRole="header">
-            {title}
-          </ThemedText>
-          {subtitle ? <ThemedText themeColor="textSecondary">{subtitle}</ThemedText> : null}
+        <ThemedView style={styles.headerRow}>
+          <ThemedView style={styles.header}>
+            <ThemedText type="subtitle" accessibilityRole="header">
+              {title}
+            </ThemedText>
+            {subtitle ? <ThemedText themeColor="textSecondary">{subtitle}</ThemedText> : null}
+          </ThemedView>
+          {headerAction}
         </ThemedView>
         {children}
       </ScrollView>
@@ -63,9 +68,15 @@ const styles = StyleSheet.create({
     maxWidth: MaxContentWidth,
     alignSelf: 'center',
   },
-  header: {
-    gap: Spacing.one,
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: Spacing.three,
     marginBottom: Spacing.two,
+  },
+  header: {
+    flex: 1,
+    gap: Spacing.one,
   },
   card: {
     gap: Spacing.one,
