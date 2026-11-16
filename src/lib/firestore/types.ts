@@ -20,6 +20,8 @@ export type UserProfile = {
 export type Bike = {
   make: string;
   model: string;
+  /** Engine displacement in cc. Integer, 1–3000. */
+  engineCc: number;
   /** Integer, 1885–2100. */
   year: number;
   nickname: string | null;

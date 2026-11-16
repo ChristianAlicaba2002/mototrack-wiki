@@ -97,11 +97,12 @@ service cloud.firestore {
       match /bikes/{bikeId} {
         function validBike() {
           return hasExactly([
-              'make', 'model', 'year', 'nickname', 'plateNumber',
+              'make', 'model', 'engineCc', 'year', 'nickname', 'plateNumber',
               'odometerKm', 'photoPath', 'createdAt', 'updatedAt'
             ])
             && isText(data().make, 60)
             && isText(data().model, 60)
+            && data().engineCc is int && data().engineCc >= 1 && data().engineCc <= 3000
             && data().year is int && data().year >= 1885 && data().year <= 2100
             && isOptionalText(data().nickname, 60)
             && isOptionalText(data().plateNumber, 20)

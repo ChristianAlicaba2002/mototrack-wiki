@@ -63,6 +63,7 @@ const profile = (overrides = {}) => ({
 const bike = (overrides = {}) => ({
   make: 'Honda',
   model: 'Click 125i',
+  engineCc: 125,
   year: 2022,
   nickname: null,
   plateNumber: 'ABC 1234',
@@ -158,6 +159,10 @@ describe('users/{uid}/bikes', () => {
     await assertFails(addDoc(col, bike({ year: 2022.5 })));
     await assertFails(addDoc(col, bike({ make: '' })));
     await assertFails(addDoc(col, bike({ odometerKm: -1 })));
+    await assertFails(addDoc(col, bike({ engineCc: 0 })));
+    await assertFails(addDoc(col, bike({ engineCc: 3001 })));
+    await assertFails(addDoc(col, bike({ engineCc: 124.5 })));
+    await assertFails(addDoc(col, bike({ engineCc: '125' })));
     const { plateNumber: _omitted, ...missingField } = bike();
     await assertFails(addDoc(col, missingField));
   });
