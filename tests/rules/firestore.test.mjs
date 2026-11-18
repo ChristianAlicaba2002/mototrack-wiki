@@ -155,7 +155,12 @@ describe('users/{uid} activeBikeId', () => {
     const ref = doc(asAlice(), 'users/alice');
     await assertSucceeds(updateDoc(ref, { activeBikeId: 'bike1', updatedAt: now() }));
     await assertSucceeds(updateDoc(ref, { activeBikeId: null, updatedAt: now() }));
-    await assertSucceeds(setDoc(doc(asAlice(), 'users/alice'), profile({ activeBikeId: null })));
+  });
+
+  test('can be included when the profile is created', async () => {
+    const ref = doc(asAlice(), 'users/alice');
+    await assertFails(setDoc(ref, profile({ activeBikeId: 'missing' })));
+    await assertSucceeds(setDoc(ref, profile({ activeBikeId: null })));
   });
 
   test('rejects bikes that do not exist or belong to someone else', async () => {
