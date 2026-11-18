@@ -52,7 +52,7 @@ export function toFormValues(bike: Bike): BikeFormValues {
 }
 
 /** Parses a whole number, allowing thousands separators ("12,500"). Returns null if it isn't one. */
-function parseWholeNumber(text: string): number | null {
+export function parseWholeNumber(text: string): number | null {
   const cleaned = text.trim().replace(/[,\s]/g, '');
   if (!/^\d+$/.test(cleaned)) return null;
   const value = Number(cleaned);

@@ -13,10 +13,6 @@ export default function AppTabs() {
     <NativeTabs
       backgroundColor={colors.background}
       indicatorColor={colors.backgroundElement}
-      // Android: remove the press ripple/highlight on tab items.
-      rippleColor="transparent"
-      // Android: always show labels on every tab, not just the selected one.
-      labelVisibilityMode="labeled"
       labelStyle={{ selected: { color: colors.text } }}>
       <NativeTabs.Trigger name="index">
         <NativeTabs.Trigger.Label>Home</NativeTabs.Trigger.Label>

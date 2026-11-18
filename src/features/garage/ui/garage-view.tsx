@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import {
   CalendarIcon,
+  CheckIcon,
   ChevronRightIcon,
   EngineIcon,
   GaugeIcon,
@@ -18,14 +19,20 @@ import type { WithId } from '@/lib/firestore/collections';
 import type { Bike } from '@/lib/firestore/types';
 
 import type { GarageViewModel } from '../model/garage-view-model';
+import { formatKm as formatNumber } from '../model/odometer';
 import { Button, ErrorMessage, IconButton, Radius } from './controls';
 
-function formatNumber(n: number): string {
-  return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-}
-
 /** Presentational only — all state and actions come from the view model. */
-export function GarageView({ bikes, loading, error, addBike, editBike }: GarageViewModel) {
+export function GarageView({
+  bikes,
+  activeBikeId,
+  loading,
+  error,
+  addBike,
+  editBike,
+  makeActive,
+  updateOdometer,
+}: GarageViewModel) {
   const hasBikes = bikes.length > 0;
 
   return (
@@ -56,7 +63,14 @@ export function GarageView({ bikes, loading, error, addBike, editBike }: GarageV
             YOUR BIKES
           </ThemedText>
           {bikes.map((bike) => (
-            <BikeCard key={bike.id} bike={bike} onPress={() => editBike(bike.id)} />
+            <BikeCard
+              key={bike.id}
+              bike={bike}
+              isActive={bike.id === activeBikeId}
+              onPress={() => editBike(bike.id)}
+              onMakeActive={() => makeActive(bike.id)}
+              onUpdateOdometer={() => updateOdometer(bike.id)}
+            />
           ))}
         </>
       ) : (
@@ -96,7 +110,15 @@ function Stat({ label, value }: { label: string; value: string }) {
   );
 }
 
-function BikeCard({ bike, onPress }: { bike: WithId<Bike>; onPress: () => void }) {
+type BikeCardProps = {
+  bike: WithId<Bike>;
+  isActive: boolean;
+  onPress: () => void;
+  onMakeActive: () => void;
+  onUpdateOdometer: () => void;
+};
+
+function BikeCard({ bike, isActive, onPress, onMakeActive, onUpdateOdometer }: BikeCardProps) {
   const theme = useTheme();
   const name = `${bike.make} ${bike.model}`;
   const title = bike.nickname ?? name;
@@ -105,11 +127,11 @@ function BikeCard({ bike, onPress }: { bike: WithId<Bike>; onPress: () => void }
     <Pressable
       onPress={onPress}
       accessibilityRole="button"
-      accessibilityLabel={`${title}, ${bike.year}, ${bike.engineCc} cc, ${formatNumber(bike.odometerKm)} kilometres`}
+      accessibilityLabel={`${title}${isActive ? ', active motorcycle' : ''}, ${bike.year}, ${bike.engineCc} cc, ${formatNumber(bike.odometerKm)} kilometres`}
       accessibilityHint="Opens the motorcycle to edit or delete it"
       style={({ pressed }) => [
         styles.card,
-        { backgroundColor: theme.backgroundElement },
+        { backgroundColor: theme.backgroundElement, borderColor: isActive ? theme.accent : 'transparent' },
         pressed && styles.cardPressed,
       ]}>
       <View style={styles.cardTop}>
@@ -117,9 +139,19 @@ function BikeCard({ bike, onPress }: { bike: WithId<Bike>; onPress: () => void }
           <MotorcycleIcon size={26} color={theme.brand} />
         </View>
         <View style={styles.cardHeading}>
-          <ThemedText style={styles.cardTitle} numberOfLines={1}>
-            {title}
-          </ThemedText>
+          <View style={styles.titleRow}>
+            <ThemedText style={styles.cardTitle} numberOfLines={1}>
+              {title}
+            </ThemedText>
+            {isActive ? (
+              <View style={[styles.activeBadge, { backgroundColor: theme.accent }]}>
+                <CheckIcon size={12} color={theme.onAccent} />
+                <ThemedText type="smallBold" style={[styles.activeBadgeText, { color: theme.onAccent }]}>
+                  Active
+                </ThemedText>
+              </View>
+            ) : null}
+          </View>
           <ThemedText type="small" themeColor="textSecondary" numberOfLines={1}>
             {bike.nickname ? name : bike.make}
           </ThemedText>
@@ -142,7 +174,48 @@ function BikeCard({ bike, onPress }: { bike: WithId<Bike>; onPress: () => void }
         <ThemedText type="small" themeColor="textSecondary">
           km
         </ThemedText>
+        <SmallAction label="Update" accessibilityLabel={`Update odometer for ${title}`} onPress={onUpdateOdometer} primary />
       </View>
+
+      {!isActive ? (
+        <SmallAction
+          label="Set as active"
+          accessibilityLabel={`Set ${title} as the active motorcycle`}
+          onPress={onMakeActive}
+        />
+      ) : null}
+    </Pressable>
+  );
+}
+
+/** A compact pill button that sits inside a card. */
+function SmallAction({
+  label,
+  accessibilityLabel,
+  onPress,
+  primary,
+}: {
+  label: string;
+  accessibilityLabel: string;
+  onPress: () => void;
+  primary?: boolean;
+}) {
+  const theme = useTheme();
+  return (
+    <Pressable
+      onPress={onPress}
+      hitSlop={6}
+      accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel}
+      style={({ pressed }) => [
+        styles.smallAction,
+        { backgroundColor: primary ? theme.accent : theme.background },
+        !primary && styles.smallActionWide,
+        pressed && styles.cardPressed,
+      ]}>
+      <ThemedText type="smallBold" style={{ color: primary ? theme.onAccent : theme.accent }}>
+        {label}
+      </ThemedText>
     </Pressable>
   );
 }
@@ -234,6 +307,35 @@ const styles = StyleSheet.create({
     gap: Spacing.three,
     padding: Spacing.three,
     borderRadius: Radius.card,
+    borderWidth: 2,
+    borderColor: 'transparent',
+  },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.two,
+  },
+  activeBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.half,
+    paddingHorizontal: Spacing.two,
+    paddingVertical: 2,
+    borderRadius: Radius.pill,
+  },
+  activeBadgeText: {
+    fontSize: 12,
+    lineHeight: 16,
+  },
+  smallAction: {
+    minHeight: 32,
+    paddingHorizontal: Spacing.three,
+    borderRadius: Radius.pill,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  smallActionWide: {
+    minHeight: 44,
   },
   cardPressed: {
     opacity: 0.85,
@@ -256,6 +358,7 @@ const styles = StyleSheet.create({
     gap: Spacing.half,
   },
   cardTitle: {
+    flexShrink: 1,
     fontSize: 18,
     lineHeight: 24,
     fontWeight: 700,

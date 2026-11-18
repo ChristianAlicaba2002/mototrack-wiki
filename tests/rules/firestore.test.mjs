@@ -17,6 +17,7 @@ import {
   setDoc,
   Timestamp,
   updateDoc,
+  writeBatch,
 } from 'firebase/firestore';
 
 let env;
@@ -134,6 +135,100 @@ describe('users/{uid}', () => {
     await assertSucceeds(updateDoc(ref, { displayName: 'Ally', updatedAt: now() }));
     await assertFails(updateDoc(ref, { createdAt: now(), updatedAt: now() }));
     await assertFails(deleteDoc(ref));
+  });
+});
+
+describe('users/{uid} activeBikeId', () => {
+  const seedProfile = async (overrides = {}) => {
+    const t = Timestamp.fromDate(new Date('2026-01-01'));
+    await seed('users/alice', profile({ createdAt: t, updatedAt: t, ...overrides }));
+  };
+
+  test('profiles without activeBikeId are still valid', async () => {
+    await seedProfile();
+    await assertSucceeds(updateDoc(doc(asAlice(), 'users/alice'), { displayName: 'Ally', updatedAt: now() }));
+  });
+
+  test('can be set to one of the owner\'s bikes or cleared', async () => {
+    await seedProfile();
+    await seedBike();
+    const ref = doc(asAlice(), 'users/alice');
+    await assertSucceeds(updateDoc(ref, { activeBikeId: 'bike1', updatedAt: now() }));
+    await assertSucceeds(updateDoc(ref, { activeBikeId: null, updatedAt: now() }));
+  });
+
+  test('can be included when the profile is created', async () => {
+    const ref = doc(asAlice(), 'users/alice');
+    await assertFails(setDoc(ref, profile({ activeBikeId: 'missing' })));
+    await assertSucceeds(setDoc(ref, profile({ activeBikeId: null })));
+  });
+
+  test('rejects bikes that do not exist or belong to someone else', async () => {
+    await seedProfile();
+    await seedBike(BOB, 'bobBike');
+    const ref = doc(asAlice(), 'users/alice');
+    await assertFails(updateDoc(ref, { activeBikeId: 'missing', updatedAt: now() }));
+    await assertFails(updateDoc(ref, { activeBikeId: 'bobBike', updatedAt: now() }));
+    await assertFails(updateDoc(ref, { activeBikeId: 42, updatedAt: now() }));
+  });
+
+  test('a stale activeBikeId does not block other edits', async () => {
+    await seedProfile({ activeBikeId: 'deleted' });
+    await assertSucceeds(updateDoc(doc(asAlice(), 'users/alice'), { displayName: 'Ally', updatedAt: now() }));
+  });
+});
+
+describe('users/{uid}/bikes/{bikeId}/odometerReadings', () => {
+  const readings = (db, bikeId = 'bike1') => collection(db, `users/alice/bikes/${bikeId}/odometerReadings`);
+
+  test('owner logs a reading together with the bike\'s odometer', async () => {
+    await seedBike();
+    const db = asAlice();
+    const batch = writeBatch(db);
+    batch.update(doc(db, 'users/alice/bikes/bike1'), { odometerKm: 13000, updatedAt: now() });
+    batch.set(doc(readings(db)), { odometerKm: 13000, createdAt: now() });
+    await assertSucceeds(batch.commit());
+    await assertSucceeds(getDoc(doc(db, 'users/alice/bikes/bike1')));
+  });
+
+  test('can be written in the batch that creates the bike', async () => {
+    const db = asAlice();
+    const batch = writeBatch(db);
+    batch.set(doc(db, 'users/alice/bikes/b1'), bike());
+    batch.set(doc(readings(db, 'b1')), { odometerKm: 12500, createdAt: now() });
+    await assertSucceeds(batch.commit());
+  });
+
+  test('must match the bike\'s odometer', async () => {
+    await seedBike();
+    const db = asAlice();
+    // Bike is at 12,500; a reading alone for another value is rejected.
+    await assertFails(addDoc(readings(db), { odometerKm: 13000, createdAt: now() }));
+    const batch = writeBatch(db);
+    batch.update(doc(db, 'users/alice/bikes/bike1'), { odometerKm: 13000, updatedAt: now() });
+    batch.set(doc(readings(db)), { odometerKm: 14000, createdAt: now() });
+    await assertFails(batch.commit());
+  });
+
+  test('validates fields and requires the bike', async () => {
+    await seedBike();
+    const db = asAlice();
+    await assertFails(addDoc(readings(db, 'missing'), { odometerKm: 0, createdAt: now() }));
+    await assertFails(addDoc(readings(db), { odometerKm: 12500, createdAt: Timestamp.now() }));
+    await assertFails(addDoc(readings(db), { odometerKm: 12500.5, createdAt: now() }));
+    await assertFails(addDoc(readings(db), { odometerKm: 12500, note: 'x', createdAt: now() }));
+  });
+
+  test('append-only for the owner; private to others', async () => {
+    await seedBike();
+    const t = Timestamp.now();
+    await seed('users/alice/bikes/bike1/odometerReadings/r1', { odometerKm: 12500, createdAt: t });
+    const ref = doc(asAlice(), 'users/alice/bikes/bike1/odometerReadings/r1');
+    await assertSucceeds(getDoc(ref));
+    await assertFails(updateDoc(ref, { odometerKm: 12500, createdAt: t }));
+    await assertFails(getDoc(doc(asBob(), 'users/alice/bikes/bike1/odometerReadings/r1')));
+    await assertFails(deleteDoc(doc(asBob(), 'users/alice/bikes/bike1/odometerReadings/r1')));
+    await assertSucceeds(deleteDoc(ref));
   });
 });
 

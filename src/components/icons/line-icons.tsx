@@ -153,3 +153,11 @@ export function SparkleIcon({ size, color }: IconProps) {
     </Icon>
   );
 }
+
+export function CheckIcon({ size, color }: IconProps) {
+  return (
+    <Icon size={size}>
+      <Path d="m5 12.5 4.5 4.5L19 7.5" {...stroke(color)} />
+    </Icon>
+  );
+}

@@ -13,6 +13,7 @@ import type {
   Bike,
   Chat,
   ChatMessage,
+  OdometerReading,
   ServiceRecord,
   UserProfile,
   VaultDocument,
@@ -40,6 +41,11 @@ export const userDoc = (uid: string) =>
 
 export const bikesCollection = (uid: string) =>
   collection(db, 'users', uid, 'bikes').withConverter(converter<Bike>());
+
+export const odometerReadingsCollection = (uid: string, bikeId: string) =>
+  collection(db, 'users', uid, 'bikes', bikeId, 'odometerReadings').withConverter(
+    converter<OdometerReading>()
+  );
 
 export const servicesCollection = (uid: string) =>
   collection(db, 'users', uid, 'services').withConverter(converter<ServiceRecord>());

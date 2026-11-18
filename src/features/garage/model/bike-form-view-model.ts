@@ -34,6 +34,8 @@ export function useBikeFormViewModel(bikeId: string | undefined) {
   const [loadState, setLoadState] = useState<BikeFormLoadState>(isEdit ? 'loading' : 'ready');
   const [pending, setPending] = useState<BikeFormPending>(null);
   const [error, setError] = useState<string | null>(null);
+  /** The odometer as loaded, so saving only logs a reading when it changed. */
+  const [loadedOdometerKm, setLoadedOdometerKm] = useState<number | null>(null);
 
   useEffect(() => {
     if (!uid || !bikeId) return;
@@ -46,6 +48,7 @@ export function useBikeFormViewModel(bikeId: string | undefined) {
           return;
         }
         setValues(toFormValues(bike));
+        setLoadedOdometerKm(bike.odometerKm);
         setLoadState('ready');
       },
       (e) => {
@@ -81,7 +84,7 @@ export function useBikeFormViewModel(bikeId: string | undefined) {
     setPending('save');
     setError(null);
     try {
-      if (bikeId) await updateBike(uid, bikeId, input);
+      if (bikeId) await updateBike(uid, bikeId, input, loadedOdometerKm ?? input.odometerKm);
       else await createBike(uid, input);
       close();
     } catch (e) {
