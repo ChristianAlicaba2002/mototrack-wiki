@@ -5,6 +5,7 @@ import { PlaceholderCard, TabScreen } from '@/components/screen/tab-screen';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
+import { ActiveBikeCard } from '@/features/garage/ui/active-bike-card';
 import { useAuth } from '@/hooks/use-auth';
 import { useTheme } from '@/hooks/use-theme';
 import { signOut } from '@/lib/firebase/google-sign-in';
@@ -17,6 +18,7 @@ export default function HomeScreen() {
       <ThemedView style={styles.logoRow}>
         <MotoTrackLogo size={56} color={theme.brand} foreground={theme.onBrand} />
       </ThemedView>
+      <ActiveBikeCard />
       <PlaceholderCard
         title="Upcoming maintenance"
         description="Service reminders for your bikes will show up here."
