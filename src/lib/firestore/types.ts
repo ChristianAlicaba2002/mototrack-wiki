@@ -12,6 +12,11 @@ export type UserProfile = {
   /** Must equal the signed-in account's email. */
   email: string | null;
   photoURL: string | null;
+  /**
+   * The bike the app is focused on: one of the owner's bikes, or null.
+   * Missing on profiles created before this field existed; treat that as null.
+   */
+  activeBikeId?: string | null;
   createdAt: Timestamp;
   updatedAt: Timestamp;
 };
@@ -31,6 +36,17 @@ export type Bike = {
   photoPath: string | null;
   createdAt: Timestamp;
   updatedAt: Timestamp;
+};
+
+/**
+ * users/{uid}/bikes/{bikeId}/odometerReadings/{readingId}: one entry in a bike's
+ * mileage history. Append-only, and written in the same batch as the bike's
+ * odometerKm (firestore.rules checks they match).
+ */
+export type OdometerReading = {
+  /** Integer, km. */
+  odometerKm: number;
+  createdAt: Timestamp;
 };
 
 export const SERVICE_TYPES = [
