@@ -1,32 +1,13 @@
 import { router } from 'expo-router';
-import { useEffect, useState } from 'react';
 
-import { useAuth } from '@/hooks/use-auth';
-import { subscribeToBikes } from '@/lib/firestore/bikes';
-import type { WithId } from '@/lib/firestore/collections';
-import type { Bike } from '@/lib/firestore/types';
+import { useGarageData } from './use-garage-data';
 
-import { toGarageErrorMessage } from './errors';
-
-type GarageState = {
-  /** null until the first snapshot arrives. */
-  bikes: WithId<Bike>[] | null;
-  error: string | null;
-};
+export function openOdometer(bikeId: string) {
+  router.push({ pathname: '/odometer', params: { id: bikeId } });
+}
 
 export function useGarageViewModel() {
-  const { user } = useAuth();
-  const uid = user?.uid;
-  const [state, setState] = useState<GarageState>({ bikes: null, error: null });
-
-  useEffect(() => {
-    if (!uid) return;
-    return subscribeToBikes(
-      uid,
-      (bikes) => setState({ bikes, error: null }),
-      (e) => setState((s) => ({ ...s, error: toGarageErrorMessage(e) }))
-    );
-  }, [uid]);
+  const { bikes, activeBike, loading, error, makeActive } = useGarageData();
 
   function addBike() {
     router.push('/bike-form');
@@ -37,11 +18,14 @@ export function useGarageViewModel() {
   }
 
   return {
-    bikes: state.bikes ?? [],
-    loading: state.bikes === null && state.error === null,
-    error: state.error,
+    bikes,
+    activeBikeId: activeBike?.id ?? null,
+    loading,
+    error,
     addBike,
     editBike,
+    makeActive,
+    updateOdometer: openOdometer,
   };
 }
 
