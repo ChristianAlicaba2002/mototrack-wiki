@@ -1,24 +1,29 @@
 import {
-  addDoc,
-  deleteDoc,
   doc,
   getDoc,
+  getDocs,
+  limit,
   onSnapshot,
   orderBy,
   query,
   serverTimestamp,
   type Unsubscribe,
-  updateDoc,
+  writeBatch,
 } from 'firebase/firestore';
 
-import { bikesCollection, type WithId, withIds } from './collections';
-import type { Bike } from './types';
+import { db } from '@/lib/firebase';
+
+import { bikesCollection, odometerReadingsCollection, userDoc, type WithId, withIds } from './collections';
+import type { Bike, OdometerReading } from './types';
 
 /** The fields a user edits in the garage form. */
 export type BikeInput = Pick<
   Bike,
   'make' | 'model' | 'engineCc' | 'year' | 'odometerKm' | 'nickname' | 'plateNumber'
 >;
+
+/** Firestore allows 500 writes per batch; leave room for the bike and profile writes. */
+const DELETE_CHUNK = 450;
 
 const bikeDoc = (uid: string, bikeId: string) => doc(bikesCollection(uid), bikeId);
 
@@ -32,26 +37,113 @@ export function subscribeToBikes(
   return onSnapshot(q, (snapshot) => onChange(withIds(snapshot)), onError);
 }
 
+/** Live single bike; null once it doesn't exist. Returns the unsubscribe function. */
+export function subscribeToBike(
+  uid: string,
+  bikeId: string,
+  onChange: (bike: WithId<Bike> | null) => void,
+  onError: (error: Error) => void
+): Unsubscribe {
+  return onSnapshot(
+    bikeDoc(uid, bikeId),
+    (snapshot) => onChange(snapshot.exists() ? { ...snapshot.data(), id: snapshot.id } : null),
+    onError
+  );
+}
+
 export async function getBike(uid: string, bikeId: string): Promise<WithId<Bike> | null> {
   const snapshot = await getDoc(bikeDoc(uid, bikeId));
   return snapshot.exists() ? { ...snapshot.data(), id: snapshot.id } : null;
 }
 
+/** Creates the bike and logs its starting odometer reading. */
 export async function createBike(uid: string, input: BikeInput): Promise<string> {
-  const ref = await addDoc(bikesCollection(uid), {
+  const ref = doc(bikesCollection(uid));
+  const batch = writeBatch(db);
+  batch.set(ref, {
     ...input,
     photoPath: null,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   });
+  batch.set(doc(odometerReadingsCollection(uid, ref.id)), {
+    odometerKm: input.odometerKm,
+    createdAt: serverTimestamp(),
+  });
+  await batch.commit();
   return ref.id;
 }
 
-/** Updates the editable fields; photoPath and createdAt are left as they are. */
-export function updateBike(uid: string, bikeId: string, input: BikeInput): Promise<void> {
-  return updateDoc(bikeDoc(uid, bikeId), { ...input, updatedAt: serverTimestamp() });
+/**
+ * Updates the editable fields; photoPath and createdAt are left as they are.
+ * Logs an odometer reading when the odometer differs from previousOdometerKm.
+ */
+export function updateBike(
+  uid: string,
+  bikeId: string,
+  input: BikeInput,
+  previousOdometerKm: number
+): Promise<void> {
+  const batch = writeBatch(db);
+  batch.update(bikeDoc(uid, bikeId), { ...input, updatedAt: serverTimestamp() });
+  if (input.odometerKm !== previousOdometerKm) {
+    batch.set(doc(odometerReadingsCollection(uid, bikeId)), {
+      odometerKm: input.odometerKm,
+      createdAt: serverTimestamp(),
+    });
+  }
+  return batch.commit();
 }
 
-export function deleteBike(uid: string, bikeId: string): Promise<void> {
-  return deleteDoc(bikeDoc(uid, bikeId));
+/**
+ * Deletes the bike and its odometer history. If it was the active bike,
+ * clears activeBikeId on the profile in the same batch.
+ */
+export async function deleteBike(uid: string, bikeId: string): Promise<void> {
+  const [profile, readings] = await Promise.all([
+    getDoc(userDoc(uid)),
+    getDocs(odometerReadingsCollection(uid, bikeId)),
+  ]);
+  const wasActive = profile.data()?.activeBikeId === bikeId;
+  const refs = readings.docs.map((d) => d.ref);
+
+  // Delete older readings in chunks first; the last batch removes the bike itself.
+  while (refs.length > DELETE_CHUNK) {
+    const batch = writeBatch(db);
+    for (const ref of refs.splice(0, DELETE_CHUNK)) batch.delete(ref);
+    await batch.commit();
+  }
+
+  const batch = writeBatch(db);
+  for (const ref of refs) batch.delete(ref);
+  batch.delete(bikeDoc(uid, bikeId));
+  if (wasActive) {
+    batch.update(userDoc(uid), { activeBikeId: null, updatedAt: serverTimestamp() });
+  }
+  await batch.commit();
+}
+
+// ---------- Odometer ----------
+
+/** Sets the bike's odometer and logs the reading in its history, atomically. */
+export function recordOdometerReading(uid: string, bikeId: string, odometerKm: number): Promise<void> {
+  const batch = writeBatch(db);
+  batch.update(bikeDoc(uid, bikeId), { odometerKm, updatedAt: serverTimestamp() });
+  batch.set(doc(odometerReadingsCollection(uid, bikeId)), {
+    odometerKm,
+    createdAt: serverTimestamp(),
+  });
+  return batch.commit();
+}
+
+/** Live odometer history, newest first. Returns the unsubscribe function. */
+export function subscribeToOdometerReadings(
+  uid: string,
+  bikeId: string,
+  max: number,
+  onChange: (readings: WithId<OdometerReading>[]) => void,
+  onError: (error: Error) => void
+): Unsubscribe {
+  const q = query(odometerReadingsCollection(uid, bikeId), orderBy('createdAt', 'desc'), limit(max));
+  return onSnapshot(q, (snapshot) => onChange(withIds(snapshot)), onError);
 }
