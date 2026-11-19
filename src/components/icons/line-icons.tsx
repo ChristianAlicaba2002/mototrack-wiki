@@ -89,6 +89,14 @@ export function ChevronRightIcon({ size, color }: IconProps) {
   );
 }
 
+export function ChevronLeftIcon({ size, color }: IconProps) {
+  return (
+    <Icon size={size}>
+      <Path d="m15 6-6 6 6 6" {...stroke(color)} />
+    </Icon>
+  );
+}
+
 export function TrashIcon({ size, color }: IconProps) {
   return (
     <Icon size={size}>
@@ -158,6 +166,35 @@ export function CheckIcon({ size, color }: IconProps) {
   return (
     <Icon size={size}>
       <Path d="m5 12.5 4.5 4.5L19 7.5" {...stroke(color)} />
+    </Icon>
+  );
+}
+
+export function WrenchIcon({ size, color }: IconProps) {
+  return (
+    <Icon size={size}>
+      <Path
+        d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.4-3.4a6 6 0 0 1-7.9 7.9l-6.6 6.6a2.1 2.1 0 0 1-3-3l6.6-6.6a6 6 0 0 1 7.9-7.9l-3.4 3.4z"
+        {...stroke(color)}
+      />
+    </Icon>
+  );
+}
+
+export function CoinIcon({ size, color }: IconProps) {
+  return (
+    <Icon size={size}>
+      <Circle cx={12} cy={12} r={9} {...stroke(color)} />
+      <Path d="M15 9.5c-.6-1-1.7-1.5-3-1.5-1.7 0-3 .9-3 2s1.2 1.7 3 2 3 .9 3 2-1.3 2-3 2c-1.3 0-2.4-.5-3-1.5M12 6v2M12 16v2" {...stroke(color)} />
+    </Icon>
+  );
+}
+
+export function NoteIcon({ size, color }: IconProps) {
+  return (
+    <Icon size={size}>
+      <Rect x={4.5} y={3.5} width={15} height={17} rx={2.5} {...stroke(color)} />
+      <Path d="M8.5 8.5h7M8.5 12h7M8.5 15.5h4" {...stroke(color)} />
     </Icon>
   );
 }
