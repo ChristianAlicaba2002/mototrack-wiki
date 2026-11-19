@@ -8,12 +8,21 @@ import {
   query,
   serverTimestamp,
   type Unsubscribe,
+  where,
+  type WriteBatch,
   writeBatch,
 } from 'firebase/firestore';
 
 import { db } from '@/lib/firebase';
 
-import { bikesCollection, odometerReadingsCollection, userDoc, type WithId, withIds } from './collections';
+import {
+  bikesCollection,
+  odometerReadingsCollection,
+  servicesCollection,
+  userDoc,
+  type WithId,
+  withIds,
+} from './collections';
 import type { Bike, OdometerReading } from './types';
 
 /** The fields a user edits in the garage form. */
@@ -96,18 +105,19 @@ export function updateBike(
 }
 
 /**
- * Deletes the bike and its odometer history. If it was the active bike,
- * clears activeBikeId on the profile in the same batch.
+ * Deletes the bike, its odometer history and its service log. If it was the
+ * active bike, clears activeBikeId on the profile in the same batch.
  */
 export async function deleteBike(uid: string, bikeId: string): Promise<void> {
-  const [profile, readings] = await Promise.all([
+  const [profile, readings, services] = await Promise.all([
     getDoc(userDoc(uid)),
     getDocs(odometerReadingsCollection(uid, bikeId)),
+    getDocs(query(servicesCollection(uid), where('bikeId', '==', bikeId))),
   ]);
   const wasActive = profile.data()?.activeBikeId === bikeId;
-  const refs = readings.docs.map((d) => d.ref);
+  const refs = [...readings.docs, ...services.docs].map((d) => d.ref);
 
-  // Delete older readings in chunks first; the last batch removes the bike itself.
+  // Delete the history in chunks first; the last batch removes the bike itself.
   while (refs.length > DELETE_CHUNK) {
     const batch = writeBatch(db);
     for (const ref of refs.splice(0, DELETE_CHUNK)) batch.delete(ref);
@@ -125,14 +135,22 @@ export async function deleteBike(uid: string, bikeId: string): Promise<void> {
 
 // ---------- Odometer ----------
 
-/** Sets the bike's odometer and logs the reading in its history, atomically. */
-export function recordOdometerReading(uid: string, bikeId: string, odometerKm: number): Promise<void> {
-  const batch = writeBatch(db);
+/**
+ * Adds "set the bike's odometer and log the reading" to a batch. The two
+ * writes must go together: firestore.rules checks the reading matches the bike.
+ */
+export function addOdometerReading(batch: WriteBatch, uid: string, bikeId: string, odometerKm: number): void {
   batch.update(bikeDoc(uid, bikeId), { odometerKm, updatedAt: serverTimestamp() });
   batch.set(doc(odometerReadingsCollection(uid, bikeId)), {
     odometerKm,
     createdAt: serverTimestamp(),
   });
+}
+
+/** Sets the bike's odometer and logs the reading in its history, atomically. */
+export function recordOdometerReading(uid: string, bikeId: string, odometerKm: number): Promise<void> {
+  const batch = writeBatch(db);
+  addOdometerReading(batch, uid, bikeId, odometerKm);
   return batch.commit();
 }
 
