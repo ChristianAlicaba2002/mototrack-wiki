@@ -1,5 +1,7 @@
 import { router } from 'expo-router';
 
+import { openServiceLog } from '@/features/services/model/navigation';
+
 import { useGarageData } from './use-garage-data';
 
 export function openOdometer(bikeId: string) {
@@ -26,6 +28,7 @@ export function useGarageViewModel() {
     editBike,
     makeActive,
     updateOdometer: openOdometer,
+    openServices: openServiceLog,
   };
 }
 

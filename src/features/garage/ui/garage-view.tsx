@@ -10,6 +10,7 @@ import {
   MotorcycleIcon,
   PlusIcon,
   TagIcon,
+  WrenchIcon,
 } from '@/components/icons/line-icons';
 import { TabScreen } from '@/components/screen/tab-screen';
 import { ThemedText } from '@/components/themed-text';
@@ -32,6 +33,7 @@ export function GarageView({
   editBike,
   makeActive,
   updateOdometer,
+  openServices,
 }: GarageViewModel) {
   const hasBikes = bikes.length > 0;
 
@@ -70,6 +72,7 @@ export function GarageView({
               onPress={() => editBike(bike.id)}
               onMakeActive={() => makeActive(bike.id)}
               onUpdateOdometer={() => updateOdometer(bike.id)}
+              onOpenServices={() => openServices(bike.id)}
             />
           ))}
         </>
@@ -116,9 +119,10 @@ type BikeCardProps = {
   onPress: () => void;
   onMakeActive: () => void;
   onUpdateOdometer: () => void;
+  onOpenServices: () => void;
 };
 
-function BikeCard({ bike, isActive, onPress, onMakeActive, onUpdateOdometer }: BikeCardProps) {
+function BikeCard({ bike, isActive, onPress, onMakeActive, onUpdateOdometer, onOpenServices }: BikeCardProps) {
   const theme = useTheme();
   const name = `${bike.make} ${bike.model}`;
   const title = bike.nickname ?? name;
@@ -177,13 +181,21 @@ function BikeCard({ bike, isActive, onPress, onMakeActive, onUpdateOdometer }: B
         <SmallAction label="Update" accessibilityLabel={`Update odometer for ${title}`} onPress={onUpdateOdometer} primary />
       </View>
 
-      {!isActive ? (
+      <View style={styles.actions}>
         <SmallAction
-          label="Set as active"
-          accessibilityLabel={`Set ${title} as the active motorcycle`}
-          onPress={onMakeActive}
+          label="Service log"
+          accessibilityLabel={`Service log for ${title}`}
+          onPress={onOpenServices}
+          icon={(c) => <WrenchIcon size={16} color={c} />}
         />
-      ) : null}
+        {!isActive ? (
+          <SmallAction
+            label="Set as active"
+            accessibilityLabel={`Set ${title} as the active motorcycle`}
+            onPress={onMakeActive}
+          />
+        ) : null}
+      </View>
     </Pressable>
   );
 }
@@ -194,11 +206,13 @@ function SmallAction({
   accessibilityLabel,
   onPress,
   primary,
+  icon,
 }: {
   label: string;
   accessibilityLabel: string;
   onPress: () => void;
   primary?: boolean;
+  icon?: (color: string) => ReactNode;
 }) {
   const theme = useTheme();
   return (
@@ -213,6 +227,7 @@ function SmallAction({
         !primary && styles.smallActionWide,
         pressed && styles.cardPressed,
       ]}>
+      {icon?.(primary ? theme.onAccent : theme.accent)}
       <ThemedText type="smallBold" style={{ color: primary ? theme.onAccent : theme.accent }}>
         {label}
       </ThemedText>
@@ -327,7 +342,13 @@ const styles = StyleSheet.create({
     fontSize: 12,
     lineHeight: 16,
   },
+  actions: {
+    flexDirection: 'row',
+    gap: Spacing.two,
+  },
   smallAction: {
+    flexDirection: 'row',
+    gap: Spacing.one + 2,
     minHeight: 32,
     paddingHorizontal: Spacing.three,
     borderRadius: Radius.pill,
@@ -335,6 +356,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   smallActionWide: {
+    flex: 1,
     minHeight: 44,
   },
   cardPressed: {

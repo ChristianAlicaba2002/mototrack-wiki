@@ -297,6 +297,40 @@ describe('users/{uid}/services', () => {
     await assertFails(addDoc(col, service({ date: '2026-11-01' })));
   });
 
+  test('validates title, notes and decimal costs', async () => {
+    await seedBike();
+    const col = collection(asAlice(), 'users/alice/services');
+    await assertSucceeds(addDoc(col, service({ cost: 1250.5, notes: 'Shell Advance 10W-40', nextDueKm: null })));
+    await assertSucceeds(addDoc(col, service({ cost: null })));
+    await assertFails(addDoc(col, service({ title: '' })));
+    await assertFails(addDoc(col, service({ title: 'x'.repeat(121) })));
+    await assertFails(addDoc(col, service({ notes: 'x'.repeat(2001) })));
+  });
+
+  test('owner can edit and delete a service', async () => {
+    await seedBike();
+    const t = Timestamp.now();
+    await seed('users/alice/services/s1', service({ createdAt: t, updatedAt: t }));
+    const ref = doc(asAlice(), 'users/alice/services/s1');
+    await assertSucceeds(updateDoc(ref, { type: 'brakes', title: 'Brake pads', cost: 900, updatedAt: now() }));
+    await assertFails(updateDoc(ref, { createdAt: now(), updatedAt: now() }));
+    await assertFails(deleteDoc(doc(asBob(), 'users/alice/services/s1')));
+    await assertSucceeds(deleteDoc(ref));
+  });
+
+  test('can be logged in the batch that moves the bike odometer up', async () => {
+    await seedBike();
+    const db = asAlice();
+    const batch = writeBatch(db);
+    batch.set(doc(collection(db, 'users/alice/services')), service({ odometerKm: 13200 }));
+    batch.update(doc(db, 'users/alice/bikes/bike1'), { odometerKm: 13200, updatedAt: now() });
+    batch.set(doc(collection(db, 'users/alice/bikes/bike1/odometerReadings')), {
+      odometerKm: 13200,
+      createdAt: now(),
+    });
+    await assertSucceeds(batch.commit());
+  });
+
   test('other users cannot read them', async () => {
     await seedBike();
     const t = Timestamp.now();
