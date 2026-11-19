@@ -66,6 +66,7 @@ export function FormField({
   const [focused, setFocused] = useState(false);
   const borderColor = error ? theme.danger : focused ? theme.accent : 'transparent';
   const iconColor = error ? theme.danger : focused ? theme.accent : theme.textSecondary;
+  const multiline = Boolean(inputProps.multiline);
 
   return (
     <View style={styles.field}>
@@ -77,10 +78,16 @@ export function FormField({
           </ThemedText>
         ) : null}
       </View>
-      <View style={[styles.inputWrap, { backgroundColor: theme.background, borderColor }]}>
+      <View
+        style={[
+          styles.inputWrap,
+          multiline && styles.inputWrapMultiline,
+          { backgroundColor: theme.background, borderColor },
+        ]}>
         {icon?.(iconColor)}
         <TextInput
-          style={[styles.input, { color: theme.text }]}
+          style={[styles.input, multiline && styles.inputMultiline, { color: theme.text }]}
+          textAlignVertical={multiline ? 'top' : undefined}
           placeholderTextColor={theme.textSecondary}
           selectionColor={theme.accent}
           cursorColor={theme.accent}
@@ -255,10 +262,23 @@ const styles = StyleSheet.create({
     paddingLeft: Spacing.three,
     paddingRight: Spacing.two,
   },
+  // Multiline inputs grow with their text; the icon stays at the top.
+  inputWrapMultiline: {
+    height: undefined,
+    minHeight: 120,
+    alignItems: 'flex-start',
+    paddingVertical: Spacing.three - 2,
+  },
   input: {
     flex: 1,
     height: '100%',
     fontSize: 16,
+  },
+  inputMultiline: {
+    height: undefined,
+    minHeight: 92,
+    paddingTop: 0,
+    paddingBottom: 0,
   },
   suffix: {
     paddingHorizontal: Spacing.two + 2,
