@@ -17,7 +17,7 @@ import { useTheme } from '@/hooks/use-theme';
 
 import { formatCost, formatServiceDate } from '../model/format';
 import { SERVICE_LOG_LIMIT, type ServiceLogViewModel } from '../model/service-log-view-model';
-import { ServiceList } from './service-row';
+import { ServiceTimeline } from './service-timeline';
 
 const CONTENT_MAX_WIDTH = 560;
 
@@ -26,12 +26,15 @@ export function ServiceLogView({
   loadState,
   title,
   services,
+  timeline,
   servicesLoading,
   totalCost,
   isTruncated,
+  deletingId,
   error,
   addService,
-  openService,
+  editService,
+  removeService,
   back,
 }: ServiceLogViewModel) {
   const theme = useTheme();
@@ -83,10 +86,15 @@ export function ServiceLogView({
                   totalCost={totalCost}
                   lastDate={formatServiceDate(services[0].date)}
                 />
-                <Panel style={styles.history}>
-                  <PanelHeading title={isTruncated ? `Last ${SERVICE_LOG_LIMIT} entries` : 'Entries'} />
-                  <ServiceList services={services} onOpen={openService} showNotes />
-                </Panel>
+                <View style={styles.history}>
+                  <PanelHeading title={isTruncated ? `Timeline · last ${SERVICE_LOG_LIMIT} entries` : 'Timeline'} />
+                  <ServiceTimeline
+                    timeline={timeline}
+                    deletingId={deletingId}
+                    onEdit={editService}
+                    onDelete={removeService}
+                  />
+                </View>
               </>
             )}
           </ScrollView>
@@ -175,8 +183,7 @@ const styles = StyleSheet.create({
     fontWeight: 700,
   },
   history: {
-    gap: Spacing.one,
-    paddingBottom: Spacing.two,
+    gap: Spacing.two,
   },
   empty: {
     gap: Spacing.two + 4,
