@@ -10,20 +10,20 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import {
-  CalendarIcon,
-  CloseIcon,
-  CoinIcon,
-  GaugeIcon,
-  NoteIcon,
-  TagIcon,
-  TrashIcon,
-} from '@/components/icons/line-icons';
+import { CloseIcon } from '@/components/icons/line-icons';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import { BIKE_LIMITS } from '@/features/garage/model/bike-form';
-import { Button, ErrorMessage, FormField, IconButton, Radius, Section } from '@/features/garage/ui/controls';
+import {
+  Button,
+  ErrorMessage,
+  FormField,
+  IconButton,
+  Radius,
+  ScreenHeader,
+  Section,
+} from '@/features/garage/ui/controls';
 import { useTheme } from '@/hooks/use-theme';
 import type { ServiceType } from '@/lib/firestore/types';
 
@@ -79,28 +79,21 @@ export function ServiceFormView({
   return (
     <ThemedView style={styles.root}>
       <SafeAreaView style={styles.root} edges={['top', 'left', 'right', 'bottom']}>
-        <View style={styles.header}>
-          <IconButton
-            accessibilityLabel="Close"
-            onPress={cancel}
-            disabled={busy}
-            icon={(c) => <CloseIcon size={20} color={c} />}
-          />
-          <View style={styles.headerText}>
-            <ThemedText type="smallBold" style={styles.headerTitle} accessibilityRole="header">
-              {isEdit ? 'Edit service' : 'Log a service'}
-            </ThemedText>
-            {ready ? (
-              <ThemedText type="small" themeColor="textSecondary" numberOfLines={1}>
-                {bikeName}
-              </ThemedText>
-            ) : null}
-          </View>
-          <View style={styles.headerSpacer} />
-        </View>
+        <ScreenHeader
+          title={isEdit ? 'Edit entry' : 'Log a service'}
+          context={ready ? bikeName : undefined}
+          leading={
+            <IconButton
+              accessibilityLabel="Close"
+              onPress={cancel}
+              disabled={busy}
+              icon={(c) => <CloseIcon size={20} color={c} />}
+            />
+          }
+        />
 
         {loadState === 'loading' ? (
-          <ActivityIndicator style={styles.loader} />
+          <ActivityIndicator style={styles.loader} color={theme.textSecondary} />
         ) : !ready ? (
           <View style={styles.content}>
             <ErrorMessage>{error ?? 'This service or motorcycle no longer exists.'}</ErrorMessage>
@@ -117,7 +110,6 @@ export function ServiceFormView({
                 <FormField
                   label="Title"
                   optional
-                  icon={(c) => <TagIcon size={18} color={c} />}
                   value={values.title}
                   onChangeText={(t) => setField('title', t)}
                   onBlur={() => blurField('title')}
@@ -133,7 +125,7 @@ export function ServiceFormView({
                 <View style={styles.field}>
                   <FormField
                     label="Date"
-                    icon={(c) => <CalendarIcon size={18} color={c} />}
+                  mono
                     value={values.date}
                     onChangeText={(t) => setField('date', t)}
                     onBlur={() => blurField('date')}
@@ -149,7 +141,7 @@ export function ServiceFormView({
                 </View>
                 <FormField
                   label="Odometer"
-                  icon={(c) => <GaugeIcon size={18} color={c} />}
+                  mono
                   suffix="km"
                   value={values.odometerKm}
                   onChangeText={(t) => setField('odometerKm', t)}
@@ -166,8 +158,8 @@ export function ServiceFormView({
               <Section title="Cost & notes">
                 <FormField
                   label="Cost"
+                  mono
                   optional
-                  icon={(c) => <CoinIcon size={18} color={c} />}
                   suffix={CURRENCY_SYMBOL}
                   value={values.cost}
                   onChangeText={(t) => setField('cost', t)}
@@ -182,7 +174,6 @@ export function ServiceFormView({
                 <FormField
                   label="Notes"
                   optional
-                  icon={(c) => <NoteIcon size={18} color={c} />}
                   value={values.notes}
                   onChangeText={(t) => setField('notes', t)}
                   onBlur={() => blurField('notes')}
@@ -195,20 +186,17 @@ export function ServiceFormView({
               </Section>
 
               {isEdit && (
-                <Section title="Danger zone" description="Removes this entry from the service log.">
-                  <Button
-                    label="Delete service"
-                    variant="danger"
-                    icon={(c) => <TrashIcon size={18} color={c} />}
-                    onPress={() => confirmDelete(remove)}
-                    loading={pending === 'delete'}
-                    disabled={busy}
-                  />
-                </Section>
+                <Button
+                  label="Delete this entry"
+                  variant="danger"
+                  onPress={() => confirmDelete(remove)}
+                  loading={pending === 'delete'}
+                  disabled={busy}
+                />
               )}
             </ScrollView>
 
-            <View style={[styles.footer, { borderColor: theme.backgroundSelected, backgroundColor: theme.background }]}>
+            <View style={[styles.footer, { borderColor: theme.line, backgroundColor: theme.background }]}>
               <View style={styles.footerInner}>
                 {error && <ErrorMessage>{error}</ErrorMessage>}
                 <Button
@@ -321,10 +309,13 @@ function Pill({
       accessibilityState={role === 'radio' ? { checked: selected, disabled } : { selected, disabled }}
       style={({ pressed }) => [
         styles.pill,
-        { backgroundColor: selected ? theme.accent : theme.background },
+        {
+          backgroundColor: selected ? theme.text : 'transparent',
+          borderColor: selected ? theme.text : theme.line,
+        },
         pressed && styles.pillPressed,
       ]}>
-      <ThemedText type="smallBold" style={{ color: selected ? theme.onAccent : theme.text }}>
+      <ThemedText type="smallBold" style={{ color: selected ? theme.background : theme.text }}>
         {label}
       </ThemedText>
     </Pressable>
@@ -335,31 +326,13 @@ const styles = StyleSheet.create({
   root: {
     flex: 1,
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.three,
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.two + 4,
-  },
-  headerText: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  headerTitle: {
-    fontSize: 17,
-  },
-  // Balances the close button so the title stays centered.
-  headerSpacer: {
-    width: 40,
-  },
   loader: {
     marginTop: Spacing.five,
   },
   content: {
     gap: Spacing.four,
     paddingHorizontal: Spacing.three,
-    paddingTop: Spacing.two,
+    paddingTop: Spacing.three + 4,
     paddingBottom: Spacing.five,
     width: '100%',
     maxWidth: FORM_MAX_WIDTH,
@@ -374,9 +347,10 @@ const styles = StyleSheet.create({
     gap: Spacing.two,
   },
   pill: {
-    minHeight: 40,
-    paddingHorizontal: Spacing.three,
-    borderRadius: Radius.pill,
+    minHeight: 38,
+    paddingHorizontal: Spacing.three - 2,
+    borderRadius: Radius.field,
+    borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
