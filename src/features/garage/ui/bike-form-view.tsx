@@ -9,16 +9,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import {
-  CalendarIcon,
-  CloseIcon,
-  EngineIcon,
-  GaugeIcon,
-  MotorcycleIcon,
-  SparkleIcon,
-  TagIcon,
-  TrashIcon,
-} from '@/components/icons/line-icons';
+import { CloseIcon } from '@/components/icons/line-icons';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
@@ -26,7 +17,7 @@ import { useTheme } from '@/hooks/use-theme';
 
 import { BIKE_LIMITS, type BikeFormValues } from '../model/bike-form';
 import type { BikeFormViewModel } from '../model/bike-form-view-model';
-import { Button, ErrorMessage, FormField, IconButton, Radius, Section } from './controls';
+import { Button, ErrorMessage, FormField, IconButton, Panel, ScreenHeader, Section } from './controls';
 
 const FORM_MAX_WIDTH = 560;
 
@@ -66,21 +57,21 @@ export function BikeFormView({
   return (
     <ThemedView style={styles.root}>
       <SafeAreaView style={styles.root} edges={['top', 'left', 'right', 'bottom']}>
-        <View style={styles.header}>
-          <IconButton
-            accessibilityLabel="Close"
-            onPress={cancel}
-            disabled={busy}
-            icon={(c) => <CloseIcon size={20} color={c} />}
-          />
-          <ThemedText type="smallBold" style={styles.headerTitle} accessibilityRole="header">
-            {isEdit ? 'Edit motorcycle' : 'New motorcycle'}
-          </ThemedText>
-          <View style={styles.headerSpacer} />
-        </View>
+        <ScreenHeader
+          title={isEdit ? 'Edit motorcycle' : 'New motorcycle'}
+          context={isEdit ? 'Garage' : 'Add to garage'}
+          leading={
+            <IconButton
+              accessibilityLabel="Close"
+              onPress={cancel}
+              disabled={busy}
+              icon={(c) => <CloseIcon size={20} color={c} />}
+            />
+          }
+        />
 
         {loadState === 'loading' ? (
-          <ActivityIndicator style={styles.loader} />
+          <ActivityIndicator style={styles.loader} color={theme.textSecondary} />
         ) : !ready ? (
           <View style={styles.content}>
             <ErrorMessage>{error ?? 'This motorcycle no longer exists.'}</ErrorMessage>
@@ -97,7 +88,6 @@ export function BikeFormView({
               <Section title="Basics">
                 <FormField
                   label="Make"
-                  icon={(c) => <MotorcycleIcon size={18} color={c} />}
                   value={values.make}
                   onChangeText={(t) => setField('make', t)}
                   onBlur={() => blurField('make')}
@@ -126,7 +116,7 @@ export function BikeFormView({
                   <View style={styles.rowItem}>
                     <FormField
                       label="Engine"
-                      icon={(c) => <EngineIcon size={18} color={c} />}
+                      mono
                       suffix="cc"
                       value={values.engineCc}
                       onChangeText={(t) => setField('engineCc', t)}
@@ -141,7 +131,7 @@ export function BikeFormView({
                   <View style={styles.rowItem}>
                     <FormField
                       label="Year"
-                      icon={(c) => <CalendarIcon size={18} color={c} />}
+                      mono
                       value={values.year}
                       onChangeText={(t) => setField('year', t)}
                       onBlur={() => blurField('year')}
@@ -155,7 +145,7 @@ export function BikeFormView({
                 </View>
                 <FormField
                   label="Odometer"
-                  icon={(c) => <GaugeIcon size={18} color={c} />}
+                  mono
                   suffix="km"
                   value={values.odometerKm}
                   onChangeText={(t) => setField('odometerKm', t)}
@@ -173,7 +163,6 @@ export function BikeFormView({
                 <FormField
                   label="Nickname"
                   optional
-                  icon={(c) => <SparkleIcon size={18} color={c} />}
                   value={values.nickname}
                   onChangeText={(t) => setField('nickname', t)}
                   onBlur={() => blurField('nickname')}
@@ -184,8 +173,8 @@ export function BikeFormView({
                 />
                 <FormField
                   label="Plate number"
+                  mono
                   optional
-                  icon={(c) => <TagIcon size={18} color={c} />}
                   value={values.plateNumber}
                   onChangeText={(t) => setField('plateNumber', t)}
                   onBlur={() => blurField('plateNumber')}
@@ -199,20 +188,17 @@ export function BikeFormView({
               </Section>
 
               {isEdit && (
-                <Section title="Danger zone" description="Removes this motorcycle from your garage for good.">
-                  <Button
-                    label="Delete motorcycle"
-                    variant="danger"
-                    icon={(c) => <TrashIcon size={18} color={c} />}
-                    onPress={() => confirmDelete(displayName, remove)}
-                    loading={pending === 'delete'}
-                    disabled={busy}
-                  />
-                </Section>
+                <Button
+                  label="Delete motorcycle"
+                  variant="danger"
+                  onPress={() => confirmDelete(displayName, remove)}
+                  loading={pending === 'delete'}
+                  disabled={busy}
+                />
               )}
             </ScrollView>
 
-            <View style={[styles.footer, { borderColor: theme.backgroundSelected, backgroundColor: theme.background }]}>
+            <View style={[styles.footer, { borderColor: theme.line, backgroundColor: theme.background }]}>
               <View style={styles.footerInner}>
                 {error && <ErrorMessage>{error}</ErrorMessage>}
                 <Button
@@ -236,17 +222,18 @@ function Preview({ values }: { values: BikeFormValues }) {
   const name = `${values.make.trim()} ${values.model.trim()}`.trim();
   const title = values.nickname.trim() || name || 'Your motorcycle';
   const specs = [
+    values.nickname.trim() ? name : '',
     values.year.trim(),
     values.engineCc.trim() && `${values.engineCc.trim()} cc`,
-    values.plateNumber.trim().toUpperCase(),
   ].filter(Boolean);
+  const plate = values.plateNumber.trim().toUpperCase();
 
   return (
-    <View style={[styles.preview, { backgroundColor: theme.accentSoft }]} accessible={false}>
-      <View style={[styles.previewBadge, { backgroundColor: theme.accent }]}>
-        <MotorcycleIcon size={30} color={theme.onAccent} />
-      </View>
-      <View style={styles.previewText}>
+    <Panel style={styles.preview}>
+      <View accessible={false} style={styles.previewText}>
+        <ThemedText type="eyebrow" themeColor="textSecondary">
+          Preview
+        </ThemedText>
         <ThemedText style={styles.previewTitle} numberOfLines={1}>
           {title}
         </ThemedText>
@@ -254,7 +241,12 @@ function Preview({ values }: { values: BikeFormValues }) {
           {specs.length > 0 ? specs.join(' · ') : 'Fill in the details below'}
         </ThemedText>
       </View>
-    </View>
+      {plate ? (
+        <ThemedText type="readout" style={[styles.plate, { borderColor: theme.text }]}>
+          {plate}
+        </ThemedText>
+      ) : null}
+    </Panel>
   );
 }
 
@@ -262,54 +254,37 @@ const styles = StyleSheet.create({
   root: {
     flex: 1,
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.two + 4,
-  },
-  headerTitle: {
-    fontSize: 17,
-  },
-  // Balances the close button so the title stays centered.
-  headerSpacer: {
-    width: 40,
-  },
   loader: {
     marginTop: Spacing.five,
   },
   content: {
     gap: Spacing.four,
     paddingHorizontal: Spacing.three,
-    paddingTop: Spacing.two,
+    paddingTop: Spacing.three + 4,
     paddingBottom: Spacing.five,
     width: '100%',
     maxWidth: FORM_MAX_WIDTH,
     alignSelf: 'center',
   },
   preview: {
-    flexDirection: 'row',
-    alignItems: 'center',
     gap: Spacing.three,
-    padding: Spacing.three,
-    borderRadius: Radius.card,
-  },
-  previewBadge: {
-    width: 56,
-    height: 56,
-    borderRadius: 18,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   previewText: {
-    flex: 1,
-    gap: Spacing.half,
+    gap: 2,
   },
   previewTitle: {
-    fontSize: 20,
-    lineHeight: 26,
+    fontSize: 22,
+    lineHeight: 27,
+    fontWeight: 800,
+    letterSpacing: -0.4,
+  },
+  plate: {
+    alignSelf: 'flex-start',
     fontWeight: 700,
+    letterSpacing: 1,
+    borderWidth: 1.5,
+    borderRadius: 3,
+    paddingHorizontal: Spacing.two,
   },
   row: {
     flexDirection: 'row',
