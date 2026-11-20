@@ -1,31 +1,26 @@
-import { Pressable, StyleSheet } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
-import { MotoTrackLogo } from '@/components/icons/moto-track-logo';
 import { PlaceholderCard, TabScreen } from '@/components/screen/tab-screen';
 import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import { ActiveBikeCard } from '@/features/garage/ui/active-bike-card';
+import { TextAction } from '@/features/garage/ui/controls';
 import { RecentServicesCard } from '@/features/services/ui/recent-services-card';
 import { useAuth } from '@/hooks/use-auth';
 import { useTheme } from '@/hooks/use-theme';
 import { signOut } from '@/lib/firebase/google-sign-in';
 
-export default function HomeScreen() {
-  const theme = useTheme();
+function todayKicker(): string {
+  return new Date().toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+}
 
+export default function HomeScreen() {
   return (
-    <TabScreen title="MotoTrack" subtitle="Your motorcycle at a glance.">
-      <ThemedView style={styles.logoRow}>
-        <MotoTrackLogo size={56} color={theme.brand} foreground={theme.onBrand} />
-      </ThemedView>
+    <TabScreen title="MotoTrack" kicker={todayKicker()}>
       <ActiveBikeCard />
       <RecentServicesCard />
-      <PlaceholderCard
-        title="Upcoming maintenance"
-        description="Service reminders for your bikes will show up here."
-      />
-      <PlaceholderCard title="Recent activity" description="Your latest logs and documents will show up here." />
+      <PlaceholderCard title="Upcoming maintenance" description="Reminders for what's due, by km or by date." />
+      <PlaceholderCard title="Recent activity" description="Your latest logs and documents, in one feed." />
       <SignedInAs />
     </TabScreen>
   );
@@ -35,23 +30,21 @@ function SignedInAs() {
   const { user } = useAuth();
   const theme = useTheme();
   return (
-    <ThemedView style={styles.signedInRow}>
-      <ThemedText type="small" themeColor="textSecondary" numberOfLines={1} style={styles.signedInText}>
-        {user?.email ?? user?.displayName ?? 'Signed in'}
-      </ThemedText>
-      <Pressable onPress={() => signOut()} accessibilityRole="button" hitSlop={8}>
-        <ThemedText type="smallBold" style={{ color: theme.accent }}>
-          Sign out
+    <View style={[styles.signedInRow, { borderTopColor: theme.line }]}>
+      <View style={styles.signedInText}>
+        <ThemedText type="eyebrow" themeColor="textSecondary">
+          Signed in
         </ThemedText>
-      </Pressable>
-    </ThemedView>
+        <ThemedText type="small" numberOfLines={1}>
+          {user?.email ?? user?.displayName ?? 'Rider'}
+        </ThemedText>
+      </View>
+      <TextAction label="Sign out" tone="text" onPress={() => signOut()} />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  logoRow: {
-    alignItems: 'flex-start',
-  },
   signedInRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -59,8 +52,10 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginTop: 'auto',
     paddingTop: Spacing.three,
+    borderTopWidth: StyleSheet.hairlineWidth,
   },
   signedInText: {
     flexShrink: 1,
+    gap: 2,
   },
 });
