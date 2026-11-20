@@ -12,7 +12,7 @@ type Props = {
 export function MotoTrackLogo({ size = 64, color, foreground }: Props) {
   return (
     <Svg width={size} height={size} viewBox="0 0 48 48" accessibilityElementsHidden importantForAccessibility="no">
-      <Rect x={0} y={0} width={48} height={48} rx={14} fill={color} />
+      <Rect x={0} y={0} width={48} height={48} rx={9} fill={color} />
       {/* gauge arc */}
       <Path
         d="M11.5 31.5a13 13 0 1 1 25 0"
