@@ -1,15 +1,85 @@
 import { type ReactNode, useState } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, TextInput, type TextInputProps, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Pressable,
+  type StyleProp,
+  StyleSheet,
+  TextInput,
+  type TextInputProps,
+  View,
+  type ViewStyle,
+} from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
-import { Spacing } from '@/constants/theme';
+import { Fonts, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
 export const Radius = {
-  field: 14,
-  card: 22,
+  field: 6,
+  card: 10,
   pill: 999,
 } as const;
+
+// ---------- Panel ----------
+
+/** A sheet of paper on the bench: flat, bordered, no shadow. */
+export function Panel({ children, style }: { children: ReactNode; style?: StyleProp<ViewStyle> }) {
+  const theme = useTheme();
+  return (
+    <View style={[styles.panel, { backgroundColor: theme.backgroundElement, borderColor: theme.line }, style]}>
+      {children}
+    </View>
+  );
+}
+
+/** Eyebrow label with an optional action on the right, e.g. "See all". */
+export function PanelHeading({ title, action }: { title: string; action?: ReactNode }) {
+  return (
+    <View style={styles.panelHeading}>
+      <ThemedText type="eyebrow" themeColor="textSecondary" accessibilityRole="header">
+        {title}
+      </ThemedText>
+      {action}
+    </View>
+  );
+}
+
+/** A full-width hairline rule. */
+export function Rule({ inset = 0 }: { inset?: number }) {
+  const theme = useTheme();
+  return <View style={[styles.rule, { backgroundColor: theme.line, marginHorizontal: inset }]} />;
+}
+
+// ---------- Screen header ----------
+
+type ScreenHeaderProps = {
+  title: string;
+  /** Small line above the title, e.g. the bike's name. */
+  context?: string;
+  leading?: ReactNode;
+  trailing?: ReactNode;
+};
+
+/** Header for stack and modal screens: left-aligned, ruled off from the content. */
+export function ScreenHeader({ title, context, leading, trailing }: ScreenHeaderProps) {
+  const theme = useTheme();
+  return (
+    <View style={[styles.screenHeader, { borderBottomColor: theme.line }]}>
+      {leading}
+      <View style={styles.screenHeaderText}>
+        {context ? (
+          <ThemedText type="eyebrow" themeColor="textSecondary" numberOfLines={1}>
+            {context}
+          </ThemedText>
+        ) : null}
+        <ThemedText style={styles.screenHeaderTitle} accessibilityRole="header" numberOfLines={1}>
+          {title}
+        </ThemedText>
+      </View>
+      {trailing}
+    </View>
+  );
+}
 
 // ---------- Section ----------
 
@@ -19,14 +89,13 @@ type SectionProps = {
   children: ReactNode;
 };
 
-/** A titled group of fields on a raised card, like iOS Settings. */
+/** A titled group of fields: stamped label, then a bordered sheet. */
 export function Section({ title, description, children }: SectionProps) {
-  const theme = useTheme();
   return (
     <View style={styles.section}>
       <View style={styles.sectionHeading}>
-        <ThemedText type="smallBold" themeColor="textSecondary" style={styles.sectionTitle}>
-          {title.toUpperCase()}
+        <ThemedText type="eyebrow" themeColor="textSecondary" accessibilityRole="header">
+          {title}
         </ThemedText>
         {description ? (
           <ThemedText type="small" themeColor="textSecondary">
@@ -34,7 +103,47 @@ export function Section({ title, description, children }: SectionProps) {
           </ThemedText>
         ) : null}
       </View>
-      <View style={[styles.sectionCard, { backgroundColor: theme.backgroundElement }]}>{children}</View>
+      <Panel style={styles.sectionCard}>{children}</Panel>
+    </View>
+  );
+}
+
+// ---------- Odometer readout ----------
+
+type OdometerReadoutProps = {
+  km: number;
+  /** Pads with leading zeros to at least this many wheels, like the real thing. */
+  digits?: number;
+  size?: 'md' | 'lg';
+};
+
+/** Mechanical-odometer style number: one wheel per digit, unused leading wheels dimmed. */
+export function OdometerReadout({ km, digits = 6, size = 'md' }: OdometerReadoutProps) {
+  const theme = useTheme();
+  const value = String(Math.max(0, Math.floor(km)));
+  const padded = value.padStart(digits, '0');
+  const firstReal = padded.length - value.length;
+  const dims = size === 'lg' ? styles.wheelLg : styles.wheelMd;
+  const text = size === 'lg' ? styles.wheelTextLg : styles.wheelTextMd;
+
+  return (
+    <View
+      style={styles.readout}
+      accessible
+      accessibilityRole="text"
+      accessibilityLabel={`${Number(value).toLocaleString('en-US')} kilometres`}>
+      <View style={[styles.wheels, { backgroundColor: theme.text }]}>
+        {padded.split('').map((d, i) => (
+          <View
+            key={i}
+            style={[dims, i > 0 && { borderLeftColor: theme.background, borderLeftWidth: StyleSheet.hairlineWidth }]}>
+            <ThemedText style={[text, { color: theme.background, opacity: i < firstReal ? 0.35 : 1 }]}>{d}</ThemedText>
+          </View>
+        ))}
+      </View>
+      <ThemedText type="eyebrow" themeColor="textSecondary">
+        km
+      </ThemedText>
     </View>
   );
 }
@@ -43,29 +152,29 @@ export function Section({ title, description, children }: SectionProps) {
 
 type FormFieldProps = Omit<TextInputProps, 'style'> & {
   label: string;
-  icon?: (color: string) => ReactNode;
   /** Shown to the right of the input, e.g. a unit. */
   suffix?: string;
   hint?: string;
   error?: string;
   optional?: boolean;
+  /** Render the value in the readout face (numbers, dates, plates). */
+  mono?: boolean;
 };
 
 export function FormField({
   label,
-  icon,
   suffix,
   hint,
   error,
   optional,
+  mono,
   onFocus,
   onBlur,
   ...inputProps
 }: FormFieldProps) {
   const theme = useTheme();
   const [focused, setFocused] = useState(false);
-  const borderColor = error ? theme.danger : focused ? theme.accent : 'transparent';
-  const iconColor = error ? theme.danger : focused ? theme.accent : theme.textSecondary;
+  const borderColor = error ? theme.danger : focused ? theme.text : theme.line;
   const multiline = Boolean(inputProps.multiline);
 
   return (
@@ -74,7 +183,7 @@ export function FormField({
         <ThemedText type="smallBold">{label}</ThemedText>
         {optional ? (
           <ThemedText type="small" themeColor="textSecondary">
-            Optional
+            optional
           </ThemedText>
         ) : null}
       </View>
@@ -82,11 +191,15 @@ export function FormField({
         style={[
           styles.inputWrap,
           multiline && styles.inputWrapMultiline,
-          { backgroundColor: theme.background, borderColor },
+          { backgroundColor: theme.background, borderColor, borderWidth: focused || error ? 1.5 : 1 },
         ]}>
-        {icon?.(iconColor)}
         <TextInput
-          style={[styles.input, multiline && styles.inputMultiline, { color: theme.text }]}
+          style={[
+            styles.input,
+            mono && styles.inputMono,
+            multiline && styles.inputMultiline,
+            { color: theme.text },
+          ]}
           textAlignVertical={multiline ? 'top' : undefined}
           placeholderTextColor={theme.textSecondary}
           selectionColor={theme.accent}
@@ -104,8 +217,8 @@ export function FormField({
           {...inputProps}
         />
         {suffix ? (
-          <View style={[styles.suffix, { backgroundColor: theme.backgroundElement }]}>
-            <ThemedText type="smallBold" themeColor="textSecondary">
+          <View style={[styles.suffix, { borderLeftColor: theme.line }]}>
+            <ThemedText type="eyebrow" themeColor="textSecondary">
               {suffix}
             </ThemedText>
           </View>
@@ -139,9 +252,9 @@ export function Button({ label, onPress, variant = 'primary', icon, disabled, lo
   const theme = useTheme();
   const inactive = disabled || loading;
   const palette = {
-    primary: { background: theme.accent, text: theme.onAccent },
-    secondary: { background: theme.backgroundElement, text: theme.text },
-    danger: { background: theme.brandSoft, text: theme.danger },
+    primary: { background: theme.accent, border: theme.accent, text: theme.onAccent },
+    secondary: { background: 'transparent', border: theme.text, text: theme.text },
+    danger: { background: 'transparent', border: theme.danger, text: theme.danger },
   }[variant];
 
   return (
@@ -153,7 +266,7 @@ export function Button({ label, onPress, variant = 'primary', icon, disabled, lo
       accessibilityState={{ disabled: inactive, busy: loading }}
       style={({ pressed }) => [
         styles.button,
-        { backgroundColor: palette.background },
+        { backgroundColor: palette.background, borderColor: palette.border },
         disabled && !loading && styles.disabled,
         pressed && styles.pressed,
       ]}>
@@ -167,6 +280,37 @@ export function Button({ label, onPress, variant = 'primary', icon, disabled, lo
           </ThemedText>
         </>
       )}
+    </Pressable>
+  );
+}
+
+/** Inline text button: underlined label, no box. */
+export function TextAction({
+  label,
+  onPress,
+  accessibilityLabel,
+  tone = 'accent',
+  disabled,
+}: {
+  label: string;
+  onPress: () => void;
+  accessibilityLabel?: string;
+  tone?: 'accent' | 'text' | 'danger';
+  disabled?: boolean;
+}) {
+  const theme = useTheme();
+  const color = { accent: theme.accent, text: theme.text, danger: theme.danger }[tone];
+  return (
+    <Pressable
+      onPress={onPress}
+      disabled={disabled}
+      hitSlop={10}
+      accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel ?? label}
+      style={({ pressed }) => [pressed && styles.textPressed, disabled && styles.disabled]}>
+      <ThemedText type="smallBold" style={[styles.textAction, { color, textDecorationColor: color }]}>
+        {label}
+      </ThemedText>
     </Pressable>
   );
 }
@@ -203,7 +347,8 @@ export function IconButton({
         {
           width: size,
           height: size,
-          backgroundColor: isPrimary ? theme.accent : theme.backgroundElement,
+          backgroundColor: isPrimary ? theme.accent : 'transparent',
+          borderColor: isPrimary ? theme.accent : theme.line,
         },
         disabled && styles.disabled,
         pressed && styles.pressed,
@@ -218,9 +363,8 @@ export function IconButton({
 export function ErrorMessage({ children }: { children: ReactNode }) {
   const theme = useTheme();
   return (
-    <View style={[styles.message, { backgroundColor: theme.brandSoft }]} accessibilityRole="alert">
-      <View style={[styles.messageDot, { backgroundColor: theme.danger }]} />
-      <ThemedText type="small" style={[styles.messageText, { color: theme.danger }]}>
+    <View style={[styles.message, { borderLeftColor: theme.danger }]} accessibilityRole="alert">
+      <ThemedText type="small" style={{ color: theme.danger }}>
         {children}
       </ThemedText>
     </View>
@@ -228,21 +372,84 @@ export function ErrorMessage({ children }: { children: ReactNode }) {
 }
 
 const styles = StyleSheet.create({
+  panel: {
+    borderRadius: Radius.card,
+    borderWidth: StyleSheet.hairlineWidth * 2,
+    padding: Spacing.three,
+    gap: Spacing.three,
+  },
+  panelHeading: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: Spacing.three,
+  },
+  rule: {
+    height: StyleSheet.hairlineWidth,
+  },
+  screenHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.three,
+    paddingHorizontal: Spacing.three,
+    paddingVertical: Spacing.two + 4,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  screenHeaderText: {
+    flex: 1,
+    gap: 2,
+  },
+  screenHeaderTitle: {
+    fontSize: 20,
+    lineHeight: 25,
+    fontWeight: 800,
+    letterSpacing: -0.4,
+  },
   section: {
     gap: Spacing.two,
   },
   sectionHeading: {
-    gap: Spacing.half,
-    paddingHorizontal: Spacing.one,
-  },
-  sectionTitle: {
-    fontSize: 12,
-    letterSpacing: 0.8,
+    gap: Spacing.one,
+    paddingHorizontal: Spacing.half,
   },
   sectionCard: {
-    gap: Spacing.three,
-    padding: Spacing.three,
-    borderRadius: Radius.card,
+    gap: Spacing.three + 4,
+  },
+  readout: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    gap: Spacing.two,
+  },
+  wheels: {
+    flexDirection: 'row',
+    borderRadius: 4,
+    overflow: 'hidden',
+  },
+  wheelMd: {
+    width: 22,
+    height: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  wheelLg: {
+    width: 34,
+    height: 50,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  wheelTextMd: {
+    fontFamily: Fonts.mono,
+    fontSize: 18,
+    lineHeight: 22,
+    fontWeight: 600,
+    fontVariant: ['tabular-nums'],
+  },
+  wheelTextLg: {
+    fontFamily: Fonts.mono,
+    fontSize: 30,
+    lineHeight: 36,
+    fontWeight: 600,
+    fontVariant: ['tabular-nums'],
   },
   field: {
     gap: Spacing.two,
@@ -250,44 +457,47 @@ const styles = StyleSheet.create({
   labelRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'baseline',
   },
   inputWrap: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: Spacing.two + 2,
-    height: 52,
+    height: 50,
     borderRadius: Radius.field,
-    borderWidth: 1.5,
-    paddingLeft: Spacing.three,
-    paddingRight: Spacing.two,
+    paddingLeft: Spacing.three - 2,
   },
-  // Multiline inputs grow with their text; the icon stays at the top.
   inputWrapMultiline: {
     height: undefined,
     minHeight: 120,
     alignItems: 'flex-start',
-    paddingVertical: Spacing.three - 2,
+    paddingVertical: Spacing.three - 4,
   },
   input: {
     flex: 1,
     height: '100%',
     fontSize: 16,
+    paddingRight: Spacing.three - 2,
+  },
+  inputMono: {
+    fontFamily: Fonts.mono,
+    fontVariant: ['tabular-nums'],
   },
   inputMultiline: {
     height: undefined,
-    minHeight: 92,
+    minHeight: 96,
     paddingTop: 0,
     paddingBottom: 0,
   },
   suffix: {
-    paddingHorizontal: Spacing.two + 2,
-    paddingVertical: Spacing.one,
-    borderRadius: Radius.pill,
+    alignSelf: 'stretch',
+    justifyContent: 'center',
+    paddingHorizontal: Spacing.three,
+    borderLeftWidth: StyleSheet.hairlineWidth,
   },
   button: {
-    height: 54,
-    borderRadius: Radius.pill,
+    height: 50,
+    borderRadius: Radius.field + 2,
+    borderWidth: 1.5,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -297,32 +507,27 @@ const styles = StyleSheet.create({
   buttonLabel: {
     fontSize: 16,
   },
+  textAction: {
+    textDecorationLine: 'underline',
+  },
+  textPressed: {
+    opacity: 0.6,
+  },
   iconButton: {
-    borderRadius: Radius.pill,
+    borderRadius: Radius.field + 2,
+    borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
   disabled: {
-    opacity: 0.45,
+    opacity: 0.4,
   },
   pressed: {
-    opacity: 0.8,
-    transform: [{ scale: 0.98 }],
+    opacity: 0.75,
   },
   message: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.two + 2,
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.two + 4,
-    borderRadius: Radius.field,
-  },
-  messageDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-  },
-  messageText: {
-    flex: 1,
+    borderLeftWidth: 3,
+    paddingLeft: Spacing.three - 4,
+    paddingVertical: Spacing.one,
   },
 });
