@@ -1,6 +1,5 @@
 import {
   ActivityIndicator,
-  Alert,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -37,22 +36,9 @@ import {
   startOfDay,
 } from '../model/service-form';
 import type { ServiceFormViewModel } from '../model/service-form-view-model';
+import { confirmDeleteService } from './confirm-delete';
 
 const FORM_MAX_WIDTH = 560;
-
-/** Alert.alert has no buttons on web, so fall back to the browser's confirm dialog. */
-function confirmDelete(onConfirm: () => void) {
-  const title = 'Delete this service?';
-  const message = 'It will be removed from the service log. This can’t be undone.';
-  if (Platform.OS === 'web') {
-    if (window.confirm(`${title}\n\n${message}`)) onConfirm();
-    return;
-  }
-  Alert.alert(title, message, [
-    { text: 'Cancel', style: 'cancel' },
-    { text: 'Delete', style: 'destructive', onPress: onConfirm },
-  ]);
-}
 
 /** Presentational only — all state and actions come from the view model. */
 export function ServiceFormView({
@@ -189,7 +175,7 @@ export function ServiceFormView({
                 <Button
                   label="Delete this entry"
                   variant="danger"
-                  onPress={() => confirmDelete(remove)}
+                  onPress={() => confirmDeleteService(remove)}
                   loading={pending === 'delete'}
                   disabled={busy}
                 />
