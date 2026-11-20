@@ -23,8 +23,6 @@ import { useTheme } from '@/hooks/use-theme';
 
 import type { LoginViewModel } from '../model/login-view-model';
 
-const FEATURES = ['Garage', 'Service log', 'Doc vault', 'AI mechanic'];
-
 export type LoginViewProps = LoginViewModel;
 
 /** Presentational only — all state and actions come from the view model. */
@@ -58,41 +56,24 @@ export function LoginView({
             <View style={styles.content}>
               {/* Brand */}
               <View style={styles.brand}>
-                <MotoTrackLogo size={64} color={theme.brand} foreground={theme.onBrand} />
-                <View style={styles.brandText}>
-                  <ThemedText type="subtitle" style={styles.brandTitle}>
-                    MotoTrack
-                  </ThemedText>
-                  <View style={[styles.badge, { backgroundColor: theme.brandSoft }]}>
-                    <ThemedText type="smallBold" style={{ color: theme.brand }}>
-                      & Wiki AI
-                    </ThemedText>
-                  </View>
+                <View style={styles.wordmarkRow}>
+                  <MotoTrackLogo size={40} color={theme.brand} foreground={theme.onBrand} />
+                  <ThemedText style={styles.wordmark}>MotoTrack</ThemedText>
                 </View>
-                <ThemedText themeColor="textSecondary" style={styles.tagline}>
-                  {isSignIn
-                    ? 'Welcome back, rider. Your garage, service history, and papers are waiting.'
-                    : 'Ditch the paper logbook. Track maintenance, store documents, and ask the AI mechanic.'}
+                <View style={[styles.brandRule, { backgroundColor: theme.text }]} />
+                <ThemedText type="title" style={styles.headline}>
+                  {isSignIn ? 'Back in the saddle.' : 'Bin the paper logbook.'}
                 </ThemedText>
-                <View style={styles.chips}>
-                  {FEATURES.map((label, i) => (
-                    <View
-                      key={label}
-                      style={[styles.chip, { backgroundColor: theme.backgroundElement }]}>
-                      <View
-                        style={[styles.chipDot, { backgroundColor: i % 2 === 0 ? theme.brand : theme.accent }]}
-                      />
-                      <ThemedText type="small" themeColor="textSecondary">
-                        {label}
-                      </ThemedText>
-                    </View>
-                  ))}
-                </View>
+                <ThemedText themeColor="textSecondary">
+                  {isSignIn
+                    ? 'Your bikes, their mileage and every service you logged are where you left them.'
+                    : 'Keep mileage, service history and papers for every bike you own — and ask the mechanic when something sounds off.'}
+                </ThemedText>
               </View>
 
               {/* Form */}
               <View style={styles.form}>
-                <ThemedText type="smallBold" style={styles.formTitle}>
+                <ThemedText type="eyebrow" themeColor="textSecondary">
                   {isSignIn ? 'Sign in' : 'Create your account'}
                 </ThemedText>
 
@@ -118,7 +99,7 @@ export function LoginView({
                   labelAction={
                     isSignIn && (
                       <Pressable onPress={resetPassword} disabled={busy} hitSlop={8} accessibilityRole="button">
-                        <ThemedText type="small" style={{ color: theme.accent }}>
+                        <ThemedText type="small" style={[styles.underline, { color: theme.accent }]}>
                           Forgot password?
                         </ThemedText>
                       </Pressable>
@@ -168,11 +149,11 @@ export function LoginView({
               </View>
 
               <View style={styles.dividerRow}>
-                <View style={[styles.divider, { backgroundColor: theme.backgroundSelected }]} />
+                <View style={[styles.divider, { backgroundColor: theme.line }]} />
                 <ThemedText type="small" themeColor="textSecondary">
                   or
                 </ThemedText>
-                <View style={[styles.divider, { backgroundColor: theme.backgroundSelected }]} />
+                <View style={[styles.divider, { backgroundColor: theme.line }]} />
               </View>
 
               <Button
@@ -189,7 +170,7 @@ export function LoginView({
                   {isSignIn ? 'New to MotoTrack?' : 'Already have an account?'}
                 </ThemedText>
                 <Pressable onPress={toggleMode} disabled={busy} hitSlop={8} accessibilityRole="button">
-                  <ThemedText type="smallBold" style={{ color: theme.accent }}>
+                  <ThemedText type="smallBold" style={[styles.underline, { color: theme.accent }]}>
                     {isSignIn ? 'Create an account' : 'Sign in'}
                   </ThemedText>
                 </Pressable>
@@ -225,7 +206,8 @@ function Field({ label, labelAction, icon, trailing, inputRef, onFocus, onBlur, 
           styles.inputWrap,
           {
             backgroundColor: theme.backgroundElement,
-            borderColor: focused ? theme.accent : theme.backgroundSelected,
+            borderColor: focused ? theme.text : theme.line,
+            borderWidth: focused ? 1.5 : 1,
           },
         ]}>
         {icon(focused ? theme.accent : theme.textSecondary)}
@@ -298,8 +280,8 @@ function Button({ label, onPress, disabled, loading, variant, leading, trailing 
       style={({ pressed }) => [
         styles.button,
         isPrimary
-          ? { backgroundColor: theme.accent }
-          : { backgroundColor: theme.background, borderColor: theme.backgroundSelected, borderWidth: 1 },
+          ? { backgroundColor: theme.accent, borderColor: theme.accent }
+          : { backgroundColor: 'transparent', borderColor: theme.text },
         disabled && !loading && styles.buttonDisabled,
         pressed && styles.buttonPressed,
       ]}>
@@ -332,52 +314,34 @@ const styles = StyleSheet.create({
   content: {
     width: '100%',
     maxWidth: 440,
-    gap: Spacing.four,
+    gap: Spacing.four + 4,
   },
   brand: {
     gap: Spacing.three,
   },
-  brandText: {
+  wordmarkRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: Spacing.two,
-    flexWrap: 'wrap',
+    gap: Spacing.two + 4,
   },
-  brandTitle: {
-    letterSpacing: -0.5,
+  wordmark: {
+    fontSize: 20,
+    lineHeight: 24,
+    fontWeight: 800,
+    letterSpacing: -0.4,
   },
-  badge: {
-    paddingHorizontal: Spacing.two + 2,
-    paddingVertical: Spacing.half,
-    borderRadius: 999,
+  brandRule: {
+    height: 2,
+    marginTop: Spacing.one,
   },
-  tagline: {
-    lineHeight: 22,
+  headline: {
+    marginTop: Spacing.two,
   },
-  chips: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: Spacing.two,
-  },
-  chip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.one + 2,
-    paddingHorizontal: Spacing.two + 4,
-    paddingVertical: Spacing.one,
-    borderRadius: 999,
-  },
-  chipDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
+  underline: {
+    textDecorationLine: 'underline',
   },
   form: {
     gap: Spacing.three,
-  },
-  formTitle: {
-    fontSize: 18,
-    lineHeight: 24,
   },
   field: {
     gap: Spacing.two,
@@ -391,9 +355,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.two + 4,
-    height: 54,
-    borderRadius: 14,
-    borderWidth: 1.5,
+    height: 52,
+    borderRadius: 6,
     paddingHorizontal: Spacing.three,
   },
   input: {
@@ -407,8 +370,9 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.one,
   },
   button: {
-    height: 54,
-    borderRadius: 14,
+    height: 52,
+    borderRadius: 8,
+    borderWidth: 1.5,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
