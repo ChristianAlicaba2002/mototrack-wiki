@@ -1,16 +1,23 @@
 import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { ChevronLeftIcon, PlusIcon, WrenchIcon } from '@/components/icons/line-icons';
+import { ChevronLeftIcon, PlusIcon } from '@/components/icons/line-icons';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
-import { Button, ErrorMessage, IconButton, Radius, Section } from '@/features/garage/ui/controls';
+import {
+  Button,
+  ErrorMessage,
+  IconButton,
+  Panel,
+  PanelHeading,
+  ScreenHeader,
+} from '@/features/garage/ui/controls';
 import { useTheme } from '@/hooks/use-theme';
 
 import { formatCost, formatServiceDate } from '../model/format';
 import { SERVICE_LOG_LIMIT, type ServiceLogViewModel } from '../model/service-log-view-model';
-import { ServiceRow } from './service-row';
+import { ServiceList } from './service-row';
 
 const CONTENT_MAX_WIDTH = 560;
 
@@ -27,41 +34,36 @@ export function ServiceLogView({
   openService,
   back,
 }: ServiceLogViewModel) {
+  const theme = useTheme();
   const ready = loadState === 'ready';
 
   return (
     <ThemedView style={styles.root}>
       <SafeAreaView style={styles.root} edges={['top', 'left', 'right']}>
-        <View style={styles.header}>
-          <IconButton
-            accessibilityLabel="Back"
-            onPress={back}
-            icon={(c) => <ChevronLeftIcon size={22} color={c} />}
-          />
-          <View style={styles.headerText}>
-            <ThemedText type="smallBold" style={styles.headerTitle} accessibilityRole="header" numberOfLines={1}>
-              Service log
-            </ThemedText>
-            {ready ? (
-              <ThemedText type="small" themeColor="textSecondary" numberOfLines={1}>
-                {title}
-              </ThemedText>
-            ) : null}
-          </View>
-          {ready ? (
+        <ScreenHeader
+          title="Service log"
+          context={ready ? title : undefined}
+          leading={
             <IconButton
-              variant="primary"
-              accessibilityLabel="Log a service"
-              onPress={addService}
-              icon={(c) => <PlusIcon size={20} color={c} />}
+              accessibilityLabel="Back"
+              onPress={back}
+              icon={(c) => <ChevronLeftIcon size={22} color={c} />}
             />
-          ) : (
-            <View style={styles.headerSpacer} />
-          )}
-        </View>
+          }
+          trailing={
+            ready ? (
+              <IconButton
+                variant="primary"
+                accessibilityLabel="Log a service"
+                onPress={addService}
+                icon={(c) => <PlusIcon size={20} color={c} />}
+              />
+            ) : undefined
+          }
+        />
 
         {loadState === 'loading' ? (
-          <ActivityIndicator style={styles.loader} />
+          <ActivityIndicator style={styles.loader} color={theme.textSecondary} />
         ) : !ready ? (
           <View style={styles.content}>
             <ErrorMessage>{error ?? 'This motorcycle no longer exists.'}</ErrorMessage>
@@ -71,7 +73,7 @@ export function ServiceLogView({
           <ScrollView contentContainerStyle={styles.content}>
             {error && <ErrorMessage>{error}</ErrorMessage>}
             {servicesLoading ? (
-              <ActivityIndicator style={styles.loader} />
+              <ActivityIndicator style={styles.loader} color={theme.textSecondary} />
             ) : services.length === 0 ? (
               !error && <EmptyLog onAdd={addService} />
             ) : (
@@ -81,13 +83,10 @@ export function ServiceLogView({
                   totalCost={totalCost}
                   lastDate={formatServiceDate(services[0].date)}
                 />
-                <Section
-                  title="History"
-                  description={isTruncated ? `Your last ${SERVICE_LOG_LIMIT} services.` : undefined}>
-                  {services.map((service) => (
-                    <ServiceRow key={service.id} service={service} onPress={() => openService(service.id)} showNotes />
-                  ))}
-                </Section>
+                <Panel style={styles.history}>
+                  <PanelHeading title={isTruncated ? `Last ${SERVICE_LOG_LIMIT} entries` : 'Entries'} />
+                  <ServiceList services={services} onOpen={openService} showNotes />
+                </Panel>
               </>
             )}
           </ScrollView>
@@ -97,46 +96,45 @@ export function ServiceLogView({
   );
 }
 
+/** Totals as a ruled strip, like the footer of a ledger page. */
 function Summary({ count, totalCost, lastDate }: { count: number; totalCost: number; lastDate: string }) {
   const theme = useTheme();
   return (
-    <View style={[styles.summary, { backgroundColor: theme.accent }]}>
-      <Stat label={count === 1 ? 'Service' : 'Services'} value={String(count)} />
-      <View style={[styles.summaryDivider, { backgroundColor: theme.onAccent }]} />
-      <Stat label="Total spent" value={formatCost(totalCost)} />
-      <View style={[styles.summaryDivider, { backgroundColor: theme.onAccent }]} />
-      <Stat label="Last service" value={lastDate} />
+    <View style={[styles.summary, { borderColor: theme.text }]}>
+      <Stat label={count === 1 ? 'Entry' : 'Entries'} value={String(count)} />
+      <View style={[styles.summaryDivider, { backgroundColor: theme.line }]} />
+      <Stat label="Spent" value={formatCost(totalCost)} />
+      <View style={[styles.summaryDivider, { backgroundColor: theme.line }]} />
+      <Stat label="Last" value={lastDate} />
     </View>
   );
 }
 
 function Stat({ label, value }: { label: string; value: string }) {
-  const theme = useTheme();
   return (
     <View style={styles.stat} accessible accessibilityLabel={`${label}: ${value}`}>
-      <ThemedText style={[styles.statValue, { color: theme.onAccent }]} numberOfLines={1} adjustsFontSizeToFit>
-        {value}
-      </ThemedText>
-      <ThemedText type="small" style={[styles.statLabel, { color: theme.onAccent }]} numberOfLines={1}>
+      <ThemedText type="eyebrow" themeColor="textSecondary">
         {label}
+      </ThemedText>
+      <ThemedText type="readout" style={styles.statValue} numberOfLines={1} adjustsFontSizeToFit>
+        {value}
       </ThemedText>
     </View>
   );
 }
 
 function EmptyLog({ onAdd }: { onAdd: () => void }) {
-  const theme = useTheme();
   return (
-    <View style={[styles.empty, { backgroundColor: theme.backgroundElement }]}>
-      <View style={[styles.emptyBadge, { backgroundColor: theme.accentSoft }]}>
-        <WrenchIcon size={36} color={theme.accent} />
-      </View>
-      <ThemedText style={styles.emptyTitle}>No services yet</ThemedText>
-      <ThemedText type="small" themeColor="textSecondary" style={styles.emptyText}>
-        Log oil changes, brake jobs, chain and tire work to keep track of what was done and what it cost.
+    <Panel style={styles.empty}>
+      <ThemedText type="eyebrow" themeColor="textSecondary">
+        Blank page
       </ThemedText>
-      <Button label="Log a service" onPress={onAdd} icon={(c) => <PlusIcon size={20} color={c} />} />
-    </View>
+      <ThemedText style={styles.emptyTitle}>Nothing logged for this bike.</ThemedText>
+      <ThemedText type="small" themeColor="textSecondary">
+        Write down oil changes, brake jobs, chain and tire work — what was done, at what km, and what it cost.
+      </ThemedText>
+      <Button label="Log the first service" onPress={onAdd} />
+    </Panel>
   );
 }
 
@@ -144,30 +142,13 @@ const styles = StyleSheet.create({
   root: {
     flex: 1,
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.three,
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.two + 4,
-  },
-  headerText: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  headerTitle: {
-    fontSize: 17,
-  },
-  headerSpacer: {
-    width: 40,
-  },
   loader: {
     marginTop: Spacing.five,
   },
   content: {
-    gap: Spacing.four,
+    gap: Spacing.three + 4,
     paddingHorizontal: Spacing.three,
-    paddingTop: Spacing.two,
+    paddingTop: Spacing.three + 4,
     paddingBottom: Spacing.six,
     width: '100%',
     maxWidth: CONTENT_MAX_WIDTH,
@@ -175,49 +156,36 @@ const styles = StyleSheet.create({
   },
   summary: {
     flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: Spacing.three,
-    paddingHorizontal: Spacing.two,
-    borderRadius: Radius.card,
+    borderTopWidth: 2,
+    borderBottomWidth: 2,
+    paddingVertical: Spacing.three - 4,
   },
   summaryDivider: {
     width: StyleSheet.hairlineWidth,
     alignSelf: 'stretch',
-    opacity: 0.4,
   },
   stat: {
     flex: 1,
-    alignItems: 'center',
-    gap: Spacing.half,
-    paddingHorizontal: Spacing.one,
+    gap: Spacing.one,
+    paddingHorizontal: Spacing.three - 4,
   },
   statValue: {
-    fontSize: 18,
-    lineHeight: 24,
+    fontSize: 17,
+    lineHeight: 22,
     fontWeight: 700,
-    fontVariant: ['tabular-nums'],
   },
-  statLabel: {
-    opacity: 0.85,
+  history: {
+    gap: Spacing.one,
+    paddingBottom: Spacing.two,
   },
   empty: {
-    alignItems: 'center',
-    gap: Spacing.three,
-    padding: Spacing.four,
-    borderRadius: Radius.card,
-  },
-  emptyBadge: {
-    width: 72,
-    height: 72,
-    borderRadius: 24,
-    alignItems: 'center',
-    justifyContent: 'center',
+    gap: Spacing.two + 4,
+    paddingVertical: Spacing.four,
   },
   emptyTitle: {
-    fontSize: 18,
-    fontWeight: 700,
-  },
-  emptyText: {
-    textAlign: 'center',
+    fontSize: 22,
+    lineHeight: 27,
+    fontWeight: 800,
+    letterSpacing: -0.4,
   },
 });
