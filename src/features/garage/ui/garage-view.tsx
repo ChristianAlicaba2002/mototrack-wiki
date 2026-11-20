@@ -1,6 +1,6 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 
-import { ChevronRightIcon, PlusIcon } from '@/components/icons/line-icons';
+import { ChevronRightIcon, CoinIcon, PlusIcon } from '@/components/icons/line-icons';
 import { TabScreen } from '@/components/screen/tab-screen';
 import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
@@ -23,6 +23,7 @@ export function GarageView({
   makeActive,
   updateOdometer,
   openServices,
+  openExpenses,
 }: GarageViewModel) {
   const hasBikes = bikes.length > 0;
 
@@ -48,7 +49,9 @@ export function GarageView({
           <SkeletonCard />
         </>
       ) : hasBikes ? (
-        bikes.map((bike) => (
+        <>
+          <ExpensesLink onPress={() => openExpenses()} />
+          {bikes.map((bike) => (
           <BikeCard
             key={bike.id}
             bike={bike}
@@ -57,8 +60,10 @@ export function GarageView({
             onMakeActive={() => makeActive(bike.id)}
             onUpdateOdometer={() => updateOdometer(bike.id)}
             onOpenServices={() => openServices(bike.id)}
+            onOpenExpenses={() => openExpenses(bike.id)}
           />
-        ))
+          ))}
+        </>
       ) : (
         !error && <EmptyGarage onAdd={addBike} />
       )}
@@ -78,9 +83,18 @@ type BikeCardProps = {
   onMakeActive: () => void;
   onUpdateOdometer: () => void;
   onOpenServices: () => void;
+  onOpenExpenses: () => void;
 };
 
-function BikeCard({ bike, isActive, onPress, onMakeActive, onUpdateOdometer, onOpenServices }: BikeCardProps) {
+function BikeCard({
+  bike,
+  isActive,
+  onPress,
+  onMakeActive,
+  onUpdateOdometer,
+  onOpenServices,
+  onOpenExpenses,
+}: BikeCardProps) {
   const theme = useTheme();
   const name = `${bike.make} ${bike.model}`;
   const title = bike.nickname ?? name;
@@ -125,6 +139,7 @@ function BikeCard({ bike, isActive, onPress, onMakeActive, onUpdateOdometer, onO
             onPress={onUpdateOdometer}
           />
           <TextAction label="Service log" accessibilityLabel={`Service log for ${title}`} onPress={onOpenServices} />
+          <TextAction label="Expenses" accessibilityLabel={`Expenses for ${title}`} onPress={onOpenExpenses} />
           {!isActive ? (
             <TextAction
               label="Ride this one"
@@ -135,6 +150,32 @@ function BikeCard({ bike, isActive, onPress, onMakeActive, onUpdateOdometer, onO
           ) : null}
         </View>
       </Panel>
+    </Pressable>
+  );
+}
+
+/** Shortcut to the spending summary across every bike. */
+function ExpensesLink({ onPress }: { onPress: () => void }) {
+  const theme = useTheme();
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel="Expense summary"
+      accessibilityHint="Shows what was spent per motorcycle, per service type and per month"
+      style={({ pressed }) => [
+        styles.expenses,
+        { backgroundColor: theme.backgroundElement, borderColor: theme.line },
+        pressed && styles.cardPressed,
+      ]}>
+      <CoinIcon size={20} color={theme.text} />
+      <View style={styles.expensesText}>
+        <ThemedText type="smallBold">Expense summary</ThemedText>
+        <ThemedText type="small" themeColor="textSecondary" numberOfLines={1}>
+          Totals per bike, per service type and per month
+        </ThemedText>
+      </View>
+      <ChevronRightIcon size={18} color={theme.textSecondary} />
     </Pressable>
   );
 }
@@ -183,6 +224,19 @@ function SkeletonCard() {
 const styles = StyleSheet.create({
   cardPressed: {
     opacity: 0.8,
+  },
+  expenses: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.three,
+    borderRadius: Radius.card,
+    borderWidth: StyleSheet.hairlineWidth * 2,
+    paddingHorizontal: Spacing.three,
+    paddingVertical: Spacing.three - 4,
+  },
+  expensesText: {
+    flex: 1,
+    gap: 2,
   },
   cardTop: {
     flexDirection: 'row',
