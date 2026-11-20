@@ -4,15 +4,34 @@ import { ActivityIndicator, StyleSheet, useColorScheme } from 'react-native';
 
 import { AnimatedSplashOverlay } from '@/components/animated-icon';
 import { ThemedView } from '@/components/themed-view';
+import { Colors } from '@/constants/theme';
 import { AuthProvider, useAuth } from '@/hooks/use-auth';
 
 SplashScreen.preventAutoHideAsync();
+
+function navigationTheme(base: typeof DefaultTheme, colors: (typeof Colors)['light' | 'dark']) {
+  return {
+    ...base,
+    colors: {
+      ...base.colors,
+      primary: colors.accent,
+      background: colors.background,
+      card: colors.background,
+      text: colors.text,
+      border: colors.line,
+      notification: colors.brand,
+    },
+  };
+}
+
+const LightNavTheme = navigationTheme(DefaultTheme, Colors.light);
+const DarkNavTheme = navigationTheme(DarkTheme, Colors.dark);
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
   return (
     <AuthProvider>
-      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+      <ThemeProvider value={colorScheme === 'dark' ? DarkNavTheme : LightNavTheme}>
         <AnimatedSplashOverlay />
         <RootNavigator />
       </ThemeProvider>
