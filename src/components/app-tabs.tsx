@@ -12,7 +12,12 @@ export default function AppTabs() {
   return (
     <NativeTabs
       backgroundColor={colors.background}
-      indicatorColor={colors.backgroundElement}
+      indicatorColor={colors.backgroundSelected}
+      tintColor={colors.text}
+      // Android: always show every label. With 4+ tabs the default ("auto")
+      // hides unselected labels and shifts the active icon up; "labeled" keeps
+      // all tabs the same height with no shifting animation.
+      labelVisibilityMode="labeled"
       labelStyle={{ selected: { color: colors.text } }}>
       <NativeTabs.Trigger name="index">
         <NativeTabs.Trigger.Label>Home</NativeTabs.Trigger.Label>
