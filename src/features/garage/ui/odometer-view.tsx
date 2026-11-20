@@ -1,7 +1,9 @@
 import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { CloseIcon, GaugeIcon } from '@/components/icons/line-icons';
+import { Fragment } from 'react';
+
+import { CloseIcon } from '@/components/icons/line-icons';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
@@ -12,7 +14,17 @@ import type { OdometerReading } from '@/lib/firestore/types';
 import { BIKE_LIMITS, parseWholeNumber } from '../model/bike-form';
 import { formatKm } from '../model/odometer';
 import { HISTORY_LIMIT, type OdometerViewModel } from '../model/odometer-view-model';
-import { Button, ErrorMessage, FormField, IconButton, Radius, Section } from './controls';
+import {
+  Button,
+  ErrorMessage,
+  FormField,
+  IconButton,
+  OdometerReadout,
+  Panel,
+  Rule,
+  ScreenHeader,
+  Section,
+} from './controls';
 
 const FORM_MAX_WIDTH = 560;
 
@@ -47,21 +59,21 @@ export function OdometerView({
   return (
     <ThemedView style={styles.root}>
       <SafeAreaView style={styles.root} edges={['top', 'left', 'right', 'bottom']}>
-        <View style={styles.header}>
-          <IconButton
-            accessibilityLabel="Close"
-            onPress={cancel}
-            disabled={saving}
-            icon={(c) => <CloseIcon size={20} color={c} />}
-          />
-          <ThemedText type="smallBold" style={styles.headerTitle} accessibilityRole="header" numberOfLines={1}>
-            Update odometer
-          </ThemedText>
-          <View style={styles.headerSpacer} />
-        </View>
+        <ScreenHeader
+          title="Update odometer"
+          context={loadState === 'ready' ? title : undefined}
+          leading={
+            <IconButton
+              accessibilityLabel="Close"
+              onPress={cancel}
+              disabled={saving}
+              icon={(c) => <CloseIcon size={20} color={c} />}
+            />
+          }
+        />
 
         {loadState === 'loading' ? (
-          <ActivityIndicator style={styles.loader} />
+          <ActivityIndicator style={styles.loader} color={theme.textSecondary} />
         ) : loadState !== 'ready' || !bike ? (
           <View style={styles.content}>
             <ErrorMessage>{error ?? 'This motorcycle no longer exists.'}</ErrorMessage>
@@ -73,30 +85,22 @@ export function OdometerView({
               contentContainerStyle={styles.content}
               keyboardShouldPersistTaps="handled"
               keyboardDismissMode="interactive">
-              <View
-                style={[styles.hero, { backgroundColor: theme.accentSoft }]}
-                accessible
-                accessibilityLabel={`${title}, current odometer ${formatKm(currentKm)} kilometres`}>
-                <View style={[styles.heroBadge, { backgroundColor: theme.accent }]}>
-                  <GaugeIcon size={28} color={theme.onAccent} />
-                </View>
-                <View style={styles.heroText}>
-                  <ThemedText type="small" themeColor="textSecondary" numberOfLines={1}>
-                    {title} · current reading
+              <Panel>
+                <ThemedText type="eyebrow" themeColor="textSecondary">
+                  On the dash now
+                </ThemedText>
+                <OdometerReadout km={currentKm} size="lg" />
+                {delta !== null ? (
+                  <ThemedText type="readout" style={{ color: theme.success }}>
+                    +{formatKm(delta)} km since the last reading
                   </ThemedText>
-                  <View style={styles.heroValueRow}>
-                    <ThemedText style={styles.heroValue}>{formatKm(currentKm)}</ThemedText>
-                    <ThemedText type="smallBold" themeColor="textSecondary">
-                      km
-                    </ThemedText>
-                  </View>
-                </View>
-              </View>
+                ) : null}
+              </Panel>
 
               <Section title="New reading">
                 <FormField
                   label="Odometer"
-                  icon={(c) => <GaugeIcon size={18} color={c} />}
+                  mono
                   suffix="km"
                   value={text}
                   onChangeText={setText}
@@ -104,11 +108,7 @@ export function OdometerView({
                   onSubmitEditing={save}
                   returnKeyType="done"
                   error={fieldError}
-                  hint={
-                    delta !== null
-                      ? `+${formatKm(delta)} km since the last reading.`
-                      : 'The number on your dashboard right now.'
-                  }
+                  hint="The number on your dashboard right now."
                   placeholder={formatKm(currentKm)}
                   keyboardType="number-pad"
                   maxLength={String(BIKE_LIMITS.odometerMax).length + 2}
@@ -127,14 +127,19 @@ export function OdometerView({
                     No readings yet. Your updates will be listed here.
                   </ThemedText>
                 ) : (
-                  readings.map((reading, i) => (
-                    <HistoryRow key={reading.id} reading={reading} previous={readings[i + 1]} isLatest={i === 0} />
-                  ))
+                  <View>
+                    {readings.map((reading, i) => (
+                      <Fragment key={reading.id}>
+                        {i > 0 ? <Rule /> : null}
+                        <HistoryRow reading={reading} previous={readings[i + 1]} isLatest={i === 0} />
+                      </Fragment>
+                    ))}
+                  </View>
                 )}
               </Section>
             </ScrollView>
 
-            <View style={[styles.footer, { borderColor: theme.backgroundSelected, backgroundColor: theme.background }]}>
+            <View style={[styles.footer, { borderColor: theme.line, backgroundColor: theme.background }]}>
               <View style={styles.footerInner}>
                 {error && <ErrorMessage>{error}</ErrorMessage>}
                 <Button label="Save reading" onPress={save} loading={saving} disabled={saving} />
@@ -166,14 +171,15 @@ function HistoryRow({
       style={styles.historyRow}
       accessible
       accessibilityLabel={`${date}: ${formatKm(reading.odometerKm)} kilometres, ${diffText}`}>
-      <View style={[styles.historyDot, { backgroundColor: isLatest ? theme.accent : theme.backgroundSelected }]} />
-      <View style={styles.historyText}>
-        <ThemedText style={styles.historyValue}>{formatKm(reading.odometerKm)} km</ThemedText>
-        <ThemedText type="small" themeColor="textSecondary">
-          {date}
-        </ThemedText>
-      </View>
-      <ThemedText type="smallBold" style={{ color: diff !== null && diff > 0 ? theme.success : theme.textSecondary }}>
+      <ThemedText type="readout" themeColor="textSecondary" style={styles.historyDate} numberOfLines={1}>
+        {date}
+      </ThemedText>
+      <ThemedText type="readout" style={[styles.historyValue, isLatest && styles.historyLatest]}>
+        {formatKm(reading.odometerKm)}
+      </ThemedText>
+      <ThemedText
+        type="readout"
+        style={[styles.historyDiff, { color: diff !== null && diff > 0 ? theme.success : theme.textSecondary }]}>
         {diffText}
       </ThemedText>
     </View>
@@ -184,77 +190,38 @@ const styles = StyleSheet.create({
   root: {
     flex: 1,
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.two + 4,
-  },
-  headerTitle: {
-    fontSize: 17,
-  },
-  headerSpacer: {
-    width: 40,
-  },
   loader: {
     marginTop: Spacing.five,
   },
   content: {
     gap: Spacing.four,
     paddingHorizontal: Spacing.three,
-    paddingTop: Spacing.two,
+    paddingTop: Spacing.three + 4,
     paddingBottom: Spacing.five,
     width: '100%',
     maxWidth: FORM_MAX_WIDTH,
     alignSelf: 'center',
   },
-  hero: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.three,
-    padding: Spacing.three,
-    borderRadius: Radius.card,
-  },
-  heroBadge: {
-    width: 56,
-    height: 56,
-    borderRadius: 18,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  heroText: {
-    flex: 1,
-    gap: Spacing.half,
-  },
-  heroValueRow: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-    gap: Spacing.one,
-  },
-  heroValue: {
-    fontSize: 30,
-    lineHeight: 36,
-    fontWeight: 700,
-    fontVariant: ['tabular-nums'],
-  },
   historyRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.three,
+    paddingVertical: Spacing.two + 4,
   },
-  historyDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-  },
-  historyText: {
+  historyDate: {
     flex: 1,
-    gap: Spacing.half,
+    fontSize: 12,
   },
   historyValue: {
+    fontSize: 15,
+  },
+  historyLatest: {
     fontWeight: 700,
-    fontVariant: ['tabular-nums'],
+  },
+  historyDiff: {
+    minWidth: 96,
+    textAlign: 'right',
+    fontSize: 12,
   },
   footer: {
     borderTopWidth: StyleSheet.hairlineWidth,
