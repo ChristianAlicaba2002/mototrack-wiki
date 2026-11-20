@@ -1,6 +1,7 @@
 /**
- * Below are the colors that are used in the app. The colors are defined in the light and dark mode.
- * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://unistyl.es/), etc.
+ * MotoTrack design tokens. The look is a workshop logbook: warm paper, ink,
+ * hairline rules, and instrument-style readouts for anything you'd read off
+ * a dashboard (km, dates, costs, plates).
  */
 
 import '@/global.css';
@@ -9,35 +10,39 @@ import { Platform } from 'react-native';
 
 export const Colors = {
   light: {
-    text: '#000000',
-    background: '#ffffff',
-    backgroundElement: '#F0F0F3',
-    backgroundSelected: '#E0E1E6',
-    textSecondary: '#60646C',
-    /** School colors. Blue = primary actions; red = brand marks. */
-    accent: '#1D4ED8',
-    onAccent: '#ffffff',
-    accentSoft: '#E6EEFF',
+    text: '#1A1814',
+    /** Warm paper, so white panels read as sheets on a bench. */
+    background: '#F4F1EA',
+    backgroundElement: '#FFFFFF',
+    backgroundSelected: '#E8E3D9',
+    textSecondary: '#6E675C',
+    /** Hairline rules and panel borders. */
+    line: '#DCD5C8',
+    /** School colors. Blue = primary actions; red = brand marks and the active bike. */
+    accent: '#1F3D8F',
+    onAccent: '#FFFFFF',
+    accentSoft: '#E3E8F4',
     brand: '#C8102E',
-    onBrand: '#ffffff',
-    brandSoft: '#FDE8EB',
-    danger: '#B4141F',
-    success: '#218358',
+    onBrand: '#FFFFFF',
+    brandSoft: '#F7E2E4',
+    danger: '#B3261E',
+    success: '#2F6B40',
   },
   dark: {
-    text: '#ffffff',
-    background: '#000000',
-    backgroundElement: '#212225',
-    backgroundSelected: '#2E3135',
-    textSecondary: '#B0B4BA',
-    accent: '#5B9BFF',
-    onAccent: '#06142E',
-    accentSoft: '#0F1E3D',
-    brand: '#E5323F',
-    onBrand: '#ffffff',
-    brandSoft: '#3A1015',
-    danger: '#FF8A8A',
-    success: '#3DD68C',
+    text: '#ECE8E0',
+    background: '#131211',
+    backgroundElement: '#1C1B19',
+    backgroundSelected: '#2A2824',
+    textSecondary: '#A29C90',
+    line: '#302E29',
+    accent: '#93AAE6',
+    onAccent: '#0D1530',
+    accentSoft: '#1A2238',
+    brand: '#E5484D',
+    onBrand: '#FFFFFF',
+    brandSoft: '#381618',
+    danger: '#FF8A80',
+    success: '#82C595',
   },
 } as const;
 
