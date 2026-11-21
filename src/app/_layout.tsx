@@ -52,6 +52,7 @@ function RootNavigator() {
           <Stack.Screen name="odometer" options={{ presentation: 'modal' }} />
           <Stack.Screen name="services" />
           <Stack.Screen name="service-form" options={{ presentation: 'modal' }} />
+          <Stack.Screen name="expenses" />
         </Stack.Protected>
         <Stack.Protected guard={!signedIn}>
           <Stack.Screen name="login" />

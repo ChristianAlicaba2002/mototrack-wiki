@@ -1,5 +1,6 @@
 import { router } from 'expo-router';
 
+import { openExpenseSummary } from '@/features/expenses/model/navigation';
 import { openServiceLog } from '@/features/services/model/navigation';
 
 import { useGarageData } from './use-garage-data';
@@ -29,6 +30,7 @@ export function useGarageViewModel() {
     makeActive,
     updateOdometer: openOdometer,
     openServices: openServiceLog,
+    openExpenses: openExpenseSummary,
   };
 }
 

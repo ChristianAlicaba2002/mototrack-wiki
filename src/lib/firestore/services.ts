@@ -51,6 +51,20 @@ export function subscribeToServices(
   return onSnapshot(q, (snapshot) => onChange(withIds(snapshot)), onError);
 }
 
+/**
+ * Live service log across all of the owner's bikes, most recent first. Used by
+ * the expense summary. Ordering on one field needs no composite index.
+ */
+export function subscribeToAllServices(
+  uid: string,
+  max: number,
+  onChange: (services: WithId<ServiceRecord>[]) => void,
+  onError: (error: Error) => void
+): Unsubscribe {
+  const q = query(servicesCollection(uid), orderBy('date', 'desc'), limit(max));
+  return onSnapshot(q, (snapshot) => onChange(withIds(snapshot)), onError);
+}
+
 export async function getService(uid: string, serviceId: string): Promise<WithId<ServiceRecord> | null> {
   const snapshot = await getDoc(serviceDoc(uid, serviceId));
   return snapshot.exists() ? { ...snapshot.data(), id: snapshot.id } : null;
