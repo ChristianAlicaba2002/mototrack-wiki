@@ -13,6 +13,7 @@ import { GuideRow, MissingSpecNote, PinnedSpec, SpecRow, WikiList, WikiListSkele
 
 export function WikiView({
   loading,
+  skeletonPinned,
   error,
   isEmpty,
   hasDocs,
@@ -52,7 +53,7 @@ export function WikiView({
       {error && hasDocs ? <ErrorMessage>{error}</ErrorMessage> : null}
 
       {loading ? (
-        <WikiListSkeleton />
+        <WikiListSkeleton pinned={skeletonPinned} />
       ) : error && !hasDocs ? (
         <EmptyState
           eyebrow="Couldn’t load"

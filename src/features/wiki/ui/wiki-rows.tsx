@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { type DimensionValue, Pressable, StyleSheet, View } from 'react-native';
 
 import { ChevronRightIcon } from '@/components/icons/line-icons';
 import { SkeletonText } from '@/components/skeleton';
@@ -125,27 +125,92 @@ export function MissingSpecNote({ bikeModel }: { bikeModel: string }) {
   );
 }
 
-export function WikiListSkeleton() {
+const SPEC_SKELETON_ROWS = [
+  { make: 40, model: 78 },
+  { make: 40, model: 85 },
+  { make: 40, model: 80 },
+  { make: 40, model: 113 },
+  { make: 64, model: 77 },
+  { make: 48, model: 131 },
+];
+
+const GUIDE_SKELETON_ROWS: { meta: number; title: number; summary: DimensionValue[] }[] = [
+  { meta: 176, title: 175, summary: ['97%', '88%'] },
+  { meta: 208, title: 242, summary: ['100%', '82%'] },
+  { meta: 232, title: 168, summary: ['94%', '90%'] },
+];
+
+const EYEBROW = { lineHeight: 14, fontSize: 11 };
+const READOUT = { lineHeight: 20, fontSize: 14 };
+const ROW_TITLE = { lineHeight: 26, fontSize: 22 };
+const PINNED_TITLE = { lineHeight: 32, fontSize: 28 };
+
+export function WikiListSkeleton({ pinned }: { pinned: boolean }) {
+  return (
+    <View style={styles.skeleton} accessible accessibilityLabel="Loading the wiki" accessibilityState={{ busy: true }}>
+      {pinned ? (
+        <View style={styles.pinned}>
+          <View style={styles.rowText}>
+            <SkeletonText {...EYEBROW} width={72} />
+            <SkeletonText {...PINNED_TITLE} width={180} />
+            <SkeletonText {...READOUT} width={244} />
+          </View>
+          <View style={styles.chevron} />
+        </View>
+      ) : null}
+
+      <SkeletonGroup title={120}>
+        {SPEC_SKELETON_ROWS.map((row, i) => (
+          <SkeletonRow key={i}>
+            <SkeletonText {...EYEBROW} width={row.make} />
+            <SkeletonText {...ROW_TITLE} width={row.model} />
+            <SkeletonText {...READOUT} width={176} />
+          </SkeletonRow>
+        ))}
+      </SkeletonGroup>
+
+      <SkeletonGroup title={80}>
+        {GUIDE_SKELETON_ROWS.map((row, i) => (
+          <SkeletonRow key={i}>
+            <SkeletonText {...EYEBROW} width={row.meta} />
+            <SkeletonText {...ROW_TITLE} width={row.title} />
+            {row.summary.map((width, line) => (
+              <SkeletonText key={line} {...READOUT} width={width} />
+            ))}
+          </SkeletonRow>
+        ))}
+      </SkeletonGroup>
+    </View>
+  );
+}
+
+function SkeletonGroup({ title, children }: { title: number; children: ReactNode }) {
   const theme = useTheme();
   return (
-    <View style={styles.group} accessible accessibilityLabel="Loading the wiki" accessibilityState={{ busy: true }}>
-      <SkeletonText lineHeight={14} fontSize={11} width={96} />
-      <View style={[styles.list, { borderBottomColor: theme.line }]}>
-        {[0, 1, 2, 3].map((i) => (
-          <View key={i} style={[styles.row, { borderTopColor: theme.line }]}>
-            <View style={styles.rowText}>
-              <SkeletonText lineHeight={14} fontSize={11} width={56} />
-              <SkeletonText lineHeight={26} fontSize={22} width="60%" />
-              <SkeletonText lineHeight={20} fontSize={14} width="40%" />
-            </View>
-          </View>
-        ))}
-      </View>
+    <View style={styles.group}>
+      <SkeletonText {...EYEBROW} width={title} />
+      <View style={[styles.list, { borderBottomColor: theme.line }]}>{children}</View>
+    </View>
+  );
+}
+
+function SkeletonRow({ children }: { children: ReactNode }) {
+  const theme = useTheme();
+  return (
+    <View style={[styles.row, { borderTopColor: theme.line }]}>
+      <View style={styles.rowText}>{children}</View>
+      <View style={styles.chevron} />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  skeleton: {
+    gap: Spacing.three,
+  },
+  chevron: {
+    width: 18,
+  },
   group: {
     gap: Spacing.two,
   },

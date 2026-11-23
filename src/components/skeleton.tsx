@@ -58,7 +58,7 @@ type SkeletonTextProps = {
 
 export function SkeletonText({ lineHeight, fontSize, width }: SkeletonTextProps) {
   return (
-    <View style={{ width, height: lineHeight, justifyContent: 'center' }}>
+    <View style={{ width, maxWidth: '100%', height: lineHeight, justifyContent: 'center' }}>
       <SkeletonBlock height={Math.round(fontSize * 0.72)} />
     </View>
   );
