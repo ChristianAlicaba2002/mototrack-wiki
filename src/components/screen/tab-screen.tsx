@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
@@ -10,14 +10,29 @@ type TabScreenProps = {
   summary?: string;
   action?: ReactNode;
   children?: ReactNode;
+  onRefresh?: () => void;
+  refreshing?: boolean;
 };
 
-export function TabScreen({ summary, action, children }: TabScreenProps) {
+export function TabScreen({ summary, action, children, onRefresh, refreshing = false }: TabScreenProps) {
   const theme = useTheme();
 
   return (
     <SafeAreaView edges={['left', 'right']} style={[styles.safeArea, { backgroundColor: theme.background }]}>
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView
+        contentContainerStyle={styles.content}
+        alwaysBounceVertical={Boolean(onRefresh)}
+        refreshControl={
+          onRefresh ? (
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor={theme.textSecondary}
+              colors={[theme.brand]}
+              progressBackgroundColor={theme.backgroundElement}
+            />
+          ) : undefined
+        }>
         {summary || action ? (
           <View style={styles.intro}>
             {summary ? (

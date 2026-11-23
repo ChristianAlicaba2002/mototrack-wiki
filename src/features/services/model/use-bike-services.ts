@@ -3,8 +3,10 @@ import { useEffect, useState } from 'react';
 import { toGarageErrorMessage } from '@/features/garage/model/errors';
 import { useAuth } from '@/hooks/use-auth';
 import type { WithId } from '@/lib/firestore/collections';
-import { subscribeToServices } from '@/lib/firestore/services';
+import { fetchServices, subscribeToServices } from '@/lib/firestore/services';
 import type { ServiceRecord } from '@/lib/firestore/types';
+
+export const RECENT_SERVICES_COUNT = 3;
 
 type State = {
   /** Which bike the services below belong to, so switching bikes never shows the old list. */
@@ -35,10 +37,17 @@ export function useBikeServices(bikeId: string | undefined, max: number) {
   const services = current ? state.services : null;
   const error = current ? state.error : null;
 
+  async function refresh() {
+    if (!uid || !bikeId) return;
+    const fresh = await fetchServices(uid, bikeId, max);
+    setState((s) => (s.bikeId === bikeId ? { bikeId, services: fresh, error: null } : s));
+  }
+
   return {
     services: services ?? [],
     loading: Boolean(bikeId) && services === null && error === null,
     error,
+    refresh,
   };
 }
 

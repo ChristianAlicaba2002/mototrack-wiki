@@ -2,6 +2,7 @@ import {
   doc,
   getDoc,
   getDocs,
+  getDocsFromServer,
   limit,
   onSnapshot,
   orderBy,
@@ -36,14 +37,19 @@ const DELETE_CHUNK = 450;
 
 const bikeDoc = (uid: string, bikeId: string) => doc(bikesCollection(uid), bikeId);
 
+const bikesQuery = (uid: string) => query(bikesCollection(uid), orderBy('createdAt', 'asc'));
+
 /** Live list of the user's bikes, oldest first. Returns the unsubscribe function. */
 export function subscribeToBikes(
   uid: string,
   onChange: (bikes: WithId<Bike>[]) => void,
   onError: (error: Error) => void
 ): Unsubscribe {
-  const q = query(bikesCollection(uid), orderBy('createdAt', 'asc'));
-  return onSnapshot(q, (snapshot) => onChange(withIds(snapshot)), onError);
+  return onSnapshot(bikesQuery(uid), (snapshot) => onChange(withIds(snapshot)), onError);
+}
+
+export async function fetchBikes(uid: string): Promise<WithId<Bike>[]> {
+  return withIds(await getDocsFromServer(bikesQuery(uid)));
 }
 
 /** Live single bike; null once it doesn't exist. Returns the unsubscribe function. */

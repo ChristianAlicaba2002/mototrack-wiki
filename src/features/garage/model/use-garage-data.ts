@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 
 import { useAuth } from '@/hooks/use-auth';
-import { subscribeToBikes } from '@/lib/firestore/bikes';
+import { fetchBikes, subscribeToBikes } from '@/lib/firestore/bikes';
 import type { WithId } from '@/lib/firestore/collections';
 import type { Bike } from '@/lib/firestore/types';
-import { setActiveBike, subscribeToUserProfile } from '@/lib/firestore/user-profile';
+import { fetchUserProfile, setActiveBike, subscribeToUserProfile } from '@/lib/firestore/user-profile';
 
 import { resolveActiveBike } from './active-bike';
 import { toGarageErrorMessage } from './errors';
@@ -61,11 +61,18 @@ export function useGarageData() {
     }
   }
 
+  async function refresh() {
+    if (!uid) return;
+    const [freshBikes, profile] = await Promise.all([fetchBikes(uid), fetchUserProfile(uid)]);
+    setState({ bikes: freshBikes, activeBikeId: profile?.activeBikeId ?? null, error: null });
+  }
+
   return {
     bikes,
     activeBike,
     loading: (state.bikes === null || state.activeBikeId === undefined) && state.error === null,
     error: state.error,
     makeActive,
+    refresh,
   };
 }
