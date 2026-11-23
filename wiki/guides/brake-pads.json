@@ -1,0 +1,65 @@
+{
+  "kind": "guide",
+  "title": "Inspect and replace disc brake pads",
+  "category": "diy",
+  "summary": "Check pad thickness through the caliper and swap worn pads before they reach the metal backing.",
+  "difficulty": "moderate",
+  "minutes": 45,
+  "keywords": [
+    "brake",
+    "preno",
+    "pads",
+    "caliper",
+    "disc"
+  ],
+  "appliesTo": [],
+  "tools": [
+    "Wrenches or hex keys for the caliper bolts",
+    "Torque wrench",
+    "Flashlight",
+    "Flat screwdriver",
+    "Clean rags"
+  ],
+  "parts": [
+    "Brake pads for your model",
+    "Brake cleaner"
+  ],
+  "steps": [
+    {
+      "text": "Look into the caliper with a flashlight. Replace the pads if the friction material is down to the wear groove or about 1.5 mm.",
+      "caution": null
+    },
+    {
+      "text": "Remove the pad pin plug and loosen the pad pin while the caliper is still mounted.",
+      "caution": null
+    },
+    {
+      "text": "Unbolt the caliper from the fork or swingarm and slide it off the disc.",
+      "caution": "Don't let the caliper hang by the brake hose. Rest it on something or tie it up."
+    },
+    {
+      "text": "Pull the pad pin and remove the old pads, noting how the spring plate sits.",
+      "caution": null
+    },
+    {
+      "text": "Push the pistons back into the caliper slowly with your fingers or a flat tool. Watch the brake fluid reservoir so it doesn't overflow.",
+      "caution": null
+    },
+    {
+      "text": "Clean the caliper with brake cleaner, fit the new pads and spring, and refit the pad pin.",
+      "caution": null
+    },
+    {
+      "text": "Mount the caliper and tighten its bolts and the pad pin to the service manual torque.",
+      "caution": null
+    },
+    {
+      "text": "Pump the brake lever until it feels firm before you move the bike.",
+      "caution": "The first few presses do nothing while the pistons move out. Never ride off before the lever is firm."
+    },
+    {
+      "text": "Bed in the pads with a few gentle stops from moderate speed in a safe place.",
+      "caution": null
+    }
+  ]
+}

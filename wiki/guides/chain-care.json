@@ -1,0 +1,57 @@
+{
+  "kind": "guide",
+  "title": "Clean, lube and adjust the chain",
+  "category": "diy",
+  "summary": "For chain-driven bikes. A clean, oiled chain at the right slack lasts longer and keeps the sprockets from wearing out.",
+  "difficulty": "easy",
+  "minutes": 30,
+  "keywords": [
+    "chain",
+    "kadena",
+    "sprocket",
+    "slack",
+    "lube"
+  ],
+  "appliesTo": [],
+  "tools": [
+    "Chain brush or old toothbrush",
+    "Wrenches for the axle nut and adjusters",
+    "Ruler",
+    "Rags",
+    "Rear stand or center stand"
+  ],
+  "parts": [
+    "Chain cleaner or kerosene",
+    "Chain lube"
+  ],
+  "steps": [
+    {
+      "text": "Put the bike on its center stand so the rear wheel turns freely, with the engine off and the transmission in neutral.",
+      "caution": null
+    },
+    {
+      "text": "Spray cleaner on a section of the lower run of chain and scrub the plates and rollers with the brush. Turn the wheel by hand and repeat all the way round.",
+      "caution": "Never turn the wheel with the engine running. A chain can pull in fingers in an instant."
+    },
+    {
+      "text": "Wipe the chain dry with a rag and let any solvent evaporate.",
+      "caution": null
+    },
+    {
+      "text": "Apply lube to the inside of the chain, where the rollers meet the sprockets, while turning the wheel. Wipe off the excess after ten minutes.",
+      "caution": null
+    },
+    {
+      "text": "Check the slack midway along the lower run. Most commuters want 20 to 30 mm of up-and-down play.",
+      "caution": null
+    },
+    {
+      "text": "To adjust, loosen the rear axle nut and turn both adjusters by the same amount so the marks match on each side.",
+      "caution": null
+    },
+    {
+      "text": "Tighten the axle nut to the torque on your spec sheet, then recheck slack and the rear brake.",
+      "caution": "If the chain has tight spots or the sprocket teeth look hooked, replace the chain and sprockets together."
+    }
+  ]
+}

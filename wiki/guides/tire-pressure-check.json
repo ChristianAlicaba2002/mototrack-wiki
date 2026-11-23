@@ -1,0 +1,48 @@
+{
+  "kind": "guide",
+  "title": "Check tire pressure",
+  "category": "tire_pressure",
+  "summary": "Underinflated tires wear fast and feel vague in corners. Check them cold, once a week, before you ride.",
+  "difficulty": "easy",
+  "minutes": 10,
+  "keywords": [
+    "tire",
+    "gulong",
+    "hangin",
+    "psi",
+    "pressure",
+    "air"
+  ],
+  "appliesTo": [],
+  "tools": [
+    "Tire pressure gauge",
+    "Air pump or a gas station air hose"
+  ],
+  "parts": [],
+  "steps": [
+    {
+      "text": "Check the tires cold, before riding or after the bike has stood for at least three hours.",
+      "caution": null
+    },
+    {
+      "text": "Look up the front and rear pressure on your spec sheet. Use the passenger figure if you ride two-up or carry heavy cargo.",
+      "caution": null
+    },
+    {
+      "text": "Remove the valve cap and press the gauge firmly onto the valve until the hissing stops, then read it.",
+      "caution": null
+    },
+    {
+      "text": "Add air in short bursts and recheck until you reach the target. If you overshoot, press the valve core briefly to let some out.",
+      "caution": null
+    },
+    {
+      "text": "Refit the valve caps. They keep dirt and water out of the valve.",
+      "caution": null
+    },
+    {
+      "text": "While you are there, look for cuts, bulges, nails and tread below the wear bars.",
+      "caution": "A bulge or a cut that shows the cords means the tire must be replaced before you ride."
+    }
+  ]
+}

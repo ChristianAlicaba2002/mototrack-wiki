@@ -1,0 +1,62 @@
+{
+  "kind": "guide",
+  "title": "Change the engine oil",
+  "category": "fluids",
+  "summary": "Drain the old oil, swap the crush washer and refill to the mark. The single most useful job you can do yourself.",
+  "difficulty": "easy",
+  "minutes": 30,
+  "keywords": [
+    "oil",
+    "langis",
+    "pms",
+    "drain bolt",
+    "crush washer"
+  ],
+  "appliesTo": [],
+  "tools": [
+    "Socket or box wrench for the drain bolt",
+    "Torque wrench",
+    "Drain pan",
+    "Funnel",
+    "Clean rags"
+  ],
+  "parts": [
+    "Engine oil (grade and amount on your spec sheet)",
+    "Drain bolt crush washer",
+    "Oil filter, if your bike has a cartridge filter"
+  ],
+  "steps": [
+    {
+      "text": "Ride for about five minutes so the oil is warm and flows out easily, then switch the engine off.",
+      "caution": null
+    },
+    {
+      "text": "Park on the center stand on level ground and set the drain pan under the drain bolt.",
+      "caution": "The engine and exhaust stay hot. Wear gloves and keep your arms clear of the muffler."
+    },
+    {
+      "text": "Remove the oil filler cap first, then loosen and remove the drain bolt. Let the oil drain until it only drips.",
+      "caution": null
+    },
+    {
+      "text": "Wipe the drain bolt, fit a new crush washer and thread it in by hand. Tighten it to the torque on your spec sheet.",
+      "caution": "Overtightening strips the threads in the crankcase. Use a torque wrench, not feel."
+    },
+    {
+      "text": "Pour in the new oil with the funnel, about 0.1 L short of the full amount.",
+      "caution": null
+    },
+    {
+      "text": "Refit the filler cap, start the engine and let it idle for a minute, then switch it off and wait two minutes.",
+      "caution": null
+    },
+    {
+      "text": "With the bike upright, check the dipstick without screwing it in. Top up to the upper mark, not above it.",
+      "caution": null
+    },
+    {
+      "text": "Check the drain bolt for leaks, then pour the old oil into a sealed bottle and take it to a shop or recycler.",
+      "caution": null
+    }
+  ]
+}
