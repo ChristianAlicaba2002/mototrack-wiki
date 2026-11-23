@@ -1,6 +1,7 @@
+import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
-import { ChevronRightIcon, CoinIcon, PlusIcon } from '@/components/icons/line-icons';
+import { ChevronRightIcon, PlusIcon } from '@/components/icons/line-icons';
 import { TabScreen } from '@/components/screen/tab-screen';
 import { ThemedText } from '@/components/themed-text';
 import { Fonts, Spacing } from '@/constants/theme';
@@ -10,9 +11,8 @@ import type { Bike } from '@/lib/firestore/types';
 
 import type { GarageViewModel } from '../model/garage-view-model';
 import { formatKm as formatNumber } from '../model/odometer';
-import { Button, ErrorMessage, IconButton, OdometerReadout, Panel, Radius, Rule, TextAction } from './controls';
+import { Button, ErrorMessage, IconButton, OdometerReadout, Radius, TextAction } from './controls';
 
-/** Presentational only — all state and actions come from the view model. */
 export function GarageView({
   bikes,
   activeBikeId,
@@ -43,26 +43,26 @@ export function GarageView({
       }>
       {error && <ErrorMessage>{error}</ErrorMessage>}
       {loading ? (
-        <>
-          <SkeletonCard />
-          <SkeletonCard />
-        </>
+        <List>
+          <SkeletonRow />
+          <SkeletonRow />
+        </List>
       ) : hasBikes ? (
-        <>
+        <List>
           <ExpensesLink onPress={() => openExpenses()} />
           {bikes.map((bike) => (
-          <BikeCard
-            key={bike.id}
-            bike={bike}
-            isActive={bike.id === activeBikeId}
-            onPress={() => editBike(bike.id)}
-            onMakeActive={() => makeActive(bike.id)}
-            onUpdateOdometer={() => updateOdometer(bike.id)}
-            onOpenServices={() => openServices(bike.id)}
-            onOpenExpenses={() => openExpenses(bike.id)}
-          />
+            <BikeRow
+              key={bike.id}
+              bike={bike}
+              isActive={bike.id === activeBikeId}
+              onPress={() => editBike(bike.id)}
+              onMakeActive={() => makeActive(bike.id)}
+              onUpdateOdometer={() => updateOdometer(bike.id)}
+              onOpenServices={() => openServices(bike.id)}
+              onOpenExpenses={() => openExpenses(bike.id)}
+            />
           ))}
-        </>
+        </List>
       ) : (
         !error && <EmptyGarage onAdd={addBike} />
       )}
@@ -75,7 +75,7 @@ function summaryLine(bikes: WithId<Bike>[]): string {
   return `${bikes.length} ${bikes.length === 1 ? 'bike' : 'bikes'} · ${formatNumber(totalKm)} km ridden`;
 }
 
-type BikeCardProps = {
+type BikeRowProps = {
   bike: WithId<Bike>;
   isActive: boolean;
   onPress: () => void;
@@ -85,7 +85,7 @@ type BikeCardProps = {
   onOpenExpenses: () => void;
 };
 
-function BikeCard({
+function BikeRow({
   bike,
   isActive,
   onPress,
@@ -93,7 +93,7 @@ function BikeCard({
   onUpdateOdometer,
   onOpenServices,
   onOpenExpenses,
-}: BikeCardProps) {
+}: BikeRowProps) {
   const theme = useTheme();
   const name = `${bike.make} ${bike.model}`;
   const title = bike.nickname ?? name;
@@ -104,56 +104,56 @@ function BikeCard({
       accessibilityRole="button"
       accessibilityLabel={`${title}${isActive ? ', active motorcycle' : ''}, ${bike.year}, ${bike.engineCc} cc, ${formatNumber(bike.odometerKm)} kilometres`}
       accessibilityHint="Opens the motorcycle to edit or delete it"
-      style={({ pressed }) => pressed && styles.cardPressed}>
-      <Panel style={isActive && { borderLeftColor: theme.brand, borderLeftWidth: 4 }}>
-        <View style={styles.cardTop}>
-          <View style={styles.cardHeading}>
-            {isActive ? (
-              <ThemedText type="eyebrow" style={{ color: theme.brand }}>
-                Riding now
-              </ThemedText>
-            ) : null}
-            <ThemedText style={styles.cardTitle} numberOfLines={1}>
-              {title}
+      style={({ pressed }) => [styles.row, { borderTopColor: theme.line }, pressed && styles.pressed]}>
+      <View style={styles.rowTop}>
+        <View style={styles.rowHeading}>
+          {isActive ? (
+            <ThemedText type="eyebrow" style={{ color: theme.brand }}>
+              Riding now
             </ThemedText>
-            <ThemedText type="small" themeColor="textSecondary" numberOfLines={1}>
-              {bike.nickname ? `${name} · ` : ''}
-              {bike.year} · {bike.engineCc} cc
-            </ThemedText>
-          </View>
-          <ChevronRightIcon size={18} color={theme.textSecondary} />
-        </View>
-
-        <View style={styles.odometerRow}>
-          <OdometerReadout km={bike.odometerKm} />
-          {bike.plateNumber ? <Plate number={bike.plateNumber} /> : null}
-        </View>
-
-        <Rule />
-
-        <View style={styles.actions}>
-          <TextAction
-            label="Update km"
-            accessibilityLabel={`Update odometer for ${title}`}
-            onPress={onUpdateOdometer}
-          />
-          <TextAction label="Service log" accessibilityLabel={`Service log for ${title}`} onPress={onOpenServices} />
-          <TextAction label="Expenses" accessibilityLabel={`Expenses for ${title}`} onPress={onOpenExpenses} />
-          {!isActive ? (
-            <TextAction
-              label="Ride this one"
-              tone="text"
-              accessibilityLabel={`Set ${title} as the active motorcycle`}
-              onPress={onMakeActive}
-            />
           ) : null}
+          <ThemedText style={styles.rowTitle} numberOfLines={1}>
+            {title}
+          </ThemedText>
+          <ThemedText type="small" themeColor="textSecondary" numberOfLines={1}>
+            {bike.nickname ? `${name} · ` : ''}
+            {bike.year} · {bike.engineCc} cc
+          </ThemedText>
         </View>
-      </Panel>
+        <ChevronRightIcon size={18} color={theme.textSecondary} />
+      </View>
+
+      <View style={styles.odometerRow}>
+        <OdometerReadout km={bike.odometerKm} />
+        {bike.plateNumber ? <Plate number={bike.plateNumber} /> : null}
+      </View>
+
+      <View style={styles.actions}>
+        <TextAction
+          label="Update km"
+          accessibilityLabel={`Update odometer for ${title}`}
+          onPress={onUpdateOdometer}
+        />
+        <TextAction label="Service log" accessibilityLabel={`Service log for ${title}`} onPress={onOpenServices} />
+        <TextAction label="Expenses" accessibilityLabel={`Expenses for ${title}`} onPress={onOpenExpenses} />
+        {!isActive ? (
+          <TextAction
+            label="Ride this one"
+            tone="text"
+            accessibilityLabel={`Set ${title} as the active motorcycle`}
+            onPress={onMakeActive}
+          />
+        ) : null}
+      </View>
     </Pressable>
   );
 }
 
-/** Shortcut to the spending summary across every bike. */
+function List({ children }: { children: ReactNode }) {
+  const theme = useTheme();
+  return <View style={[styles.list, { borderBottomColor: theme.line }]}>{children}</View>;
+}
+
 function ExpensesLink({ onPress }: { onPress: () => void }) {
   const theme = useTheme();
   return (
@@ -162,12 +162,7 @@ function ExpensesLink({ onPress }: { onPress: () => void }) {
       accessibilityRole="button"
       accessibilityLabel="Expense summary"
       accessibilityHint="Shows what was spent per motorcycle, per service type and per month"
-      style={({ pressed }) => [
-        styles.expenses,
-        { backgroundColor: theme.backgroundElement, borderColor: theme.line },
-        pressed && styles.cardPressed,
-      ]}>
-      <CoinIcon size={20} color={theme.text} />
+      style={({ pressed }) => [styles.expenses, { borderTopColor: theme.line }, pressed && styles.pressed]}>
       <View style={styles.expensesText}>
         <ThemedText type="smallBold">Expense summary</ThemedText>
         <ThemedText type="small" themeColor="textSecondary" numberOfLines={1}>
@@ -179,7 +174,6 @@ function ExpensesLink({ onPress }: { onPress: () => void }) {
   );
 }
 
-/** The plate, drawn like a plate. */
 function Plate({ number }: { number: string }) {
   const theme = useTheme();
   return (
@@ -193,7 +187,7 @@ function Plate({ number }: { number: string }) {
 
 function EmptyGarage({ onAdd }: { onAdd: () => void }) {
   return (
-    <Panel style={styles.empty}>
+    <View style={styles.empty}>
       <ThemedText type="eyebrow" themeColor="textSecondary">
         000000 km
       </ThemedText>
@@ -202,51 +196,57 @@ function EmptyGarage({ onAdd }: { onAdd: () => void }) {
         Add your first motorcycle to keep its mileage, specs and service history together.
       </ThemedText>
       <Button label="Add motorcycle" onPress={onAdd} />
-    </Panel>
+    </View>
   );
 }
 
-function SkeletonCard() {
+function SkeletonRow() {
   const theme = useTheme();
   const block = { backgroundColor: theme.backgroundSelected };
   return (
-    <Panel>
-      <View accessibilityLabel="Loading motorcycles" style={styles.skeleton}>
-        <View style={[styles.skeletonLine, block, { width: '55%', height: 18 }]} />
-        <View style={[styles.skeletonLine, block, { width: '35%' }]} />
-        <View style={[styles.skeletonLine, block, { width: 150, height: 32, marginTop: Spacing.two }]} />
-      </View>
-    </Panel>
+    <View
+      accessibilityLabel="Loading motorcycles"
+      style={[styles.row, styles.skeleton, { borderTopColor: theme.line }]}>
+      <View style={[styles.skeletonLine, block, { width: '55%', height: 18 }]} />
+      <View style={[styles.skeletonLine, block, { width: '35%' }]} />
+      <View style={[styles.skeletonLine, block, { width: 150, height: 32, marginTop: Spacing.two }]} />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  cardPressed: {
-    opacity: 0.8,
+  pressed: {
+    opacity: 0.6,
+  },
+  list: {
+    borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  row: {
+    gap: Spacing.three,
+    paddingVertical: Spacing.three + 4,
+    borderTopWidth: StyleSheet.hairlineWidth,
   },
   expenses: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.three,
-    borderRadius: Radius.card,
-    borderWidth: StyleSheet.hairlineWidth * 2,
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.three - 4,
+    paddingVertical: Spacing.three,
+    borderTopWidth: StyleSheet.hairlineWidth,
   },
   expensesText: {
     flex: 1,
     gap: 2,
   },
-  cardTop: {
+  rowTop: {
     flexDirection: 'row',
     alignItems: 'flex-start',
     gap: Spacing.three,
   },
-  cardHeading: {
+  rowHeading: {
     flex: 1,
     gap: 2,
   },
-  cardTitle: {
+  rowTitle: {
     fontFamily: Fonts.display,
     fontSize: 25,
     lineHeight: 29,
@@ -279,7 +279,7 @@ const styles = StyleSheet.create({
   },
   empty: {
     gap: Spacing.two + 4,
-    paddingVertical: Spacing.four,
+    paddingTop: Spacing.three,
   },
   emptyTitle: {
     fontFamily: Fonts.display,
