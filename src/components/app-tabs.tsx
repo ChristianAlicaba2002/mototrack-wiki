@@ -1,48 +1,38 @@
 import { NativeTabs } from 'expo-router/native-tabs';
-import { useColorScheme } from 'react-native';
+import { StyleSheet, useColorScheme, View } from 'react-native';
 
+import { AppHeader } from '@/components/app-header';
+import { Tabs } from '@/constants/tabs';
 import { Colors } from '@/constants/theme';
+import { useActiveTab } from '@/hooks/use-active-tab';
 
-// Each tab needs an icon per platform: `sf` (SF Symbol) for iOS and `md`
-// (Material Symbol) for Android. Each platform ignores the other's prop.
 export default function AppTabs() {
   const scheme = useColorScheme();
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
+  const activeTab = useActiveTab();
 
   return (
-    <NativeTabs
-      backgroundColor={colors.background}
-      indicatorColor={colors.backgroundSelected}
-      tintColor={colors.text}
-      // Android: always show every label. With 4+ tabs the default ("auto")
-      // hides unselected labels and shifts the active icon up; "labeled" keeps
-      // all tabs the same height with no shifting animation.
-      labelVisibilityMode="labeled"
-      labelStyle={{ selected: { color: colors.text } }}>
-      <NativeTabs.Trigger name="index">
-        <NativeTabs.Trigger.Label>Home</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon sf={{ default: 'house', selected: 'house.fill' }} md="home" />
-      </NativeTabs.Trigger>
-
-      <NativeTabs.Trigger name="garage">
-        <NativeTabs.Trigger.Label>Garage</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon sf={{ default: 'motorcycle', selected: 'motorcycle.fill' }} md="two_wheeler" />
-      </NativeTabs.Trigger>
-
-      <NativeTabs.Trigger name="vault">
-        <NativeTabs.Trigger.Label>Vault</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon sf={{ default: 'folder', selected: 'folder.fill' }} md="folder_shared" />
-      </NativeTabs.Trigger>
-
-      <NativeTabs.Trigger name="wiki">
-        <NativeTabs.Trigger.Label>Wiki</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon sf={{ default: 'book', selected: 'book.fill' }} md="menu_book" />
-      </NativeTabs.Trigger>
-
-      <NativeTabs.Trigger name="ai-mechanic">
-        <NativeTabs.Trigger.Label>AI Mechanic</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon sf={{ default: 'wrench.and.screwdriver', selected: 'wrench.and.screwdriver.fill' }} md="build" />
-      </NativeTabs.Trigger>
-    </NativeTabs>
+    <View style={[styles.root, { backgroundColor: colors.background }]}>
+      <AppHeader title={activeTab.label} />
+      <NativeTabs
+        backgroundColor={colors.background}
+        indicatorColor={colors.backgroundSelected}
+        tintColor={colors.text}
+        labelVisibilityMode="labeled"
+        labelStyle={{ selected: { color: colors.text } }}>
+        {Tabs.map((tab) => (
+          <NativeTabs.Trigger key={tab.name} name={tab.name}>
+            <NativeTabs.Trigger.Label>{tab.label}</NativeTabs.Trigger.Label>
+            <NativeTabs.Trigger.Icon sf={tab.sf} md={tab.md} />
+          </NativeTabs.Trigger>
+        ))}
+      </NativeTabs>
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  root: {
+    flex: 1,
+  },
+});
