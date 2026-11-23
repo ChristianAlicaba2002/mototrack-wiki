@@ -1,6 +1,6 @@
 import Svg, { Circle, Path, Rect } from 'react-native-svg';
 
-type IconProps = { size?: number; color: string };
+export type IconProps = { size?: number; color: string };
 
 const stroke = (color: string) =>
   ({
@@ -195,6 +195,33 @@ export function NoteIcon({ size, color }: IconProps) {
     <Icon size={size}>
       <Rect x={4.5} y={3.5} width={15} height={17} rx={2.5} {...stroke(color)} />
       <Path d="M8.5 8.5h7M8.5 12h7M8.5 15.5h4" {...stroke(color)} />
+    </Icon>
+  );
+}
+
+export function HomeIcon({ size, color }: IconProps) {
+  return (
+    <Icon size={size}>
+      <Path d="M4 10.5 12 4l8 6.5V19a1.5 1.5 0 0 1-1.5 1.5H15v-6H9v6H5.5A1.5 1.5 0 0 1 4 19z" {...stroke(color)} />
+    </Icon>
+  );
+}
+
+export function VaultIcon({ size, color }: IconProps) {
+  return (
+    <Icon size={size}>
+      <Rect x={3.5} y={4} width={17} height={15} rx={2.5} {...stroke(color)} />
+      <Circle cx={12} cy={11.5} r={3} {...stroke(color)} />
+      <Path d="M12 8.5v1M7 19v1.5M17 19v1.5" {...stroke(color)} />
+    </Icon>
+  );
+}
+
+export function BookIcon({ size, color }: IconProps) {
+  return (
+    <Icon size={size}>
+      <Path d="M12 6.5C10.5 5 8 4.5 4 4.5v14c4 0 6.5.5 8 2 1.5-1.5 4-2 8-2v-14c-4 0-6.5.5-8 2z" {...stroke(color)} />
+      <Path d="M12 6.5v14" {...stroke(color)} />
     </Icon>
   );
 }
