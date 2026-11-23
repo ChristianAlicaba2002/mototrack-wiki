@@ -17,7 +17,7 @@ import type {
   ServiceRecord,
   UserProfile,
   VaultDocument,
-  WikiArticle,
+  WikiDoc,
 } from './types';
 
 /** A document's data plus its id. */
@@ -59,4 +59,4 @@ export const chatsCollection = (uid: string) =>
 export const messagesCollection = (uid: string, chatId: string) =>
   collection(db, 'users', uid, 'chats', chatId, 'messages').withConverter(converter<ChatMessage>());
 
-export const wikiCollection = () => collection(db, 'wiki').withConverter(converter<WikiArticle>());
+export const wikiCollection = () => collection(db, 'wiki').withConverter(converter<WikiDoc>());
