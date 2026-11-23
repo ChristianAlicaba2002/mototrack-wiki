@@ -1,0 +1,92 @@
+{
+  "kind": "spec",
+  "title": "Honda BeAT",
+  "make": "Honda",
+  "model": "BeAT",
+  "aliases": [],
+  "yearFrom": 2020,
+  "yearTo": null,
+  "engineCc": 110,
+  "keywords": [
+    "scooter",
+    "automatic",
+    "air-cooled",
+    "beat fi"
+  ],
+  "fluids": {
+    "engineOil": {
+      "grade": "SAE 10W-30, JASO MB",
+      "capacityL": 0.65
+    },
+    "gearOil": {
+      "grade": "SAE 10W-30",
+      "capacityL": 0.1
+    },
+    "coolant": null,
+    "brakeFluid": "DOT 3"
+  },
+  "tirePressure": {
+    "front": {
+      "soloPsi": 29,
+      "passengerPsi": 29
+    },
+    "rear": {
+      "soloPsi": 33,
+      "passengerPsi": 36
+    }
+  },
+  "torque": [
+    {
+      "item": "Engine oil drain bolt",
+      "nm": 24
+    },
+    {
+      "item": "Final drive oil drain bolt",
+      "nm": 13
+    },
+    {
+      "item": "Spark plug",
+      "nm": 16
+    },
+    {
+      "item": "Front axle nut",
+      "nm": 49
+    },
+    {
+      "item": "Rear axle nut",
+      "nm": 118
+    }
+  ],
+  "intervals": [
+    {
+      "item": "Engine oil",
+      "everyKm": 4000,
+      "everyMonths": 6
+    },
+    {
+      "item": "Final drive oil",
+      "everyKm": 8000,
+      "everyMonths": 12
+    },
+    {
+      "item": "Air filter",
+      "everyKm": 16000,
+      "everyMonths": null
+    },
+    {
+      "item": "Spark plug",
+      "everyKm": 16000,
+      "everyMonths": null
+    },
+    {
+      "item": "Drive belt",
+      "everyKm": 24000,
+      "everyMonths": null
+    },
+    {
+      "item": "Brake fluid",
+      "everyKm": null,
+      "everyMonths": 24
+    }
+  ]
+}

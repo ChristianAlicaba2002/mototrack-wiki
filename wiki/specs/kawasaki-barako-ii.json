@@ -1,0 +1,93 @@
+{
+  "kind": "spec",
+  "title": "Kawasaki Barako II",
+  "make": "Kawasaki",
+  "model": "Barako II",
+  "aliases": [
+    "Barako"
+  ],
+  "yearFrom": 2009,
+  "yearTo": null,
+  "engineCc": 177,
+  "keywords": [
+    "business",
+    "manual",
+    "chain",
+    "air-cooled",
+    "tricycle",
+    "barako 175"
+  ],
+  "fluids": {
+    "engineOil": {
+      "grade": "SAE 20W-50, JASO MA",
+      "capacityL": 1.0
+    },
+    "gearOil": null,
+    "coolant": null,
+    "brakeFluid": "DOT 3"
+  },
+  "tirePressure": {
+    "front": {
+      "soloPsi": 29,
+      "passengerPsi": 29
+    },
+    "rear": {
+      "soloPsi": 33,
+      "passengerPsi": 36
+    }
+  },
+  "torque": [
+    {
+      "item": "Engine oil drain plug",
+      "nm": 20
+    },
+    {
+      "item": "Spark plug",
+      "nm": 14
+    },
+    {
+      "item": "Front axle nut",
+      "nm": 49
+    },
+    {
+      "item": "Rear axle nut",
+      "nm": 69
+    },
+    {
+      "item": "Rear sprocket nut",
+      "nm": 34
+    }
+  ],
+  "intervals": [
+    {
+      "item": "Engine oil",
+      "everyKm": 2000,
+      "everyMonths": 6
+    },
+    {
+      "item": "Chain clean and lube",
+      "everyKm": 1000,
+      "everyMonths": null
+    },
+    {
+      "item": "Air filter",
+      "everyKm": 6000,
+      "everyMonths": null
+    },
+    {
+      "item": "Spark plug",
+      "everyKm": 6000,
+      "everyMonths": null
+    },
+    {
+      "item": "Valve clearance",
+      "everyKm": 6000,
+      "everyMonths": null
+    },
+    {
+      "item": "Brake fluid",
+      "everyKm": null,
+      "everyMonths": 24
+    }
+  ]
+}

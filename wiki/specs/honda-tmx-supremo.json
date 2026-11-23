@@ -1,0 +1,92 @@
+{
+  "kind": "spec",
+  "title": "Honda TMX Supremo",
+  "make": "Honda",
+  "model": "TMX Supremo",
+  "aliases": [
+    "TMX 150"
+  ],
+  "yearFrom": 2016,
+  "yearTo": null,
+  "engineCc": 149,
+  "keywords": [
+    "business",
+    "manual",
+    "chain",
+    "air-cooled",
+    "tricycle"
+  ],
+  "fluids": {
+    "engineOil": {
+      "grade": "SAE 10W-30, JASO MA",
+      "capacityL": 1.0
+    },
+    "gearOil": null,
+    "coolant": null,
+    "brakeFluid": "DOT 3"
+  },
+  "tirePressure": {
+    "front": {
+      "soloPsi": 25,
+      "passengerPsi": 25
+    },
+    "rear": {
+      "soloPsi": 29,
+      "passengerPsi": 33
+    }
+  },
+  "torque": [
+    {
+      "item": "Engine oil drain bolt",
+      "nm": 24
+    },
+    {
+      "item": "Spark plug",
+      "nm": 12
+    },
+    {
+      "item": "Front axle nut",
+      "nm": 59
+    },
+    {
+      "item": "Rear axle nut",
+      "nm": 88
+    },
+    {
+      "item": "Rear sprocket nut",
+      "nm": 32
+    }
+  ],
+  "intervals": [
+    {
+      "item": "Engine oil",
+      "everyKm": 2000,
+      "everyMonths": 6
+    },
+    {
+      "item": "Chain clean and lube",
+      "everyKm": 1000,
+      "everyMonths": null
+    },
+    {
+      "item": "Air filter",
+      "everyKm": 8000,
+      "everyMonths": null
+    },
+    {
+      "item": "Spark plug",
+      "everyKm": 8000,
+      "everyMonths": null
+    },
+    {
+      "item": "Valve clearance",
+      "everyKm": 4000,
+      "everyMonths": null
+    },
+    {
+      "item": "Brake fluid",
+      "everyKm": null,
+      "everyMonths": 24
+    }
+  ]
+}
