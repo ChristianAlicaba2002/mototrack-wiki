@@ -1,3 +1,4 @@
+import { Fragment } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -6,19 +7,19 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Fonts, Spacing } from '@/constants/theme';
 import { bikeDisplayName } from '@/features/garage/model/active-bike';
-import { ErrorMessage, IconButton, Panel, PanelHeading, Radius, ScreenHeader } from '@/features/garage/ui/controls';
+import { ErrorMessage, IconButton, Radius, Rule, ScreenHeader, Section } from '@/features/garage/ui/controls';
 import { formatCost } from '@/features/services/model/format';
 import { useTheme } from '@/hooks/use-theme';
 import type { WithId } from '@/lib/firestore/collections';
 import type { Bike } from '@/lib/firestore/types';
 
-import { type ExpenseLine, MONTHS_SHOWN } from '../model/expense-summary';
+import { type ExpenseLine, MONTHS_SHOWN, type MonthLine } from '../model/expense-summary';
 import { EXPENSE_SERVICE_LIMIT, type ExpenseSummaryViewModel } from '../model/expense-summary-view-model';
 
 const CONTENT_MAX_WIDTH = 560;
-const BAR_HEIGHT = 6;
+const BAR_HEIGHT = 3;
+const CHART_HEIGHT = 112;
 
-/** Presentational only — all state and actions come from the view model. */
 export function ExpenseSummaryView({
   loading,
   error,
@@ -43,6 +44,7 @@ export function ExpenseSummaryView({
           leading={
             <IconButton
               accessibilityLabel="Back"
+              variant="plain"
               onPress={back}
               icon={(c) => <ChevronLeftIcon size={22} color={c} />}
             />
@@ -61,23 +63,27 @@ export function ExpenseSummaryView({
               !error && <EmptySummary filtered={selectedBike !== undefined} />
             ) : (
               <>
-                <Totals total={summary.total} count={summary.count} thisMonth={thisMonth.total} />
+                <Total total={summary.total} count={summary.count} thisMonth={thisMonth.total} />
+
+                <Section title={`Last ${MONTHS_SHOWN} months`} plain>
+                  <MonthChart months={summary.byMonth} />
+                  {summary.olderTotal > 0 ? (
+                    <ThemedText type="small" themeColor="textSecondary">
+                      {formatCost(summary.olderTotal)} more was spent outside these months (before{' '}
+                      {oldestShown.label}).
+                    </ThemedText>
+                  ) : null}
+                </Section>
 
                 {selectedBikeId === null && bikes.length > 1 && (
-                  <Breakdown title="By motorcycle" lines={summary.byBike} />
+                  <Section title="By motorcycle" plain>
+                    <Breakdown lines={summary.byBike} />
+                  </Section>
                 )}
 
-                <Breakdown title="By service type" lines={summary.byType} />
-
-                <Breakdown
-                  title={`By month · last ${MONTHS_SHOWN} months`}
-                  lines={summary.byMonth}
-                  footnote={
-                    summary.olderTotal > 0
-                      ? `${formatCost(summary.olderTotal)} more was spent outside these months (before ${oldestShown.label}).`
-                      : undefined
-                  }
-                />
+                <Section title="By service type" plain>
+                  <Breakdown lines={summary.byType} />
+                </Section>
 
                 <Notes withoutCost={summary.withoutCost} isTruncated={isTruncated} />
               </>
@@ -95,7 +101,6 @@ type BikeFilterProps = {
   onSelect: (bikeId: string | null) => void;
 };
 
-/** "All" plus one chip per bike. Scrolls sideways when there are many. */
 function BikeFilter({ bikes, selectedId, onSelect }: BikeFilterProps) {
   return (
     <ScrollView
@@ -138,86 +143,142 @@ function Chip({ label, selected, onPress }: { label: string; selected: boolean; 
   );
 }
 
-/** Headline numbers as a ruled strip, matching the service log. */
-function Totals({ total, count, thisMonth }: { total: number; count: number; thisMonth: number }) {
-  const theme = useTheme();
+function Total({ total, count, thisMonth }: { total: number; count: number; thisMonth: number }) {
+  const entries = `${count} ${count === 1 ? 'entry' : 'entries'}`;
+  const month = `${formatCost(thisMonth)} this month`;
   return (
-    <View style={[styles.totals, { borderColor: theme.text }]}>
-      <Stat label="Spent" value={formatCost(total)} />
-      <View style={[styles.totalsDivider, { backgroundColor: theme.line }]} />
-      <Stat label={count === 1 ? 'Entry' : 'Entries'} value={String(count)} />
-      <View style={[styles.totalsDivider, { backgroundColor: theme.line }]} />
-      <Stat label="This month" value={formatCost(thisMonth)} />
+    <View style={styles.total} accessible accessibilityLabel={`Total spent: ${formatCost(total)}, ${entries}, ${month}`}>
+      <ThemedText type="eyebrow" themeColor="textSecondary">
+        Total spent
+      </ThemedText>
+      <ThemedText style={styles.totalValue} numberOfLines={1} adjustsFontSizeToFit>
+        {formatCost(total)}
+      </ThemedText>
+      <ThemedText type="readout" themeColor="textSecondary">
+        {entries} · {month}
+      </ThemedText>
     </View>
   );
 }
 
-function Stat({ label, value }: { label: string; value: string }) {
+function monthShort(line: MonthLine): string {
+  return new Date(line.year, line.month, 1).toLocaleDateString(undefined, { month: 'short' });
+}
+
+function MonthChart({ months }: { months: MonthLine[] }) {
+  const theme = useTheme();
+  const ordered = [...months].reverse();
+  const max = ordered.reduce((m, l) => Math.max(m, l.total), 0);
+  const shownTotal = ordered.reduce((sum, l) => sum + l.total, 0);
+  const average = shownTotal / ordered.length;
+  const highest = ordered.reduce<MonthLine | null>((best, l) => (l.total > (best?.total ?? 0) ? l : best), null);
+  const current = months[0];
+
   return (
-    <View style={styles.stat} accessible accessibilityLabel={`${label}: ${value}`}>
-      <ThemedText type="eyebrow" themeColor="textSecondary">
+    <View style={styles.chartBlock}>
+      <View
+        accessible
+        accessibilityLabel={months
+          .map((l) => `${l.label}: ${l.total > 0 ? formatCost(l.total) : 'nothing spent'}`)
+          .join(', ')}>
+        <View style={[styles.chart, { borderBottomColor: theme.line }]}>
+          {ordered.map((line) => {
+            const height = max > 0 ? (line.total / max) * CHART_HEIGHT : 0;
+            const isCurrent = line.key === current.key;
+            return (
+              <View key={line.key} style={styles.column}>
+                {line.total > 0 ? (
+                  <View
+                    style={[
+                      styles.columnBar,
+                      { height: Math.max(height, 2), backgroundColor: isCurrent ? theme.brand : theme.accent },
+                    ]}
+                  />
+                ) : null}
+              </View>
+            );
+          })}
+        </View>
+        <View style={styles.chartLabels}>
+          {ordered.map((line) => (
+            <ThemedText
+              key={line.key}
+              type="readout"
+              themeColor={line.key === current.key ? 'text' : 'textSecondary'}
+              style={styles.chartLabel}
+              numberOfLines={1}>
+              {monthShort(line)}
+            </ThemedText>
+          ))}
+        </View>
+      </View>
+
+      <View style={styles.chartStats}>
+        <ChartStat label="Monthly average" value={formatCost(average)} />
+        <ChartStat
+          label={highest ? `Highest · ${highest.label}` : 'Highest'}
+          value={highest ? formatCost(highest.total) : '—'}
+        />
+      </View>
+    </View>
+  );
+}
+
+function ChartStat({ label, value }: { label: string; value: string }) {
+  return (
+    <View style={styles.chartStat} accessible accessibilityLabel={`${label}: ${value}`}>
+      <ThemedText type="eyebrow" themeColor="textSecondary" numberOfLines={1}>
         {label}
       </ThemedText>
-      <ThemedText type="readout" style={styles.statValue} numberOfLines={1} adjustsFontSizeToFit>
+      <ThemedText type="readout" style={styles.chartStatValue} numberOfLines={1}>
         {value}
       </ThemedText>
     </View>
   );
 }
 
-/** A titled list of totals, each with a bar scaled to the largest one in the list. */
-function Breakdown({ title, lines, footnote }: { title: string; lines: ExpenseLine[]; footnote?: string }) {
+function Breakdown({ lines }: { lines: ExpenseLine[] }) {
   const max = lines.reduce((m, l) => Math.max(m, l.total), 0);
   return (
-    <Panel>
-      <PanelHeading title={title} />
-      <View style={styles.lines}>
-        {lines.map((line) => (
-          <BarRow key={line.key} line={line} max={max} />
-        ))}
-      </View>
-      {footnote ? (
-        <ThemedText type="small" themeColor="textSecondary">
-          {footnote}
-        </ThemedText>
-      ) : null}
-    </Panel>
+    <View>
+      {lines.map((line, i) => (
+        <Fragment key={line.key}>
+          {i > 0 ? <Rule /> : null}
+          <BreakdownRow line={line} max={max} />
+        </Fragment>
+      ))}
+    </View>
   );
 }
 
-function BarRow({ line, max }: { line: ExpenseLine; max: number }) {
+function BreakdownRow({ line, max }: { line: ExpenseLine; max: number }) {
   const theme = useTheme();
-  const empty = line.count === 0;
   const percent = Math.round(line.share * 100);
   const entries = `${line.count} ${line.count === 1 ? 'entry' : 'entries'}`;
   const width = max > 0 ? `${(line.total / max) * 100}%` : '0%';
 
   return (
     <View
-      style={[styles.line, empty && styles.lineEmpty]}
+      style={styles.row}
       accessible
-      accessibilityLabel={
-        empty
-          ? `${line.label}: nothing logged`
-          : `${line.label}: ${formatCost(line.total)}, ${percent} percent, ${entries}`
-      }>
-      <View style={styles.lineTop}>
-        <ThemedText type="smallBold" style={styles.lineLabel} numberOfLines={1}>
+      accessibilityLabel={`${line.label}: ${formatCost(line.total)}, ${percent} percent, ${entries}`}>
+      <View style={styles.rowTop}>
+        <ThemedText type="smallBold" style={styles.rowLabel} numberOfLines={1}>
           {line.label}
         </ThemedText>
-        <ThemedText type="readout" style={styles.lineAmount}>
-          {empty ? '—' : formatCost(line.total)}
+        <ThemedText type="readout" style={styles.rowAmount}>
+          {formatCost(line.total)}
         </ThemedText>
       </View>
-      <View style={[styles.track, { backgroundColor: theme.backgroundSelected }]}>
-        <View style={[styles.bar, { width: width as `${number}%`, backgroundColor: theme.accent }]} />
-      </View>
-      {!empty && (
-        <ThemedText type="readout" themeColor="textSecondary" style={styles.lineMeta}>
+      <View style={styles.rowBottom}>
+        <View style={[styles.track, { backgroundColor: theme.backgroundSelected }]}>
+          <View style={[styles.bar, { width: width as `${number}%`, backgroundColor: theme.accent }]} />
+        </View>
+        <ThemedText type="readout" themeColor="textSecondary" style={styles.rowMeta}>
           {entries}
           {line.total > 0 ? ` · ${percent}%` : ''}
         </ThemedText>
-      )}
+      </View>
     </View>
   );
 }
@@ -243,17 +304,17 @@ function Notes({ withoutCost, isTruncated }: { withoutCost: number; isTruncated:
 
 function EmptySummary({ filtered }: { filtered: boolean }) {
   return (
-    <Panel style={styles.empty}>
+    <View style={styles.empty}>
       <ThemedText type="eyebrow" themeColor="textSecondary">
-        {formatCost(0)}
+        Total spent
       </ThemedText>
-      <ThemedText style={styles.emptyTitle}>Nothing spent yet.</ThemedText>
+      <ThemedText style={styles.totalValue}>{formatCost(0)}</ThemedText>
       <ThemedText type="small" themeColor="textSecondary">
         {filtered
           ? 'No services are logged for this motorcycle. Add one from its service log, with what it cost.'
-          : 'Log a service with its cost and the totals show up here, by bike, by type and by month.'}
+          : 'Log a service with its cost and the totals show up here, by month, by bike and by type.'}
       </ThemedText>
-    </Panel>
+    </View>
   );
 }
 
@@ -265,7 +326,7 @@ const styles = StyleSheet.create({
     marginTop: Spacing.five,
   },
   content: {
-    gap: Spacing.three + 4,
+    gap: Spacing.four,
     paddingHorizontal: Spacing.three,
     paddingTop: Spacing.three + 4,
     paddingBottom: Spacing.six,
@@ -286,49 +347,80 @@ const styles = StyleSheet.create({
   pressed: {
     opacity: 0.75,
   },
-  totals: {
-    flexDirection: 'row',
-    borderTopWidth: 2,
-    borderBottomWidth: 2,
-    paddingVertical: Spacing.three - 4,
-  },
-  totalsDivider: {
-    width: StyleSheet.hairlineWidth,
-    alignSelf: 'stretch',
-  },
-  stat: {
-    flex: 1,
+  total: {
     gap: Spacing.one,
-    paddingHorizontal: Spacing.three - 4,
   },
-  statValue: {
-    fontFamily: Fonts.monoMedium,
-    fontSize: 17,
-    lineHeight: 22,
+  totalValue: {
+    fontFamily: Fonts.display,
+    fontSize: 52,
+    lineHeight: 56,
+    letterSpacing: -0.6,
   },
-  lines: {
+  chartBlock: {
+    gap: Spacing.three + 4,
+  },
+  chart: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    gap: Spacing.one,
+    height: CHART_HEIGHT,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  column: {
+    flex: 1,
+    justifyContent: 'flex-end',
+  },
+  columnBar: {
+    borderTopLeftRadius: 2,
+    borderTopRightRadius: 2,
+  },
+  chartLabels: {
+    flexDirection: 'row',
+    gap: Spacing.one,
+    marginTop: Spacing.two,
+  },
+  chartLabel: {
+    flex: 1,
+    fontSize: 10,
+    lineHeight: 14,
+    textAlign: 'center',
+  },
+  chartStats: {
+    flexDirection: 'row',
     gap: Spacing.three,
   },
-  line: {
-    gap: Spacing.one + 2,
+  chartStat: {
+    flex: 1,
+    gap: Spacing.one,
   },
-  lineEmpty: {
-    opacity: 0.5,
+  chartStatValue: {
+    fontFamily: Fonts.monoMedium,
+    fontSize: 16,
+    lineHeight: 22,
   },
-  lineTop: {
+  row: {
+    gap: Spacing.two,
+    paddingVertical: Spacing.three - 2,
+  },
+  rowTop: {
     flexDirection: 'row',
     alignItems: 'baseline',
     justifyContent: 'space-between',
     gap: Spacing.three,
   },
-  lineLabel: {
+  rowLabel: {
     flex: 1,
   },
-  lineAmount: {
+  rowAmount: {
     fontFamily: Fonts.monoMedium,
-
+  },
+  rowBottom: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.three,
   },
   track: {
+    flex: 1,
     height: BAR_HEIGHT,
     borderRadius: BAR_HEIGHT / 2,
     overflow: 'hidden',
@@ -337,22 +429,14 @@ const styles = StyleSheet.create({
     height: '100%',
     borderRadius: BAR_HEIGHT / 2,
   },
-  lineMeta: {
+  rowMeta: {
     fontSize: 12,
     lineHeight: 16,
   },
   notes: {
     gap: Spacing.one,
-    paddingHorizontal: Spacing.half,
   },
   empty: {
-    gap: Spacing.two + 4,
-    paddingVertical: Spacing.four,
-  },
-  emptyTitle: {
-    fontFamily: Fonts.display,
-    fontSize: 26,
-    lineHeight: 30,
-    letterSpacing: -0.2,
+    gap: Spacing.two,
   },
 });
