@@ -130,15 +130,81 @@ export type ChatMessage = {
   createdAt: Timestamp;
 };
 
-/** wiki/{articleId}: read-only reference content, managed outside the app. */
-export type WikiArticle = {
+export const WIKI_CATEGORIES = ['specs', 'fluids', 'tire_pressure', 'torque', 'diy'] as const;
+export type WikiCategory = (typeof WIKI_CATEGORIES)[number];
+
+export type WikiModelRef = {
+  key: string;
+  yearFrom: number | null;
+  yearTo: number | null;
+};
+
+type WikiDocBase = {
   title: string;
-  category: string;
-  summary: string;
-  /** Markdown. */
-  body: string;
-  tags: string[];
-  /** Storage path under wiki/, or null. */
-  coverImagePath: string | null;
+  category: WikiCategory;
+  models: WikiModelRef[];
+  searchText: string;
   updatedAt: Timestamp;
 };
+
+export type WikiFluid = {
+  grade: string;
+  capacityL: number;
+};
+
+export type WikiTirePressure = {
+  soloPsi: number;
+  passengerPsi: number;
+};
+
+export type WikiTorqueSpec = {
+  item: string;
+  nm: number;
+};
+
+export type WikiServiceInterval = {
+  item: string;
+  everyKm: number | null;
+  everyMonths: number | null;
+};
+
+export type WikiSpec = WikiDocBase & {
+  kind: 'spec';
+  make: string;
+  model: string;
+  yearFrom: number | null;
+  yearTo: number | null;
+  engineCc: number;
+  fluids: {
+    engineOil: WikiFluid;
+    gearOil: WikiFluid | null;
+    coolant: WikiFluid | null;
+    brakeFluid: string;
+  };
+  tirePressure: {
+    front: WikiTirePressure;
+    rear: WikiTirePressure;
+  };
+  torque: WikiTorqueSpec[];
+  intervals: WikiServiceInterval[];
+};
+
+export const WIKI_DIFFICULTIES = ['easy', 'moderate', 'advanced'] as const;
+export type WikiDifficulty = (typeof WIKI_DIFFICULTIES)[number];
+
+export type WikiGuideStep = {
+  text: string;
+  caution: string | null;
+};
+
+export type WikiGuide = WikiDocBase & {
+  kind: 'guide';
+  summary: string;
+  difficulty: WikiDifficulty;
+  minutes: number;
+  tools: string[];
+  parts: string[];
+  steps: WikiGuideStep[];
+};
+
+export type WikiDoc = WikiSpec | WikiGuide;
