@@ -29,7 +29,7 @@ import type { ServiceType } from '@/lib/firestore/types';
 import { CURRENCY_SYMBOL } from '../model/format';
 import {
   addDays,
-  parseDateInput,
+  sameDay,
   SERVICE_LIMITS,
   SERVICE_TYPE_LABELS,
   SERVICE_TYPE_ORDER,
@@ -37,6 +37,7 @@ import {
 } from '../model/service-form';
 import type { ServiceFormViewModel } from '../model/service-form-view-model';
 import { confirmDeleteService } from './confirm-delete';
+import { DateField } from './date-field';
 
 const FORM_MAX_WIDTH = 560;
 
@@ -47,6 +48,8 @@ export function ServiceFormView({
   values,
   errors,
   odometerHint,
+  minimumDate,
+  maximumDate,
   loadState,
   pending,
   error,
@@ -109,21 +112,23 @@ export function ServiceFormView({
 
               <Section title="When">
                 <View style={styles.field}>
-                  <FormField
+                  <DateField
                     label="Date"
-                  mono
                     value={values.date}
-                    onChangeText={(t) => setField('date', t)}
-                    onBlur={() => blurField('date')}
+                    minimumDate={minimumDate}
+                    maximumDate={maximumDate}
+                    onChange={setDate}
+                    onClose={() => blurField('date')}
                     error={errors.date}
-                    hint="YYYY-MM-DD"
-                    placeholder="2026-11-18"
-                    keyboardType="numbers-and-punctuation"
-                    autoCorrect={false}
-                    maxLength={10}
-                    editable={!busy}
+                    hint="The day the work was done."
+                    disabled={busy}
                   />
-                  <DateShortcuts value={values.date} onPick={setDate} disabled={busy} />
+                  <DateShortcuts
+                    value={values.date}
+                    minimumDate={minimumDate}
+                    onPick={setDate}
+                    disabled={busy}
+                  />
                 </View>
                 <FormField
                   label="Odometer"
@@ -241,30 +246,31 @@ function TypePicker({
 
 function DateShortcuts({
   value,
+  minimumDate,
   onPick,
   disabled,
 }: {
-  value: string;
+  value: Date;
+  minimumDate: Date;
   onPick: (date: Date) => void;
   disabled: boolean;
 }) {
   const today = startOfDay(new Date());
   const yesterday = addDays(today, -1);
-  const current = parseDateInput(value)?.getTime();
   return (
     <View style={styles.pills}>
       <Pill
         label="Today"
-        selected={current === today.getTime()}
+        selected={sameDay(value, today)}
         onPress={() => onPick(today)}
         disabled={disabled}
         role="button"
       />
       <Pill
         label="Yesterday"
-        selected={current === yesterday.getTime()}
+        selected={sameDay(value, yesterday)}
         onPress={() => onPick(yesterday)}
-        disabled={disabled}
+        disabled={disabled || yesterday < minimumDate}
         role="button"
       />
     </View>

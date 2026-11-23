@@ -17,3 +17,7 @@ export function formatCost(amount: number): string {
 export function formatServiceDate(date: Timestamp): string {
   return date.toDate().toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
 }
+
+export function formatLongDate(date: Date): string {
+  return date.toLocaleDateString(undefined, { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
+}
