@@ -1,0 +1,127 @@
+import type { ReactNode } from 'react';
+import { StyleSheet, View } from 'react-native';
+
+import { TabScreen } from '@/components/screen/tab-screen';
+import { ThemedText } from '@/components/themed-text';
+import { Fonts, Spacing } from '@/constants/theme';
+import { ErrorMessage, TextAction } from '@/features/garage/ui/controls';
+
+import type { WikiViewModel } from '../model/wiki-view-model';
+import { SearchField } from './search-field';
+import { CategoryChips, MyBikeToggle } from './wiki-filters';
+import { GuideRow, MissingSpecNote, PinnedSpec, SpecRow, WikiList, WikiListSkeleton } from './wiki-rows';
+
+export function WikiView({
+  loading,
+  error,
+  isEmpty,
+  query,
+  setQuery,
+  category,
+  setCategory,
+  bikeName,
+  bikeModel,
+  myBikeOnly,
+  toggleMyBikeOnly,
+  hasFilters,
+  pinnedSpec,
+  specs,
+  guides,
+  missingSpec,
+  openSpec,
+  openGuide,
+  clearFilters,
+  refreshing,
+  refresh,
+}: WikiViewModel) {
+  const noResults = !pinnedSpec && specs.length === 0 && guides.length === 0;
+
+  return (
+    <TabScreen onRefresh={refresh} refreshing={refreshing} keyboardShouldPersistTaps="handled">
+      <SearchField value={query} onChangeText={setQuery} placeholder="Search specs, fluids, guides" />
+      <CategoryChips selected={category} onSelect={setCategory} />
+      {bikeName ? <MyBikeToggle bikeName={bikeName} value={myBikeOnly} onToggle={toggleMyBikeOnly} /> : null}
+
+      {error ? <ErrorMessage>{error}</ErrorMessage> : null}
+
+      {loading ? (
+        <WikiListSkeleton />
+      ) : isEmpty ? (
+        <EmptyState
+          eyebrow="Nothing here yet"
+          title="The wiki is empty."
+          message="Spec sheets and guides show up here once they are published. Pull down to check again."
+        />
+      ) : (
+        <>
+          {pinnedSpec ? <PinnedSpec spec={pinnedSpec} onPress={() => openSpec(pinnedSpec.id)} /> : null}
+          {missingSpec && bikeModel ? <MissingSpecNote bikeModel={bikeModel} /> : null}
+
+          {noResults && hasFilters ? (
+            <EmptyState
+              eyebrow="No matches"
+              title={query.trim() ? `Nothing matches “${query.trim()}”.` : 'Nothing matches these filters.'}
+              message="Try another word or a different category."
+              action={<TextAction label="Clear filters" onPress={clearFilters} />}
+            />
+          ) : null}
+
+          {specs.length > 0 ? (
+            <WikiList title="Spec sheets" count={specs.length}>
+              {specs.map((spec) => (
+                <SpecRow key={spec.id} spec={spec} category={category} onPress={() => openSpec(spec.id)} />
+              ))}
+            </WikiList>
+          ) : null}
+
+          {guides.length > 0 ? (
+            <WikiList title="Guides" count={guides.length}>
+              {guides.map((guide) => (
+                <GuideRow key={guide.id} guide={guide} onPress={() => openGuide(guide.id)} />
+              ))}
+            </WikiList>
+          ) : null}
+        </>
+      )}
+    </TabScreen>
+  );
+}
+
+type EmptyStateProps = {
+  eyebrow: string;
+  title: string;
+  message: string;
+  action?: ReactNode;
+};
+
+function EmptyState({ eyebrow, title, message, action }: EmptyStateProps) {
+  return (
+    <View style={styles.empty}>
+      <ThemedText type="eyebrow" themeColor="textSecondary">
+        {eyebrow}
+      </ThemedText>
+      <ThemedText style={styles.emptyTitle}>{title}</ThemedText>
+      <ThemedText type="small" themeColor="textSecondary">
+        {message}
+      </ThemedText>
+      {action ? <View style={styles.emptyAction}>{action}</View> : null}
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  empty: {
+    gap: Spacing.two,
+    paddingTop: Spacing.two,
+  },
+  emptyTitle: {
+    fontFamily: Fonts.display,
+    fontSize: 26,
+    lineHeight: 30,
+    letterSpacing: -0.2,
+  },
+  emptyAction: {
+    alignSelf: 'flex-start',
+    marginTop: Spacing.one,
+  },
+});
