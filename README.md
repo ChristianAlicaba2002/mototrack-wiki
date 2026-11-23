@@ -106,7 +106,7 @@ All user data lives under the signed-in user's own document. Firestore and Stora
 | `users/{uid}/documents/{documentId}` | Vault file metadata (registration, insurance, license, receipt) | Owner |
 | `users/{uid}/chats/{chatId}` | AI Mechanic conversation | Owner |
 | `users/{uid}/chats/{chatId}/messages/{messageId}` | Messages; append-only, the app writes only `user` messages | Owner |
-| `wiki/{articleId}` | Reference articles, managed outside the app | Read-only, signed-in users |
+| `wiki/{docId}` | Spec sheets and DIY guides, seeded from [`wiki/`](wiki/) | Read-only, signed-in users |
 
 Files in Cloud Storage use the same ids: bike photos go under `users/{uid}/bikes/{bikeId}/` (images, up to 5 MB) and vault files under `users/{uid}/documents/{documentId}/` (PDF or images, up to 10 MB). Wiki images go under `wiki/` and are read-only.
 
@@ -127,6 +127,18 @@ pnpm dlx firebase-tools@15.36.0 login
 pnpm dlx firebase-tools@15.36.0 deploy --only firestore:rules,firestore:indexes,storage
 ```
 
+## Seeding the wiki
+
+Wiki content lives as JSON in [`wiki/specs/`](wiki/specs/) (one spec sheet per model) and [`wiki/guides/`](wiki/guides/) (DIY guides). The file name is the document id, so re-running the seed updates docs in place. The script checks every file and builds `models` and `searchText` for you.
+
+```bash
+pnpm seed:wiki --dry-run                                  # validate the files only
+FIRESTORE_EMULATOR_HOST=127.0.0.1:8080 pnpm seed:wiki     # seed a running Firestore emulator
+pnpm seed:wiki                                            # seed the real project
+```
+
+Seeding the real project needs a service account key. Download one from Firebase console > Project settings > Service accounts, keep it out of the repo, and set `FIREBASE_SERVICE_ACCOUNT_PATH` in `.env` to its path.
+
 ## Available scripts
 
 | Script | Command | Description |
@@ -137,6 +149,7 @@ pnpm dlx firebase-tools@15.36.0 deploy --only firestore:rules,firestore:indexes,
 | `typecheck` | `tsc --noEmit` | Typecheck the project |
 | `doctor` | `expo-doctor` | Check dependencies and config |
 | `test:rules` | `firebase emulators:exec …` | Test Firestore and Storage security rules |
+| `seed:wiki` | `node scripts/seed-wiki.mjs` | Upsert the wiki seed files into Firestore |
 
 CI runs lint, typecheck, Expo Doctor, an Android JS bundle, and the security rules tests on every pull request to `develop` and `main`.
 
@@ -189,7 +202,7 @@ mototrack-wiki/
 - [x] App shell with Home, Garage, Vault, Wiki, and AI Mechanic tabs
 - [ ] Garage: add and manage motorcycles
 - [ ] Vault: store motorcycle documents
-- [ ] Wiki: reference content and search
+- [x] Wiki: reference content and search
 - [ ] AI Mechanic: troubleshooting chat
 - [ ] Custom app icon and splash branding
 
