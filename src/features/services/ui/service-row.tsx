@@ -1,6 +1,7 @@
 import { Fragment } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
+import { SkeletonText } from '@/components/skeleton';
 import { ThemedText } from '@/components/themed-text';
 import { Fonts, Spacing } from '@/constants/theme';
 import { formatKm } from '@/features/garage/model/odometer';
@@ -96,6 +97,44 @@ export function ServiceList({
   );
 }
 
+const SKELETON_ROWS = [
+  { title: '58%', detail: '42%', cost: 52 },
+  { title: '44%', detail: '54%', cost: 44 },
+  { title: '66%', detail: '36%', cost: 58 },
+] as const;
+
+export function ServiceRowSkeleton({ index = 0 }: { index?: number }) {
+  const theme = useTheme();
+  const widths = SKELETON_ROWS[index % SKELETON_ROWS.length];
+  return (
+    <View style={styles.row}>
+      <View style={[styles.stub, { borderRightColor: theme.line }]}>
+        <SkeletonText lineHeight={styles.day.lineHeight} fontSize={styles.day.fontSize} width={24} />
+        <SkeletonText lineHeight={14} fontSize={11} width={22} />
+        <SkeletonText lineHeight={styles.year.lineHeight} fontSize={styles.year.fontSize} width={26} />
+      </View>
+      <View style={styles.text}>
+        <SkeletonText lineHeight={20} fontSize={styles.title.fontSize} width={widths.title} />
+        <SkeletonText lineHeight={styles.detail.lineHeight} fontSize={styles.detail.fontSize} width={widths.detail} />
+      </View>
+      <SkeletonText lineHeight={20} fontSize={14} width={widths.cost} />
+    </View>
+  );
+}
+
+export function ServiceListSkeleton({ count }: { count: number }) {
+  return (
+    <View>
+      {Array.from({ length: count }, (_, i) => (
+        <Fragment key={i}>
+          {i > 0 ? <Rule /> : null}
+          <ServiceRowSkeleton index={i} />
+        </Fragment>
+      ))}
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
@@ -135,6 +174,5 @@ const styles = StyleSheet.create({
   },
   cost: {
     fontFamily: Fonts.monoMedium,
-
   },
 });

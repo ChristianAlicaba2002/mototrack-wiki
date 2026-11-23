@@ -2,6 +2,7 @@ import {
   deleteDoc,
   doc,
   getDoc,
+  getDocsFromServer,
   limit,
   onSnapshot,
   orderBy,
@@ -27,6 +28,9 @@ export type ServiceInput = Pick<ServiceRecord, 'bikeId' | 'type' | 'title' | 'od
 
 const serviceDoc = (uid: string, serviceId: string) => doc(servicesCollection(uid), serviceId);
 
+const bikeServicesQuery = (uid: string, bikeId: string, max: number) =>
+  query(servicesCollection(uid), where('bikeId', '==', bikeId), orderBy('date', 'desc'), limit(max));
+
 function toFields(input: ServiceInput) {
   return { ...input, date: Timestamp.fromDate(input.date) };
 }
@@ -42,13 +46,11 @@ export function subscribeToServices(
   onChange: (services: WithId<ServiceRecord>[]) => void,
   onError: (error: Error) => void
 ): Unsubscribe {
-  const q = query(
-    servicesCollection(uid),
-    where('bikeId', '==', bikeId),
-    orderBy('date', 'desc'),
-    limit(max)
-  );
-  return onSnapshot(q, (snapshot) => onChange(withIds(snapshot)), onError);
+  return onSnapshot(bikeServicesQuery(uid, bikeId, max), (snapshot) => onChange(withIds(snapshot)), onError);
+}
+
+export async function fetchServices(uid: string, bikeId: string, max: number): Promise<WithId<ServiceRecord>[]> {
+  return withIds(await getDocsFromServer(bikeServicesQuery(uid, bikeId, max)));
 }
 
 /**

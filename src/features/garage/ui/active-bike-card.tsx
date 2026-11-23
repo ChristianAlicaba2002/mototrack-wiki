@@ -1,27 +1,37 @@
 import { router } from 'expo-router';
-import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
+import { SkeletonBlock, SkeletonText } from '@/components/skeleton';
 import { ThemedText } from '@/components/themed-text';
 import { Fonts, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
+import type { WithId } from '@/lib/firestore/collections';
+import type { Bike } from '@/lib/firestore/types';
 
 import { bikeDisplayName } from '../model/active-bike';
 import { openOdometer } from '../model/garage-view-model';
-import { useGarageData } from '../model/use-garage-data';
-import { Button, ErrorMessage, OdometerReadout, Panel, TextAction } from './controls';
+import {
+  Button,
+  ButtonSkeleton,
+  ErrorMessage,
+  OdometerReadout,
+  OdometerReadoutSkeleton,
+  Panel,
+  TextAction,
+} from './controls';
+
+type ActiveBikeCardProps = {
+  bikes: WithId<Bike>[];
+  activeBike: WithId<Bike> | null;
+  loading: boolean;
+  error: string | null;
+};
 
 /** The bike the app is focused on, with a shortcut to update its odometer. */
-export function ActiveBikeCard() {
+export function ActiveBikeCard({ bikes, activeBike, loading, error }: ActiveBikeCardProps) {
   const theme = useTheme();
-  const { bikes, activeBike, loading, error } = useGarageData();
 
-  if (loading) {
-    return (
-      <Panel style={styles.loading}>
-        <ActivityIndicator color={theme.textSecondary} />
-      </Panel>
-    );
-  }
+  if (loading) return <ActiveBikeCardSkeleton />;
   if (error && !activeBike) return <ErrorMessage>{error}</ErrorMessage>;
 
   if (!activeBike) {
@@ -81,11 +91,33 @@ export function ActiveBikeCard() {
   );
 }
 
+function ActiveBikeCardSkeleton() {
+  return (
+    <View accessible accessibilityLabel="Loading your motorcycle" accessibilityState={{ busy: true }}>
+      <Panel>
+        <View style={styles.top}>
+          <View style={styles.kicker}>
+            <SkeletonBlock width={styles.mark.width} height={styles.mark.height} radius={0} />
+            <SkeletonText lineHeight={14} fontSize={11} width={84} />
+          </View>
+        </View>
+
+        <View style={styles.heading}>
+          <SkeletonText lineHeight={styles.title.lineHeight} fontSize={styles.title.fontSize} width="62%" />
+          <SkeletonText lineHeight={20} fontSize={14} width="46%" />
+        </View>
+
+        <View style={styles.readoutRow}>
+          <OdometerReadoutSkeleton size="lg" />
+        </View>
+
+        <ButtonSkeleton />
+      </Panel>
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
-  loading: {
-    minHeight: 220,
-    justifyContent: 'center',
-  },
   top: {
     flexDirection: 'row',
     alignItems: 'center',

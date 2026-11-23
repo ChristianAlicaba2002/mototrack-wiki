@@ -1,5 +1,5 @@
 import type { User } from 'firebase/auth';
-import { getDoc, onSnapshot, serverTimestamp, setDoc, type Unsubscribe, updateDoc } from 'firebase/firestore';
+import { getDoc, getDocFromServer, onSnapshot, serverTimestamp, setDoc, type Unsubscribe, updateDoc } from 'firebase/firestore';
 
 import { userDoc } from './collections';
 import type { UserProfile } from './types';
@@ -27,6 +27,10 @@ export function subscribeToUserProfile(
   onError: (error: Error) => void
 ): Unsubscribe {
   return onSnapshot(userDoc(uid), (snapshot) => onChange(snapshot.data() ?? null), onError);
+}
+
+export async function fetchUserProfile(uid: string): Promise<UserProfile | null> {
+  return (await getDocFromServer(userDoc(uid))).data() ?? null;
 }
 
 /** Makes bikeId the bike the app is focused on (null clears it). */

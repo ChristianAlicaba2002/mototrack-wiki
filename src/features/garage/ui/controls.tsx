@@ -10,6 +10,7 @@ import {
   type ViewStyle,
 } from 'react-native';
 
+import { SkeletonBlock, SkeletonText } from '@/components/skeleton';
 import { ThemedText } from '@/components/themed-text';
 import { Fonts, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
@@ -165,6 +166,16 @@ export function OdometerReadout({ km, digits = 6, size = 'md' }: OdometerReadout
   );
 }
 
+export function OdometerReadoutSkeleton({ digits = 6, size = 'md' }: Omit<OdometerReadoutProps, 'km'>) {
+  const dims = size === 'lg' ? styles.wheelLg : styles.wheelMd;
+  return (
+    <View style={styles.readout}>
+      <SkeletonBlock width={dims.width * digits} height={dims.height} radius={4} />
+      <SkeletonText lineHeight={14} fontSize={11} width={16} />
+    </View>
+  );
+}
+
 // ---------- FormField ----------
 
 type FormFieldProps = Omit<TextInputProps, 'style'> & {
@@ -299,6 +310,10 @@ export function Button({ label, onPress, variant = 'primary', icon, disabled, lo
       )}
     </Pressable>
   );
+}
+
+export function ButtonSkeleton() {
+  return <SkeletonBlock height={styles.button.height} radius={styles.button.borderRadius} />;
 }
 
 /** Inline text button: underlined label, no box. */
