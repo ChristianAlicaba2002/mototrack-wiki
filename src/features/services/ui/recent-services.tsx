@@ -6,7 +6,7 @@ import { useGarageData } from '@/features/garage/model/use-garage-data';
 import { Button, ErrorMessage, PanelHeading, TextAction } from '@/features/garage/ui/controls';
 import { useTheme } from '@/hooks/use-theme';
 
-import { openServiceForm, openServiceLog } from '../model/navigation';
+import { openServiceDetail, openServiceForm, openServiceLog } from '../model/navigation';
 import { useBikeServices } from '../model/use-bike-services';
 import { ServiceList } from './service-row';
 
@@ -42,7 +42,7 @@ export function RecentServices() {
           No entries yet. Oil, brakes, chain, tires — write it down the day you do it.
         </ThemedText>
       ) : (
-        <ServiceList services={services} onOpen={(id) => openServiceForm(bikeId, id)} />
+        <ServiceList services={services} onOpen={(id) => openServiceDetail(bikeId, id)} />
       )}
 
       <Button label="Log a service" variant="secondary" onPress={() => openServiceForm(bikeId)} />

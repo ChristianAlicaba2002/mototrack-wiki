@@ -8,7 +8,7 @@ import type { WithId } from '@/lib/firestore/collections';
 import { deleteService } from '@/lib/firestore/services';
 import type { Bike } from '@/lib/firestore/types';
 
-import { closeServiceScreen, openServiceForm } from './navigation';
+import { closeServiceScreen, openServiceDetail, openServiceForm } from './navigation';
 import { buildTimeline } from './service-timeline';
 import { totalCost, useBikeServices } from './use-bike-services';
 
@@ -73,6 +73,7 @@ export function useServiceLogViewModel(bikeId: string) {
     deletingId,
     error: actionError ?? bikeError ?? servicesError,
     addService: () => openServiceForm(bikeId),
+    viewService: (serviceId: string) => openServiceDetail(bikeId, serviceId),
     editService: (serviceId: string) => openServiceForm(bikeId, serviceId),
     removeService,
     back: closeServiceScreen,

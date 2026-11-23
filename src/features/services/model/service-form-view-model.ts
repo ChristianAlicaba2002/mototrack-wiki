@@ -7,7 +7,7 @@ import { formatKm } from '@/features/garage/model/odometer';
 import { useAuth } from '@/hooks/use-auth';
 import { subscribeToBike } from '@/lib/firestore/bikes';
 import type { WithId } from '@/lib/firestore/collections';
-import { createService, deleteService, getService, updateService } from '@/lib/firestore/services';
+import { createService, getService, updateService } from '@/lib/firestore/services';
 import type { Bike, ServiceType } from '@/lib/firestore/types';
 
 import { closeServiceScreen } from './navigation';
@@ -24,7 +24,7 @@ import {
 } from './service-form';
 
 export type ServiceFormLoadState = 'loading' | 'ready' | 'notFound' | 'error';
-export type ServiceFormPending = 'save' | 'delete' | null;
+export type ServiceFormPending = 'save' | null;
 
 /** Log a new service for a bike (no serviceId), or edit / delete one. */
 export function useServiceFormViewModel(bikeId: string, serviceId: string | undefined) {
@@ -150,21 +150,6 @@ export function useServiceFormViewModel(bikeId: string, serviceId: string | unde
     }
   }
 
-  /** Deletes without asking; the view confirms first. */
-  async function remove() {
-    if (!uid || !serviceId || pending) return;
-    setPending('delete');
-    setError(null);
-    try {
-      await deleteService(uid, serviceId);
-      closeServiceScreen();
-    } catch (e) {
-      setError(toGarageErrorMessage(e));
-    } finally {
-      setPending(null);
-    }
-  }
-
   return {
     isEdit,
     bikeName,
@@ -181,7 +166,6 @@ export function useServiceFormViewModel(bikeId: string, serviceId: string | unde
     setDate,
     blurField,
     save,
-    remove,
     cancel: closeServiceScreen,
   };
 }
