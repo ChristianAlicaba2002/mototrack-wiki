@@ -12,11 +12,13 @@ import type { Bike, ServiceType } from '@/lib/firestore/types';
 
 import { closeServiceScreen } from './navigation';
 import {
+  earliestServiceDate,
   emptyServiceForm,
+  latestServiceDate,
   type ServiceFormErrors,
   type ServiceFormField,
   type ServiceFormValues,
-  toDateInput,
+  startOfDay,
   toFormValues,
   validateServiceForm,
 } from './service-form';
@@ -93,7 +95,13 @@ export function useServiceFormViewModel(bikeId: string, serviceId: string | unde
           : 'loading'
         : 'ready';
 
-  const { errors, input } = useMemo(() => validateServiceForm(values, bikeId), [values, bikeId]);
+  const bikeYear = bike?.year;
+  const { errors, input } = useMemo(
+    () => validateServiceForm(values, bikeId, bikeYear),
+    [values, bikeId, bikeYear]
+  );
+  const minimumDate = useMemo(() => earliestServiceDate(bikeYear), [bikeYear]);
+  const maximumDate = latestServiceDate();
 
   // Show a field's error once the user has left it, or after they tried to save.
   const visibleErrors: ServiceFormErrors = {};
@@ -108,7 +116,7 @@ export function useServiceFormViewModel(bikeId: string, serviceId: string | unde
       ? `Saving also updates ${bikeName}’s odometer from ${formatKm(bike.odometerKm)} to ${formatKm(typedKm)} km.`
       : 'The reading on the dashboard when the work was done.';
 
-  function setField(field: Exclude<ServiceFormField, 'type'>, text: string) {
+  function setField(field: Exclude<ServiceFormField, 'type' | 'date'>, text: string) {
     setValues((v) => ({ ...v, [field]: text }));
   }
 
@@ -118,7 +126,7 @@ export function useServiceFormViewModel(bikeId: string, serviceId: string | unde
   }
 
   function setDate(date: Date) {
-    setValues((v) => ({ ...v, date: toDateInput(date) }));
+    setValues((v) => ({ ...v, date: startOfDay(date) }));
     setTouched((t) => ({ ...t, date: true }));
   }
 
@@ -163,6 +171,8 @@ export function useServiceFormViewModel(bikeId: string, serviceId: string | unde
     values,
     errors: visibleErrors,
     odometerHint,
+    minimumDate,
+    maximumDate,
     loadState,
     pending,
     error: error ?? loadError,

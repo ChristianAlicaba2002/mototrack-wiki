@@ -40,8 +40,7 @@ export const SERVICE_TYPE_ORDER: readonly ServiceType[] = [
 export type ServiceFormValues = {
   type: ServiceType | null;
   title: string;
-  /** YYYY-MM-DD */
-  date: string;
+  date: Date;
   odometerKm: string;
   cost: string;
   notes: string;
@@ -54,7 +53,7 @@ export function emptyServiceForm(today: Date = new Date(), odometerKm?: number):
   return {
     type: null,
     title: '',
-    date: toDateInput(today),
+    date: startOfDay(today),
     odometerKm: odometerKm === undefined ? '' : String(odometerKm),
     cost: '',
     notes: '',
@@ -66,7 +65,7 @@ export function toFormValues(service: ServiceRecord): ServiceFormValues {
     type: service.type,
     // A title equal to the type's label was filled in for the user; show it empty again.
     title: service.title === SERVICE_TYPE_LABELS[service.type] ? '' : service.title,
-    date: toDateInput(service.date.toDate()),
+    date: startOfDay(service.date.toDate()),
     odometerKm: String(service.odometerKm),
     cost: service.cost === null ? '' : String(service.cost),
     notes: service.notes ?? '',
@@ -80,29 +79,25 @@ export function serviceTitle(type: ServiceType, title: string): string {
 
 // ---------- Dates ----------
 
-const pad = (n: number) => String(n).padStart(2, '0');
-
-/** A local date as YYYY-MM-DD. */
-export function toDateInput(date: Date): string {
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
-}
-
-/** Parses YYYY-MM-DD to local midnight. Returns null for anything else, including 2026-02-30. */
-export function parseDateInput(text: string): Date | null {
-  const match = /^(\d{4})-(\d{1,2})-(\d{1,2})$/.exec(text.trim());
-  if (!match) return null;
-  const [year, month, day] = match.slice(1).map(Number);
-  const date = new Date(year, month - 1, day);
-  const valid = date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day;
-  return valid ? date : null;
-}
-
 export function startOfDay(date: Date): Date {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate());
 }
 
 export function addDays(date: Date, days: number): Date {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate() + days);
+}
+
+export function earliestServiceDate(bikeYear?: number): Date {
+  const year = bikeYear === undefined ? SERVICE_LIMITS.yearMin : Math.max(SERVICE_LIMITS.yearMin, bikeYear - 1);
+  return new Date(year, 0, 1);
+}
+
+export function latestServiceDate(now: Date = new Date()): Date {
+  return startOfDay(now);
+}
+
+export function sameDay(a: Date, b: Date): boolean {
+  return startOfDay(a).getTime() === startOfDay(b).getTime();
 }
 
 // ---------- Cost ----------
@@ -120,6 +115,7 @@ export function parseCost(text: string): number | null {
 export function validateServiceForm(
   values: ServiceFormValues,
   bikeId: string,
+  bikeYear?: number,
   now: Date = new Date()
 ): { errors: ServiceFormErrors; input: ServiceInput | null } {
   const errors: ServiceFormErrors = {};
@@ -131,14 +127,17 @@ export function validateServiceForm(
     errors.title = `Keep the title under ${SERVICE_LIMITS.titleMax} characters.`;
   }
 
-  let date: Date | null = null;
-  if (values.date.trim().length === 0) {
-    errors.date = 'Enter the date of the service.';
-  } else {
-    date = parseDateInput(values.date);
-    if (date === null) errors.date = 'Use the format YYYY-MM-DD, e.g. 2026-11-18.';
-    else if (date > startOfDay(now)) errors.date = 'The date can’t be in the future.';
-    else if (date.getFullYear() < SERVICE_LIMITS.yearMin) errors.date = `The date must be after ${SERVICE_LIMITS.yearMin}.`;
+  const date = Number.isNaN(values.date.getTime()) ? null : startOfDay(values.date);
+  const earliest = earliestServiceDate(bikeYear);
+  if (date === null) {
+    errors.date = 'Pick the date of the service.';
+  } else if (date > latestServiceDate(now)) {
+    errors.date = 'The date can’t be in the future.';
+  } else if (date < earliest) {
+    errors.date =
+      bikeYear === undefined || earliest.getFullYear() === SERVICE_LIMITS.yearMin
+        ? `The date can’t be before ${SERVICE_LIMITS.yearMin}.`
+        : `A ${bikeYear} model can’t have been serviced before ${earliest.getFullYear()}.`;
   }
 
   let odometerKm: number | null = null;
