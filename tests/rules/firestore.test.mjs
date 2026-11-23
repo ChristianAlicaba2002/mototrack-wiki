@@ -13,6 +13,7 @@ import {
   deleteDoc,
   doc,
   getDoc,
+  getDocs,
   serverTimestamp,
   setDoc,
   Timestamp,
@@ -431,19 +432,51 @@ describe('users/{uid}/chats and messages', () => {
 
 describe('wiki', () => {
   test('signed-in users can read; nobody can write', async () => {
-    await seed('wiki/chain-maintenance', {
-      title: 'Chain maintenance',
-      category: 'maintenance',
-      summary: 'Clean and lube every 500 km.',
-      body: '# Chain maintenance',
-      tags: ['chain'],
-      coverImagePath: null,
+    await seed('wiki/chain-care', {
+      kind: 'guide',
+      title: 'Clean, lube and adjust the chain',
+      category: 'diy',
+      models: [],
+      summary: 'Clean and lube every 1,000 km.',
+      difficulty: 'easy',
+      minutes: 30,
+      tools: ['Chain brush'],
+      parts: ['Chain lube'],
+      steps: [{ text: 'Scrub the chain.', caution: null }],
+      searchText: 'chain lube diy guide',
       updatedAt: Timestamp.now(),
     });
-    await assertSucceeds(getDoc(doc(asAlice(), 'wiki/chain-maintenance')));
-    await assertFails(getDoc(doc(asGuest(), 'wiki/chain-maintenance')));
-    await assertFails(setDoc(doc(asAlice(), 'wiki/new'), { title: 'Mine' }));
-    await assertFails(deleteDoc(doc(asAlice(), 'wiki/chain-maintenance')));
+    await seed('wiki/honda-click-125i', {
+      kind: 'spec',
+      title: 'Honda Click 125i',
+      category: 'specs',
+      models: [{ key: 'honda:click125i', yearFrom: 2018, yearTo: null }],
+      make: 'Honda',
+      model: 'Click 125i',
+      yearFrom: 2018,
+      yearTo: null,
+      engineCc: 125,
+      fluids: {
+        engineOil: { grade: 'SAE 10W-30, JASO MB', capacityL: 0.8 },
+        gearOil: { grade: 'SAE 10W-30', capacityL: 0.12 },
+        coolant: null,
+        brakeFluid: 'DOT 3 or DOT 4',
+      },
+      tirePressure: {
+        front: { soloPsi: 29, passengerPsi: 29 },
+        rear: { soloPsi: 33, passengerPsi: 36 },
+      },
+      torque: [{ item: 'Engine oil drain bolt', nm: 24 }],
+      intervals: [{ item: 'Engine oil', everyKm: 4000, everyMonths: 6 }],
+      searchText: 'honda click 125i specs',
+      updatedAt: Timestamp.now(),
+    });
+    await assertSucceeds(getDoc(doc(asAlice(), 'wiki/chain-care')));
+    await assertSucceeds(getDocs(collection(asAlice(), 'wiki')));
+    await assertFails(getDoc(doc(asGuest(), 'wiki/honda-click-125i')));
+    await assertFails(setDoc(doc(asAlice(), 'wiki/new'), { kind: 'guide', title: 'Mine' }));
+    await assertFails(updateDoc(doc(asAlice(), 'wiki/honda-click-125i'), { engineCc: 150 }));
+    await assertFails(deleteDoc(doc(asAlice(), 'wiki/chain-care')));
   });
 });
 
