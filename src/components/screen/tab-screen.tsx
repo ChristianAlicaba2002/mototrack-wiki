@@ -3,7 +3,7 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
-import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
+import { MaxContentWidth, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
 type TabScreenProps = {
@@ -69,7 +69,7 @@ const styles = StyleSheet.create({
     gap: Spacing.three,
     paddingHorizontal: Spacing.three + 4,
     paddingTop: Spacing.three + 4,
-    paddingBottom: BottomTabInset + Spacing.four,
+    paddingBottom: Spacing.four,
     width: '100%',
     maxWidth: MaxContentWidth,
     alignSelf: 'center',
