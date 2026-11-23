@@ -3,7 +3,7 @@ import { StyleSheet, View } from 'react-native';
 
 import { TabScreen } from '@/components/screen/tab-screen';
 import { ThemedText } from '@/components/themed-text';
-import { Fonts, Spacing } from '@/constants/theme';
+import { Fonts, Spacing, type ThemeColor } from '@/constants/theme';
 import { ErrorMessage, TextAction } from '@/features/garage/ui/controls';
 
 import type { WikiViewModel } from '../model/wiki-view-model';
@@ -15,6 +15,7 @@ export function WikiView({
   loading,
   error,
   isEmpty,
+  hasDocs,
   query,
   setQuery,
   category,
@@ -42,10 +43,18 @@ export function WikiView({
       <CategoryChips selected={category} onSelect={setCategory} />
       {bikeName ? <MyBikeToggle bikeName={bikeName} value={myBikeOnly} onToggle={toggleMyBikeOnly} /> : null}
 
-      {error ? <ErrorMessage>{error}</ErrorMessage> : null}
+      {error && hasDocs ? <ErrorMessage>{error}</ErrorMessage> : null}
 
       {loading ? (
         <WikiListSkeleton />
+      ) : error && !hasDocs ? (
+        <EmptyState
+          eyebrow="Couldn’t load"
+          eyebrowColor="danger"
+          title="The wiki didn’t load."
+          message={error}
+          action={<TextAction label="Try again" onPress={refresh} disabled={refreshing} />}
+        />
       ) : isEmpty ? (
         <EmptyState
           eyebrow="Nothing here yet"
@@ -89,19 +98,20 @@ export function WikiView({
 
 type EmptyStateProps = {
   eyebrow: string;
+  eyebrowColor?: ThemeColor;
   title: string;
   message: string;
   action?: ReactNode;
 };
 
-function EmptyState({ eyebrow, title, message, action }: EmptyStateProps) {
+function EmptyState({ eyebrow, eyebrowColor = 'textSecondary', title, message, action }: EmptyStateProps) {
   return (
     <View style={styles.empty}>
-      <ThemedText type="eyebrow" themeColor="textSecondary">
+      <ThemedText type="eyebrow" themeColor={eyebrowColor} style={styles.emptyText}>
         {eyebrow}
       </ThemedText>
-      <ThemedText style={styles.emptyTitle}>{title}</ThemedText>
-      <ThemedText type="small" themeColor="textSecondary">
+      <ThemedText style={[styles.emptyTitle, styles.emptyText]}>{title}</ThemedText>
+      <ThemedText type="small" themeColor="textSecondary" style={[styles.emptyText, styles.emptyMessage]}>
         {message}
       </ThemedText>
       {action ? <View style={styles.emptyAction}>{action}</View> : null}
@@ -111,8 +121,18 @@ function EmptyState({ eyebrow, title, message, action }: EmptyStateProps) {
 
 const styles = StyleSheet.create({
   empty: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
     gap: Spacing.two,
-    paddingTop: Spacing.two,
+    paddingHorizontal: Spacing.three,
+    paddingBottom: Spacing.five,
+  },
+  emptyText: {
+    textAlign: 'center',
+  },
+  emptyMessage: {
+    maxWidth: 300,
   },
   emptyTitle: {
     fontFamily: Fonts.display,
@@ -121,7 +141,6 @@ const styles = StyleSheet.create({
     letterSpacing: -0.2,
   },
   emptyAction: {
-    alignSelf: 'flex-start',
-    marginTop: Spacing.one,
+    marginTop: Spacing.two,
   },
 });
