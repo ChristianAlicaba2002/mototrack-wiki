@@ -68,6 +68,7 @@ function RootNavigator() {
           <Stack.Screen name="service-form" options={{ presentation: 'modal' }} />
           <Stack.Screen name="expenses" />
           <Stack.Screen name="settings" />
+          <Stack.Screen name="wiki-spec" />
         </Stack.Protected>
         <Stack.Protected guard={!signedIn}>
           <Stack.Screen name="login" />
