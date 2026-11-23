@@ -1,12 +1,15 @@
+import { router } from 'expo-router';
 import { TabList, TabSlot, TabTrigger, Tabs as TabNavigator } from 'expo-router/ui';
 import { useState } from 'react';
 import { type LayoutRectangle, StyleSheet, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppHeader } from '@/components/app-header';
+import { SettingsIcon } from '@/components/icons/line-icons';
 import { TabBarRuleWidth, TabButton, TabMarker } from '@/components/tab-bar';
 import { Tabs, type TabName } from '@/constants/tabs';
 import { MaxContentWidth, Spacing } from '@/constants/theme';
+import { IconButton } from '@/features/garage/ui/controls';
 import { useActiveTab } from '@/hooks/use-active-tab';
 import { useTheme } from '@/hooks/use-theme';
 
@@ -21,7 +24,16 @@ export default function AppTabs() {
 
   return (
     <TabNavigator style={[styles.root, { backgroundColor: theme.background }]}>
-      <AppHeader title={activeTab.label} />
+      <AppHeader
+        title={activeTab.label}
+        trailing={
+          <IconButton
+            accessibilityLabel="Settings"
+            onPress={() => router.push('/settings')}
+            icon={(color) => <SettingsIcon size={20} color={color} />}
+          />
+        }
+      />
       <TabSlot style={styles.slot} />
       <TabList
         accessibilityRole="tablist"
