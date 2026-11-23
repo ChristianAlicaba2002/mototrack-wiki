@@ -1,0 +1,88 @@
+{
+  "kind": "spec",
+  "title": "Yamaha XSR 155",
+  "make": "Yamaha",
+  "model": "XSR 155",
+  "aliases": [],
+  "yearFrom": 2019,
+  "yearTo": null,
+  "engineCc": 155,
+  "keywords": [
+    "sport heritage",
+    "neo retro",
+    "manual",
+    "chain",
+    "liquid-cooled",
+    "vva"
+  ],
+  "fluids": {
+    "engineOil": {
+      "grade": "SAE 10W-40, JASO MA",
+      "capacityL": 0.95
+    },
+    "gearOil": null,
+    "coolant": {
+      "grade": "Yamalube Coolant",
+      "capacityL": 0.85
+    },
+    "brakeFluid": "DOT 4"
+  },
+  "tirePressure": {
+    "front": {
+      "soloPsi": 29,
+      "passengerPsi": 29
+    },
+    "rear": {
+      "soloPsi": 33,
+      "passengerPsi": 36
+    }
+  },
+  "torque": [
+    {
+      "item": "Spark plug",
+      "nm": 13
+    }
+  ],
+  "intervals": [
+    {
+      "item": "Engine oil",
+      "everyKm": 3000,
+      "everyMonths": 6
+    },
+    {
+      "item": "Oil filter",
+      "everyKm": 6000,
+      "everyMonths": null
+    },
+    {
+      "item": "Chain clean and lube",
+      "everyKm": 1000,
+      "everyMonths": null
+    },
+    {
+      "item": "Air filter",
+      "everyKm": 12000,
+      "everyMonths": null
+    },
+    {
+      "item": "Spark plug",
+      "everyKm": 8000,
+      "everyMonths": null
+    },
+    {
+      "item": "Valve clearance",
+      "everyKm": 40000,
+      "everyMonths": null
+    },
+    {
+      "item": "Coolant",
+      "everyKm": null,
+      "everyMonths": 24
+    },
+    {
+      "item": "Brake fluid",
+      "everyKm": null,
+      "everyMonths": 24
+    }
+  ]
+}

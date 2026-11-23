@@ -1,0 +1,50 @@
+{
+  "kind": "guide",
+  "title": "Do a quick pre-ride check",
+  "category": "diy",
+  "summary": "A five-minute walkaround of tires, lights, brakes, chain and fluids before you head out.",
+  "difficulty": "easy",
+  "minutes": 5,
+  "keywords": [
+    "pre-ride",
+    "safety check",
+    "blowbagets",
+    "walkaround",
+    "inspection"
+  ],
+  "appliesTo": [],
+  "tools": [
+    "Tire pressure gauge"
+  ],
+  "parts": [],
+  "steps": [
+    {
+      "text": "Tires: look for damage and check pressure against your spec sheet. Do this before riding, while they're cold.",
+      "caution": null
+    },
+    {
+      "text": "Lights: check the headlight high and low beam, tail light, brake light on both levers, and all four turn signals.",
+      "caution": null
+    },
+    {
+      "text": "Horn: give it a tap.",
+      "caution": null
+    },
+    {
+      "text": "Brakes: squeeze each lever and press the pedal. They should feel firm and the bike shouldn't roll when pushed.",
+      "caution": null
+    },
+    {
+      "text": "Chain or belt: on a chain bike, check slack and that it's lubed. On a scooter, listen for squeals on pull-off.",
+      "caution": null
+    },
+    {
+      "text": "Fluids: check the oil level window or dipstick, and coolant level on liquid-cooled bikes. Look under the bike for drips.",
+      "caution": null
+    },
+    {
+      "text": "Controls: the throttle should snap closed by itself, and the mirrors should be set before you move off.",
+      "caution": "A throttle that sticks open is dangerous. Don't ride until it is fixed."
+    }
+  ]
+}

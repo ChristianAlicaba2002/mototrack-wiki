@@ -1,0 +1,46 @@
+{
+  "kind": "guide",
+  "title": "Adjust the clutch cable",
+  "category": "diy",
+  "summary": "Set clutch lever free play on a manual bike so gears engage cleanly and the clutch doesn't slip.",
+  "difficulty": "easy",
+  "minutes": 10,
+  "keywords": [
+    "clutch",
+    "clutch cable",
+    "free play",
+    "slipping clutch",
+    "hard shifting",
+    "kambyo"
+  ],
+  "appliesTo": [],
+  "tools": [
+    "Ruler",
+    "Box wrenches for the lock nuts"
+  ],
+  "parts": [
+    "Cable lubricant, optional"
+  ],
+  "steps": [
+    {
+      "text": "With the engine off, pull the clutch lever gently until you feel resistance. Measure the gap at the lever tip; most bikes want 10 to 20 mm.",
+      "caution": null
+    },
+    {
+      "text": "For small changes, loosen the lock ring at the lever and turn the barrel adjuster. Turn it out to reduce free play, in to add it.",
+      "caution": null
+    },
+    {
+      "text": "If the barrel runs out of thread, set it back to the middle and make the larger change with the adjuster at the engine end.",
+      "caution": null
+    },
+    {
+      "text": "Tighten both lock nuts and recheck the free play.",
+      "caution": null
+    },
+    {
+      "text": "Start the engine, pull the clutch and select first gear. The bike should not creep, and should not slip when you accelerate in a high gear.",
+      "caution": "Zero free play keeps the clutch partly disengaged and wears it out fast. Always leave some play."
+    }
+  ]
+}

@@ -1,0 +1,80 @@
+{
+  "kind": "spec",
+  "title": "Suzuki Smash 115",
+  "make": "Suzuki",
+  "model": "Smash 115",
+  "aliases": [
+    "Smash"
+  ],
+  "yearFrom": 2010,
+  "yearTo": null,
+  "engineCc": 113,
+  "keywords": [
+    "underbone",
+    "manual",
+    "semi-automatic",
+    "chain",
+    "air-cooled"
+  ],
+  "fluids": {
+    "engineOil": {
+      "grade": "SAE 10W-40, JASO MA",
+      "capacityL": 0.8
+    },
+    "gearOil": null,
+    "coolant": null,
+    "brakeFluid": "DOT 3"
+  },
+  "tirePressure": {
+    "front": {
+      "soloPsi": 25,
+      "passengerPsi": 25
+    },
+    "rear": {
+      "soloPsi": 29,
+      "passengerPsi": 33
+    }
+  },
+  "torque": [
+    {
+      "item": "Engine oil drain bolt",
+      "nm": 23
+    },
+    {
+      "item": "Spark plug",
+      "nm": 11
+    }
+  ],
+  "intervals": [
+    {
+      "item": "Engine oil",
+      "everyKm": 2000,
+      "everyMonths": 6
+    },
+    {
+      "item": "Chain clean and lube",
+      "everyKm": 1000,
+      "everyMonths": null
+    },
+    {
+      "item": "Air filter",
+      "everyKm": 6000,
+      "everyMonths": null
+    },
+    {
+      "item": "Spark plug",
+      "everyKm": 6000,
+      "everyMonths": null
+    },
+    {
+      "item": "Valve clearance",
+      "everyKm": 6000,
+      "everyMonths": null
+    },
+    {
+      "item": "Brake fluid",
+      "everyKm": null,
+      "everyMonths": 24
+    }
+  ]
+}

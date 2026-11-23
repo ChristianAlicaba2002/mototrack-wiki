@@ -1,0 +1,55 @@
+{
+  "kind": "guide",
+  "title": "Replace the spark plug",
+  "category": "diy",
+  "summary": "Swap a worn plug to fix hard starts, misfires and poor fuel economy.",
+  "difficulty": "easy",
+  "minutes": 20,
+  "keywords": [
+    "spark plug",
+    "sparkplug",
+    "misfire",
+    "hard start",
+    "ngk"
+  ],
+  "appliesTo": [],
+  "tools": [
+    "Spark plug socket with extension",
+    "Torque wrench",
+    "Feeler or wire gap gauge",
+    "Compressed air or a brush"
+  ],
+  "parts": [
+    "Spark plug (type from your owner's manual)"
+  ],
+  "steps": [
+    {
+      "text": "Work on a cold engine. Remove any covers or panels to reach the plug cap.",
+      "caution": "Aluminum cylinder heads strip easily when hot. Let the engine cool fully."
+    },
+    {
+      "text": "Pull the plug cap straight off by the cap, not the wire.",
+      "caution": null
+    },
+    {
+      "text": "Blow or brush debris away from around the plug so nothing falls into the cylinder.",
+      "caution": null
+    },
+    {
+      "text": "Unscrew the old plug with the socket. Check its tip: light tan is healthy; black, oily or white means it needs a closer look.",
+      "caution": null
+    },
+    {
+      "text": "Check the gap on the new plug and adjust only if it is outside the spec in your manual.",
+      "caution": null
+    },
+    {
+      "text": "Thread the new plug in by hand until it seats, then tighten it to the torque on your spec sheet.",
+      "caution": "Starting the plug with a wrench can cross-thread it. Always start by hand."
+    },
+    {
+      "text": "Push the cap on until it clicks, refit the covers and start the engine.",
+      "caution": null
+    }
+  ]
+}

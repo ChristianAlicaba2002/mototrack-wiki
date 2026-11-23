@@ -1,0 +1,46 @@
+{
+  "kind": "guide",
+  "title": "Adjust a drum brake",
+  "category": "diy",
+  "summary": "Set the lever or pedal free play on a cable or rod drum brake so it bites early and doesn't drag.",
+  "difficulty": "easy",
+  "minutes": 10,
+  "keywords": [
+    "drum brake",
+    "rear brake",
+    "free play",
+    "preno",
+    "brake adjuster"
+  ],
+  "appliesTo": [],
+  "tools": [
+    "Ruler"
+  ],
+  "parts": [],
+  "steps": [
+    {
+      "text": "Put the bike on the center stand so the wheel spins freely.",
+      "caution": null
+    },
+    {
+      "text": "Measure how far the lever end or pedal moves before the brake starts to bite. Most bikes call for 10 to 20 mm; check your manual.",
+      "caution": null
+    },
+    {
+      "text": "Turn the adjusting nut at the brake arm on the wheel. Tighten it to reduce free play, loosen it to add free play.",
+      "caution": null
+    },
+    {
+      "text": "Spin the wheel. It should turn without rubbing when the brake is released.",
+      "caution": "If the wheel drags or warms up after a ride, back the adjuster off. A dragging brake overheats and fades."
+    },
+    {
+      "text": "Make sure the nut's cutout sits fully on the brake arm pin, then check that the brake light comes on when the brake is applied.",
+      "caution": null
+    },
+    {
+      "text": "If the wear indicator arrow reaches the end of its range, the shoes need replacing instead of adjusting.",
+      "caution": null
+    }
+  ]
+}

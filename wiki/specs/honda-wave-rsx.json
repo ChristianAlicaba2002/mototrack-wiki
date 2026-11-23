@@ -1,0 +1,89 @@
+{
+  "kind": "spec",
+  "title": "Honda Wave RSX",
+  "make": "Honda",
+  "model": "Wave RSX",
+  "aliases": [
+    "Wave 110"
+  ],
+  "yearFrom": 2019,
+  "yearTo": null,
+  "engineCc": 110,
+  "keywords": [
+    "underbone",
+    "manual",
+    "semi-automatic",
+    "chain",
+    "air-cooled",
+    "fi"
+  ],
+  "fluids": {
+    "engineOil": {
+      "grade": "SAE 10W-30, JASO MA",
+      "capacityL": 0.8
+    },
+    "gearOil": null,
+    "coolant": null,
+    "brakeFluid": "DOT 3"
+  },
+  "tirePressure": {
+    "front": {
+      "soloPsi": 29,
+      "passengerPsi": 29
+    },
+    "rear": {
+      "soloPsi": 33,
+      "passengerPsi": 41
+    }
+  },
+  "torque": [
+    {
+      "item": "Engine oil drain bolt",
+      "nm": 24
+    },
+    {
+      "item": "Spark plug",
+      "nm": 16
+    },
+    {
+      "item": "Front axle nut",
+      "nm": 49
+    },
+    {
+      "item": "Rear axle nut",
+      "nm": 59
+    }
+  ],
+  "intervals": [
+    {
+      "item": "Engine oil",
+      "everyKm": 3000,
+      "everyMonths": 6
+    },
+    {
+      "item": "Chain clean and lube",
+      "everyKm": 1000,
+      "everyMonths": null
+    },
+    {
+      "item": "Air filter",
+      "everyKm": 12000,
+      "everyMonths": null
+    },
+    {
+      "item": "Spark plug",
+      "everyKm": 8000,
+      "everyMonths": null
+    },
+    {
+      "item": "Valve clearance",
+      "everyKm": 8000,
+      "everyMonths": null
+    },
+    {
+      "item": "Brake fluid",
+      "everyKm": null,
+      "everyMonths": 24
+    }
+  ]
+}

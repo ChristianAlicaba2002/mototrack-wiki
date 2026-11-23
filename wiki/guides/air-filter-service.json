@@ -1,0 +1,50 @@
+{
+  "kind": "guide",
+  "title": "Inspect and replace the air filter",
+  "category": "diy",
+  "summary": "Open the airbox, check the element and fit a new one when it is dirty. A clogged filter costs power and fuel.",
+  "difficulty": "easy",
+  "minutes": 20,
+  "keywords": [
+    "air filter",
+    "air cleaner",
+    "airbox",
+    "fuel consumption",
+    "konsumo"
+  ],
+  "appliesTo": [],
+  "tools": [
+    "Screwdrivers for the airbox cover",
+    "Flashlight",
+    "Clean rag"
+  ],
+  "parts": [
+    "Air filter element for your model"
+  ],
+  "steps": [
+    {
+      "text": "Remove the side cover or seat panel to reach the airbox, then remove the airbox cover screws.",
+      "caution": null
+    },
+    {
+      "text": "Lift out the element and note which way it faces.",
+      "caution": null
+    },
+    {
+      "text": "Hold it up to a light. If you can't see light through it, or it is oily, torn or caked with dust, replace it.",
+      "caution": "Most scooter filters are viscous paper. Don't wash or blow them out with air; that ruins the filter."
+    },
+    {
+      "text": "Wipe dust out of the airbox with a damp rag, keeping dirt away from the intake opening.",
+      "caution": null
+    },
+    {
+      "text": "Fit the new element the same way round and check it seats evenly on every edge.",
+      "caution": null
+    },
+    {
+      "text": "Refit the cover and screws. Drain the airbox check hose underneath, if your bike has one.",
+      "caution": null
+    }
+  ]
+}

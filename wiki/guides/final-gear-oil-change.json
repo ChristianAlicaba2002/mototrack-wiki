@@ -1,0 +1,58 @@
+{
+  "kind": "guide",
+  "title": "Change the scooter final gear oil",
+  "category": "fluids",
+  "summary": "Swap the small amount of gear oil in a scooter's rear hub. Cheap, quick and often forgotten.",
+  "difficulty": "easy",
+  "minutes": 20,
+  "keywords": [
+    "gear oil",
+    "final drive",
+    "hub oil",
+    "scooter",
+    "matic",
+    "langis"
+  ],
+  "appliesTo": [],
+  "tools": [
+    "Socket for the drain and filler bolts",
+    "Torque wrench",
+    "Small drain pan",
+    "Syringe or squeeze bottle with a hose",
+    "Clean rags"
+  ],
+  "parts": [
+    "Gear oil (grade and amount on your spec sheet)",
+    "New crush washers for both bolts"
+  ],
+  "steps": [
+    {
+      "text": "Ride for a few minutes to warm the oil, then park on the center stand on level ground.",
+      "caution": null
+    },
+    {
+      "text": "Find the two bolts on the rear hub: the filler bolt sits higher, the drain bolt at the bottom. Remove the filler bolt first.",
+      "caution": "Loosen the filler first. If the drain comes out and the filler is seized, you can't refill and the bike is stuck."
+    },
+    {
+      "text": "Remove the drain bolt and let the oil drain completely.",
+      "caution": null
+    },
+    {
+      "text": "Fit a new crush washer to the drain bolt and tighten it to the torque on your spec sheet.",
+      "caution": null
+    },
+    {
+      "text": "Measure the exact amount from your spec sheet and inject it through the filler hole with the syringe or bottle.",
+      "caution": "Scooter hubs only hold about 100 to 150 mL. Overfilling pushes oil past the seal and onto the rear brake."
+    },
+    {
+      "text": "Fit a new washer to the filler bolt, tighten it to spec and wipe the hub clean.",
+      "caution": null
+    },
+    {
+      "text": "Ride a short distance, then check both bolts for leaks.",
+      "caution": null
+    }
+  ]
+}

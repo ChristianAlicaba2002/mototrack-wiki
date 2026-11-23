@@ -1,0 +1,52 @@
+{
+  "kind": "guide",
+  "title": "Tighten axle nuts after wheel work",
+  "category": "torque",
+  "summary": "Refit a wheel and torque its axle nut so the wheel is straight, the brakes work and nothing works loose.",
+  "difficulty": "moderate",
+  "minutes": 20,
+  "keywords": [
+    "axle nut",
+    "wheel",
+    "rear wheel",
+    "front wheel",
+    "cotter pin",
+    "chain adjuster"
+  ],
+  "appliesTo": [],
+  "tools": [
+    "Torque wrench",
+    "Sockets for the axle nut",
+    "Box wrench to hold the axle",
+    "Pliers"
+  ],
+  "parts": [
+    "New cotter pin, if your axle uses one"
+  ],
+  "steps": [
+    {
+      "text": "With the wheel in place, check that the brake disc sits inside the caliper, or the drum's torque arm is attached.",
+      "caution": null
+    },
+    {
+      "text": "On a chain bike, set the chain slack and line up the adjuster marks on both sides of the swingarm.",
+      "caution": null
+    },
+    {
+      "text": "Thread the axle nut on by hand and snug it down while holding the axle head with the box wrench.",
+      "caution": null
+    },
+    {
+      "text": "Tighten to the axle nut torque on your spec sheet with the torque wrench.",
+      "caution": null
+    },
+    {
+      "text": "If the axle has a cotter pin hole, tighten slightly further to line it up; never back the nut off. Fit a new cotter pin and bend the legs.",
+      "caution": "Reusing an old cotter pin can let it snap off and the nut back out."
+    },
+    {
+      "text": "Spin the wheel and pump the brake several times until it bites firmly before you ride.",
+      "caution": "Pistons pushed back during wheel removal mean the first brake application may do nothing."
+    }
+  ]
+}

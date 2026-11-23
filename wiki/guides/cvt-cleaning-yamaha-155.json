@@ -1,0 +1,91 @@
+{
+  "kind": "guide",
+  "title": "Clean the CVT on a Yamaha 155 scooter",
+  "category": "diy",
+  "summary": "Open the CVT on an NMAX, Aerox or LEXi, blow out belt dust and check the belt, rollers and sliders.",
+  "difficulty": "advanced",
+  "minutes": 90,
+  "keywords": [
+    "cvt",
+    "linis cvt",
+    "panggilid",
+    "v-belt",
+    "drive belt",
+    "rollers",
+    "bola",
+    "variator",
+    "clutch",
+    "vibration",
+    "jerky start"
+  ],
+  "appliesTo": [
+    {
+      "make": "Yamaha",
+      "model": "LEXi"
+    },
+    {
+      "make": "Yamaha",
+      "model": "NMAX"
+    },
+    {
+      "make": "Yamaha",
+      "model": "Aerox"
+    }
+  ],
+  "tools": [
+    "Socket set and box wrenches",
+    "Variator holder and clutch holder, or an impact wrench",
+    "Torque wrench",
+    "Brake cleaner",
+    "Compressed air",
+    "Caliper or ruler",
+    "Clean rags"
+  ],
+  "parts": [
+    "V-belt, if worn",
+    "Roller weights and sliders, if flat-spotted or cracked",
+    "CVT cover gasket, if torn"
+  ],
+  "steps": [
+    {
+      "text": "Park on the center stand with the engine cold. Remove the CVT air intake duct and filter housing to free the cover.",
+      "caution": null
+    },
+    {
+      "text": "Loosen the CVT cover bolts in a crisscross pattern and lift the cover off. Note where the longer bolts go.",
+      "caution": null
+    },
+    {
+      "text": "Hold the variator with the holder and remove the front pulley nut, washer and outer pulley face. Slip the belt off.",
+      "caution": null
+    },
+    {
+      "text": "Hold the clutch housing and remove the clutch nut, then pull the clutch and rear pulley out as a set.",
+      "caution": null
+    },
+    {
+      "text": "Remove the variator and take out the roller weights and sliders.",
+      "caution": null
+    },
+    {
+      "text": "Blow the belt dust out of the case and wipe every pulley face with brake cleaner on a rag.",
+      "caution": "Wear a mask; belt dust is fine and irritating. Keep cleaner and grease off the belt and the pulley faces."
+    },
+    {
+      "text": "Measure the belt width and compare it to the service limit in your service manual. Replace a belt that is narrow, cracked or glazed.",
+      "caution": null
+    },
+    {
+      "text": "Replace rollers with flat spots and sliders that are cracked or worn thin.",
+      "caution": null
+    },
+    {
+      "text": "Reassemble in reverse order. Push the belt down into the rear pulley before tightening the front pulley so it isn't pinched between the faces.",
+      "caution": null
+    },
+    {
+      "text": "Tighten the clutch and pulley nuts to the torque in your service manual, refit the cover and duct, and test-ride at low speed.",
+      "caution": "A loose pulley nut can let the variator come off at speed. If you don't have the torque values and holders, have a shop do this step."
+    }
+  ]
+}
