@@ -70,6 +70,7 @@ export function useWikiViewModel() {
     loading: wiki.loading || garage.loading,
     error: refreshError ?? wiki.error,
     isEmpty: !wiki.loading && !wiki.error && wiki.docs.length === 0,
+    hasDocs: wiki.docs.length > 0,
     query,
     setQuery,
     category,
