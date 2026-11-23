@@ -1,14 +1,7 @@
-import {
-  ActivityIndicator,
-  Alert,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  View,
-} from 'react-native';
+import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { useConfirmDrawer } from '@/components/confirm-drawer';
 import { CloseIcon } from '@/components/icons/line-icons';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -20,20 +13,6 @@ import type { BikeFormViewModel } from '../model/bike-form-view-model';
 import { Button, ErrorMessage, FormField, IconButton, ScreenHeader, Section } from './controls';
 
 const FORM_MAX_WIDTH = 560;
-
-/** Alert.alert has no buttons on web, so fall back to the browser's confirm dialog. */
-function confirmDelete(name: string, onConfirm: () => void) {
-  const title = `Delete ${name}?`;
-  const message = 'This removes the motorcycle from your garage. This can’t be undone.';
-  if (Platform.OS === 'web') {
-    if (window.confirm(`${title}\n\n${message}`)) onConfirm();
-    return;
-  }
-  Alert.alert(title, message, [
-    { text: 'Cancel', style: 'cancel' },
-    { text: 'Delete', style: 'destructive', onPress: onConfirm },
-  ]);
-}
 
 /** Presentational only — all state and actions come from the view model. */
 export function BikeFormView({
@@ -53,9 +32,20 @@ export function BikeFormView({
   const theme = useTheme();
   const busy = pending !== null;
   const ready = loadState === 'ready';
+  const { confirm, drawer } = useConfirmDrawer();
+
+  const confirmDelete = () =>
+    confirm({
+      title: `Delete ${displayName}?`,
+      message: 'This removes the motorcycle and its service history from your garage. This can’t be undone.',
+      confirmLabel: 'Delete motorcycle',
+      tone: 'danger',
+      onConfirm: remove,
+    });
 
   return (
     <ThemedView style={styles.root}>
+      {drawer}
       <SafeAreaView style={styles.root} edges={['top', 'left', 'right', 'bottom']}>
         <ScreenHeader
           title={isEdit ? 'Edit motorcycle' : 'New motorcycle'}
@@ -192,7 +182,7 @@ export function BikeFormView({
                 <Button
                   label="Delete motorcycle"
                   variant="danger"
-                  onPress={() => confirmDelete(displayName, remove)}
+                  onPress={confirmDelete}
                   loading={pending === 'delete'}
                   disabled={busy}
                 />

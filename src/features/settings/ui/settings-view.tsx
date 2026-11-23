@@ -2,6 +2,7 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AppHeader } from '@/components/app-header';
+import { useConfirmDrawer } from '@/components/confirm-drawer';
 import { ChevronLeftIcon } from '@/components/icons/line-icons';
 import { ThemedText } from '@/components/themed-text';
 import { MaxContentWidth, Spacing } from '@/constants/theme';
@@ -12,9 +13,20 @@ import type { SettingsViewModel } from '../model/settings-view-model';
 
 export function SettingsView({ account, signingOut, error, signOut, back }: SettingsViewModel) {
   const theme = useTheme();
+  const { confirm, drawer } = useConfirmDrawer();
+
+  const confirmSignOut = () =>
+    confirm({
+      title: 'Sign out?',
+      message: 'You’ll need to sign in with Google again to see your garage.',
+      confirmLabel: 'Sign out',
+      tone: 'primary',
+      onConfirm: signOut,
+    });
 
   return (
     <View style={[styles.root, { backgroundColor: theme.background }]}>
+      {drawer}
       <AppHeader
         title="Settings"
         leading={
@@ -35,7 +47,7 @@ export function SettingsView({ account, signingOut, error, signOut, back }: Sett
               </ThemedText>
               <ThemedText numberOfLines={1}>{account}</ThemedText>
             </View>
-            <TextAction label="Sign out" tone="text" disabled={signingOut} onPress={signOut} />
+            <TextAction label="Sign out" tone="text" disabled={signingOut} onPress={confirmSignOut} />
           </View>
           {error ? <ErrorMessage>{error}</ErrorMessage> : null}
         </ScrollView>
