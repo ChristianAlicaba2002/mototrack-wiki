@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { Keyboard } from 'react-native';
 
 import { bikeDisplayName } from '@/features/garage/model/active-bike';
 import { toGarageErrorMessage } from '@/features/garage/model/errors';
@@ -14,6 +15,11 @@ import { filterWikiDocs } from './wiki-search';
 
 const MIN_REFRESH_MS = 600;
 
+export type WikiFilters = {
+  category: WikiCategory | null;
+  myBikeOnly: boolean;
+};
+
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export function useWikiViewModel() {
@@ -22,6 +28,7 @@ export function useWikiViewModel() {
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState<WikiCategory | null>(null);
   const [myBikeOnly, setMyBikeOnly] = useState(false);
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [refreshError, setRefreshError] = useState<string | null>(null);
 
@@ -60,6 +67,16 @@ export function useWikiViewModel() {
     }
   }
 
+  function applyFilters(next: WikiFilters) {
+    setCategory(next.category);
+    setMyBikeOnly(next.myBikeOnly);
+  }
+
+  function openFilters() {
+    Keyboard.dismiss();
+    setFiltersOpen(true);
+  }
+
   function clearFilters() {
     setQuery('');
     setCategory(null);
@@ -74,11 +91,14 @@ export function useWikiViewModel() {
     query,
     setQuery,
     category,
-    setCategory,
     bikeName: activeBike ? bikeDisplayName(activeBike) : null,
     bikeModel: activeBike ? `${activeBike.make} ${activeBike.model}` : null,
-    myBikeOnly: myBikeOnly && activeBike !== null,
-    toggleMyBikeOnly: () => setMyBikeOnly((on) => !on),
+    filters: { category, myBikeOnly: myBikeOnly && activeBike !== null },
+    filtersApplied: category !== null || (myBikeOnly && activeBike !== null),
+    filtersOpen,
+    openFilters,
+    closeFilters: () => setFiltersOpen(false),
+    applyFilters,
     hasFilters: query.trim().length > 0 || category !== null || (myBikeOnly && activeBike !== null),
     ...result,
     openSpec: openWikiSpec,

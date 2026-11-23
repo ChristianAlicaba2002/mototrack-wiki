@@ -238,6 +238,16 @@ export function SettingsIcon({ size, color }: IconProps) {
   );
 }
 
+export function FilterIcon({ size, color }: IconProps) {
+  return (
+    <Icon size={size}>
+      <Path d="M4 7h10M18 7h2M4 17h2M10 17h10" {...stroke(color)} />
+      <Circle cx={16} cy={7} r={2} {...stroke(color)} />
+      <Circle cx={8} cy={17} r={2} {...stroke(color)} />
+    </Icon>
+  );
+}
+
 export function SearchIcon({ size, color }: IconProps) {
   return (
     <Icon size={size}>

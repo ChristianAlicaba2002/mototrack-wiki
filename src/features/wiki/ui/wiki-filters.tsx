@@ -1,30 +1,107 @@
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { useState } from 'react';
+import { Pressable, StyleSheet, View } from 'react-native';
 
-import { CheckIcon } from '@/components/icons/line-icons';
+import { BottomDrawer, useCloseDrawer } from '@/components/bottom-drawer';
+import { CheckIcon, FilterIcon } from '@/components/icons/line-icons';
 import { ThemedText } from '@/components/themed-text';
-import { Spacing } from '@/constants/theme';
-import { Radius } from '@/features/garage/ui/controls';
+import { Fonts, Spacing } from '@/constants/theme';
+import { Button, Radius } from '@/features/garage/ui/controls';
 import { useTheme } from '@/hooks/use-theme';
 import { WIKI_CATEGORIES, type WikiCategory } from '@/lib/firestore/types';
 
 import { WIKI_CATEGORY_LABELS } from '../model/categories';
+import type { WikiFilters } from '../model/wiki-view-model';
 
-const SCREEN_GUTTER = Spacing.three + 4;
+type FilterButtonProps = {
+  active: boolean;
+  onPress: () => void;
+};
+
+export function FilterButton({ active, onPress }: FilterButtonProps) {
+  const theme = useTheme();
+  return (
+    <Pressable
+      onPress={onPress}
+      hitSlop={6}
+      accessibilityRole="button"
+      accessibilityLabel={active ? 'Filters, some applied' : 'Filters'}
+      style={({ pressed }) => [styles.filterButton, pressed && styles.pressed]}>
+      <FilterIcon size={22} color={theme.text} />
+      {active ? <View style={[styles.filterDot, { backgroundColor: theme.accent }]} /> : null}
+    </Pressable>
+  );
+}
+
+type WikiFilterDrawerProps = {
+  open: boolean;
+  onClosed: () => void;
+  filters: WikiFilters;
+  bikeName: string | null;
+  onApply: (filters: WikiFilters) => void;
+};
+
+export function WikiFilterDrawer({ open, onClosed, filters, bikeName, onApply }: WikiFilterDrawerProps) {
+  return (
+    <BottomDrawer open={open} onClosed={onClosed}>
+      <FilterSheet initial={filters} bikeName={bikeName} onApply={onApply} />
+    </BottomDrawer>
+  );
+}
+
+type FilterSheetProps = {
+  initial: WikiFilters;
+  bikeName: string | null;
+  onApply: (filters: WikiFilters) => void;
+};
+
+function FilterSheet({ initial, bikeName, onApply }: FilterSheetProps) {
+  const close = useCloseDrawer();
+  const [draft, setDraft] = useState<WikiFilters>(initial);
+
+  return (
+    <View style={styles.sheet}>
+      <ThemedText style={styles.title} accessibilityRole="header">
+        Filters
+      </ThemedText>
+
+      <View style={styles.group}>
+        <ThemedText type="eyebrow" themeColor="textSecondary">
+          Category
+        </ThemedText>
+        <CategoryChips
+          selected={draft.category}
+          onSelect={(category) => setDraft((d) => ({ ...d, category }))}
+        />
+      </View>
+
+      {bikeName ? (
+        <MyBikeToggle
+          bikeName={bikeName}
+          value={draft.myBikeOnly}
+          onToggle={() => setDraft((d) => ({ ...d, myBikeOnly: !d.myBikeOnly }))}
+        />
+      ) : null}
+
+      <View style={styles.actions}>
+        <Button label="Apply filter" onPress={() => close(() => onApply(draft))} />
+        <Button
+          label="Clear filter"
+          variant="secondary"
+          onPress={() => close(() => onApply({ category: null, myBikeOnly: false }))}
+        />
+      </View>
+    </View>
+  );
+}
 
 type CategoryChipsProps = {
   selected: WikiCategory | null;
   onSelect: (category: WikiCategory | null) => void;
 };
 
-export function CategoryChips({ selected, onSelect }: CategoryChipsProps) {
+function CategoryChips({ selected, onSelect }: CategoryChipsProps) {
   return (
-    <ScrollView
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      keyboardShouldPersistTaps="handled"
-      style={styles.chipScroll}
-      contentContainerStyle={styles.chips}
-      accessibilityRole="tablist">
+    <View style={styles.chips} accessibilityRole="radiogroup">
       <Chip label="All" selected={selected === null} onPress={() => onSelect(null)} />
       {WIKI_CATEGORIES.map((category) => (
         <Chip
@@ -34,7 +111,7 @@ export function CategoryChips({ selected, onSelect }: CategoryChipsProps) {
           onPress={() => onSelect(selected === category ? null : category)}
         />
       ))}
-    </ScrollView>
+    </View>
   );
 }
 
@@ -43,7 +120,7 @@ function Chip({ label, selected, onPress }: { label: string; selected: boolean; 
   return (
     <Pressable
       onPress={onPress}
-      accessibilityRole="tab"
+      accessibilityRole="radio"
       accessibilityState={{ selected }}
       accessibilityLabel={label}
       style={({ pressed }) => [
@@ -66,7 +143,7 @@ type MyBikeToggleProps = {
   onToggle: () => void;
 };
 
-export function MyBikeToggle({ bikeName, value, onToggle }: MyBikeToggleProps) {
+function MyBikeToggle({ bikeName, value, onToggle }: MyBikeToggleProps) {
   const theme = useTheme();
   return (
     <Pressable
@@ -92,13 +169,36 @@ export function MyBikeToggle({ bikeName, value, onToggle }: MyBikeToggleProps) {
 }
 
 const styles = StyleSheet.create({
-  chipScroll: {
-    flexGrow: 0,
-    marginHorizontal: -SCREEN_GUTTER,
+  filterButton: {
+    width: 48,
+    height: 48,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  filterDot: {
+    position: 'absolute',
+    top: 10,
+    right: 8,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  sheet: {
+    gap: Spacing.four,
+  },
+  title: {
+    fontFamily: Fonts.display,
+    fontSize: 28,
+    lineHeight: 32,
+    letterSpacing: -0.2,
+  },
+  group: {
+    gap: Spacing.two + 2,
   },
   chips: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: Spacing.two,
-    paddingHorizontal: SCREEN_GUTTER,
   },
   chip: {
     borderWidth: 1,
@@ -126,5 +226,8 @@ const styles = StyleSheet.create({
   },
   toggleLabel: {
     flexShrink: 1,
+  },
+  actions: {
+    gap: Spacing.two + 4,
   },
 });
