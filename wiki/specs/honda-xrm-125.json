@@ -1,0 +1,91 @@
+{
+  "kind": "spec",
+  "title": "Honda XRM 125",
+  "make": "Honda",
+  "model": "XRM 125",
+  "aliases": [
+    "XRM",
+    "XRM 125 Motard",
+    "XRM 125 DS"
+  ],
+  "yearFrom": 2015,
+  "yearTo": null,
+  "engineCc": 125,
+  "keywords": [
+    "underbone",
+    "manual",
+    "chain",
+    "air-cooled",
+    "fi",
+    "dual sport"
+  ],
+  "fluids": {
+    "engineOil": {
+      "grade": "SAE 10W-30, JASO MA",
+      "capacityL": 0.8
+    },
+    "gearOil": null,
+    "coolant": null,
+    "brakeFluid": "DOT 3"
+  },
+  "tirePressure": {
+    "front": {
+      "soloPsi": 29,
+      "passengerPsi": 29
+    },
+    "rear": {
+      "soloPsi": 33,
+      "passengerPsi": 41
+    }
+  },
+  "torque": [
+    {
+      "item": "Engine oil drain bolt",
+      "nm": 24
+    },
+    {
+      "item": "Spark plug",
+      "nm": 16
+    },
+    {
+      "item": "Front axle nut",
+      "nm": 49
+    },
+    {
+      "item": "Rear axle nut",
+      "nm": 59
+    }
+  ],
+  "intervals": [
+    {
+      "item": "Engine oil",
+      "everyKm": 3000,
+      "everyMonths": 6
+    },
+    {
+      "item": "Chain clean and lube",
+      "everyKm": 1000,
+      "everyMonths": null
+    },
+    {
+      "item": "Air filter",
+      "everyKm": 12000,
+      "everyMonths": null
+    },
+    {
+      "item": "Spark plug",
+      "everyKm": 8000,
+      "everyMonths": null
+    },
+    {
+      "item": "Valve clearance",
+      "everyKm": 8000,
+      "everyMonths": null
+    },
+    {
+      "item": "Brake fluid",
+      "everyKm": null,
+      "everyMonths": 24
+    }
+  ]
+}

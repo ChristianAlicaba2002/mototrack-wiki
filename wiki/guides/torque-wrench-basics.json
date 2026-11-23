@@ -1,0 +1,48 @@
+{
+  "kind": "guide",
+  "title": "Use a torque wrench correctly",
+  "category": "torque",
+  "summary": "Set, use and store a click-type torque wrench so bolts end up at the value on your spec sheet.",
+  "difficulty": "easy",
+  "minutes": 15,
+  "keywords": [
+    "torque wrench",
+    "nm",
+    "newton meter",
+    "kgf",
+    "overtighten",
+    "stripped thread"
+  ],
+  "appliesTo": [],
+  "tools": [
+    "Click-type torque wrench",
+    "Sockets"
+  ],
+  "parts": [],
+  "steps": [
+    {
+      "text": "Pick a wrench whose range covers the value. Readings are least accurate in the bottom 20% of the scale.",
+      "caution": null
+    },
+    {
+      "text": "Unlock the handle and turn it until the scale reads the value in N·m. To convert, 1 kgf·m is about 9.8 N·m.",
+      "caution": null
+    },
+    {
+      "text": "Make sure the thread is clean and the fastener is snugged down by hand or with a normal wrench first.",
+      "caution": null
+    },
+    {
+      "text": "Hold the wrench by the handle grip only and pull smoothly at a right angle to the wrench.",
+      "caution": null
+    },
+    {
+      "text": "Stop the instant it clicks. Don't pull again to double-check; that adds extra torque.",
+      "caution": "Never use a torque wrench to loosen bolts. It throws off the calibration."
+    },
+    {
+      "text": "After use, wind the setting back to the lowest value and store it in its case.",
+      "caution": null
+    }
+  ]
+}

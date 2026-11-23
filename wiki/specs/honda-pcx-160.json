@@ -1,0 +1,103 @@
+{
+  "kind": "spec",
+  "title": "Honda PCX 160",
+  "make": "Honda",
+  "model": "PCX 160",
+  "aliases": [
+    "PCX"
+  ],
+  "yearFrom": 2021,
+  "yearTo": null,
+  "engineCc": 157,
+  "keywords": [
+    "scooter",
+    "automatic",
+    "maxiscooter",
+    "liquid-cooled",
+    "esp+"
+  ],
+  "fluids": {
+    "engineOil": {
+      "grade": "SAE 10W-30, JASO MB",
+      "capacityL": 0.8
+    },
+    "gearOil": {
+      "grade": "SAE 10W-30",
+      "capacityL": 0.12
+    },
+    "coolant": {
+      "grade": "Honda Pre-Mix Coolant",
+      "capacityL": 0.55
+    },
+    "brakeFluid": "DOT 4"
+  },
+  "tirePressure": {
+    "front": {
+      "soloPsi": 29,
+      "passengerPsi": 29
+    },
+    "rear": {
+      "soloPsi": 33,
+      "passengerPsi": 36
+    }
+  },
+  "torque": [
+    {
+      "item": "Engine oil drain bolt",
+      "nm": 24
+    },
+    {
+      "item": "Final drive oil drain bolt",
+      "nm": 13
+    },
+    {
+      "item": "Spark plug",
+      "nm": 16
+    },
+    {
+      "item": "Front axle nut",
+      "nm": 59
+    },
+    {
+      "item": "Rear axle nut",
+      "nm": 118
+    }
+  ],
+  "intervals": [
+    {
+      "item": "Engine oil",
+      "everyKm": 4000,
+      "everyMonths": 6
+    },
+    {
+      "item": "Final drive oil",
+      "everyKm": 8000,
+      "everyMonths": 12
+    },
+    {
+      "item": "Air filter",
+      "everyKm": 16000,
+      "everyMonths": null
+    },
+    {
+      "item": "Spark plug",
+      "everyKm": 16000,
+      "everyMonths": null
+    },
+    {
+      "item": "Drive belt",
+      "everyKm": 24000,
+      "everyMonths": null
+    },
+    {
+      "item": "Coolant",
+      "everyKm": null,
+      "everyMonths": 36
+    },
+    {
+      "item": "Brake fluid",
+      "everyKm": null,
+      "everyMonths": 24
+    }
+  ]
+}

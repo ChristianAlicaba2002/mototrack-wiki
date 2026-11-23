@@ -1,0 +1,48 @@
+{
+  "kind": "guide",
+  "title": "Inspect tires for wear and damage",
+  "category": "tire_pressure",
+  "summary": "Check tread depth, age and damage so you replace a tire before it fails.",
+  "difficulty": "easy",
+  "minutes": 10,
+  "keywords": [
+    "tire",
+    "gulong",
+    "tread",
+    "wear bar",
+    "tire age",
+    "dot code"
+  ],
+  "appliesTo": [],
+  "tools": [
+    "Tread depth gauge or a coin",
+    "Flashlight"
+  ],
+  "parts": [],
+  "steps": [
+    {
+      "text": "Find the wear bar markers: small triangles on the sidewall point to raised bars inside the tread grooves.",
+      "caution": null
+    },
+    {
+      "text": "If the tread is level with a wear bar anywhere on the tire, replace the tire.",
+      "caution": "Worn tires lose grip fast on wet roads. Don't wait for the cords to show."
+    },
+    {
+      "text": "Look for cuts, bulges, embedded nails or glass. Turn the wheel slowly to see the whole tire.",
+      "caution": null
+    },
+    {
+      "text": "Check for cracking on the sidewalls and between the tread blocks; that is a sign of age or underinflation.",
+      "caution": null
+    },
+    {
+      "text": "Read the four-digit date code on the sidewall (week then year, e.g. 2324 is week 23 of 2024). Replace tires older than five to six years even if they look fine.",
+      "caution": null
+    },
+    {
+      "text": "Finish by setting the pressure to the values on your spec sheet.",
+      "caution": null
+    }
+  ]
+}

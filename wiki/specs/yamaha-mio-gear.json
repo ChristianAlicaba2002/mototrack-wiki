@@ -1,0 +1,99 @@
+{
+  "kind": "spec",
+  "title": "Yamaha Mio Gear",
+  "make": "Yamaha",
+  "model": "Mio Gear",
+  "aliases": [
+    "Mio Gear S"
+  ],
+  "yearFrom": 2021,
+  "yearTo": null,
+  "engineCc": 125,
+  "keywords": [
+    "scooter",
+    "automatic",
+    "air-cooled",
+    "blue core"
+  ],
+  "fluids": {
+    "engineOil": {
+      "grade": "SAE 10W-40, JASO MB",
+      "capacityL": 0.8
+    },
+    "gearOil": {
+      "grade": "SAE 10W-30",
+      "capacityL": 0.1
+    },
+    "coolant": null,
+    "brakeFluid": "DOT 4"
+  },
+  "tirePressure": {
+    "front": {
+      "soloPsi": 25,
+      "passengerPsi": 25
+    },
+    "rear": {
+      "soloPsi": 33,
+      "passengerPsi": 36
+    }
+  },
+  "torque": [
+    {
+      "item": "Engine oil drain bolt",
+      "nm": 20
+    },
+    {
+      "item": "Final gear oil drain bolt",
+      "nm": 20
+    },
+    {
+      "item": "Spark plug",
+      "nm": 13
+    },
+    {
+      "item": "Front axle nut",
+      "nm": 45
+    },
+    {
+      "item": "Rear axle nut",
+      "nm": 105
+    }
+  ],
+  "intervals": [
+    {
+      "item": "Engine oil",
+      "everyKm": 3000,
+      "everyMonths": 6
+    },
+    {
+      "item": "Final gear oil",
+      "everyKm": 9000,
+      "everyMonths": 12
+    },
+    {
+      "item": "Air filter",
+      "everyKm": 12000,
+      "everyMonths": null
+    },
+    {
+      "item": "CVT clean and check",
+      "everyKm": 12000,
+      "everyMonths": null
+    },
+    {
+      "item": "Spark plug",
+      "everyKm": 8000,
+      "everyMonths": null
+    },
+    {
+      "item": "V-belt",
+      "everyKm": 24000,
+      "everyMonths": null
+    },
+    {
+      "item": "Brake fluid",
+      "everyKm": null,
+      "everyMonths": 24
+    }
+  ]
+}

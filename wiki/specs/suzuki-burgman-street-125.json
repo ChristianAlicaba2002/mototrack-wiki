@@ -1,0 +1,83 @@
+{
+  "kind": "spec",
+  "title": "Suzuki Burgman Street 125",
+  "make": "Suzuki",
+  "model": "Burgman Street 125",
+  "aliases": [
+    "Burgman Street",
+    "Burgman Street EX"
+  ],
+  "yearFrom": 2020,
+  "yearTo": null,
+  "engineCc": 124,
+  "keywords": [
+    "scooter",
+    "automatic",
+    "air-cooled",
+    "maxiscooter"
+  ],
+  "fluids": {
+    "engineOil": {
+      "grade": "SAE 10W-40, JASO MB",
+      "capacityL": 0.75
+    },
+    "gearOil": {
+      "grade": "SAE 10W-40",
+      "capacityL": 0.11
+    },
+    "coolant": null,
+    "brakeFluid": "DOT 4"
+  },
+  "tirePressure": {
+    "front": {
+      "soloPsi": 25,
+      "passengerPsi": 25
+    },
+    "rear": {
+      "soloPsi": 29,
+      "passengerPsi": 33
+    }
+  },
+  "torque": [
+    {
+      "item": "Engine oil drain bolt",
+      "nm": 23
+    },
+    {
+      "item": "Spark plug",
+      "nm": 11
+    }
+  ],
+  "intervals": [
+    {
+      "item": "Engine oil",
+      "everyKm": 3000,
+      "everyMonths": 6
+    },
+    {
+      "item": "Final gear oil",
+      "everyKm": 12000,
+      "everyMonths": 12
+    },
+    {
+      "item": "Air filter",
+      "everyKm": 12000,
+      "everyMonths": null
+    },
+    {
+      "item": "Spark plug",
+      "everyKm": 6000,
+      "everyMonths": null
+    },
+    {
+      "item": "V-belt",
+      "everyKm": 24000,
+      "everyMonths": null
+    },
+    {
+      "item": "Brake fluid",
+      "everyKm": null,
+      "everyMonths": 24
+    }
+  ]
+}

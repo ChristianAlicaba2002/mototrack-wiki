@@ -1,0 +1,58 @@
+{
+  "kind": "guide",
+  "title": "Plug a tubeless tire puncture",
+  "category": "tire_pressure",
+  "summary": "Make a roadside repair with a string plug kit to get home or to a shop.",
+  "difficulty": "moderate",
+  "minutes": 30,
+  "keywords": [
+    "flat tire",
+    "puncture",
+    "butas gulong",
+    "tubeless",
+    "tire plug",
+    "vulcanizing"
+  ],
+  "appliesTo": [],
+  "tools": [
+    "Tubeless plug kit (reamer and insertion tool)",
+    "Pliers",
+    "Portable pump or CO2 inflator",
+    "Tire pressure gauge",
+    "Knife"
+  ],
+  "parts": [
+    "Tire repair strings",
+    "Soapy water"
+  ],
+  "steps": [
+    {
+      "text": "Find the leak. Spray soapy water on the tread and look for bubbles if you can't see the object.",
+      "caution": null
+    },
+    {
+      "text": "Mark the spot, then pull out the nail or object with pliers.",
+      "caution": "Only tread punctures up to about 6 mm can be plugged. A sidewall or shoulder cut needs a new tire."
+    },
+    {
+      "text": "Push the reamer into the hole and work it in and out a few times to clean and roughen it.",
+      "caution": null
+    },
+    {
+      "text": "Thread a string through the insertion tool so it's centered, coated in the kit's cement if supplied.",
+      "caution": null
+    },
+    {
+      "text": "Push the tool in until about a third of the string is left outside, then pull the tool straight out quickly. The string stays in.",
+      "caution": null
+    },
+    {
+      "text": "Trim the string about 5 mm above the tread and inflate the tire to the pressure on your spec sheet.",
+      "caution": null
+    },
+    {
+      "text": "Check the plug with soapy water. Ride gently and have the tire patched from the inside or replaced soon.",
+      "caution": "A string plug is a temporary fix. Keep speeds moderate and avoid carrying a passenger until the tire is properly repaired."
+    }
+  ]
+}

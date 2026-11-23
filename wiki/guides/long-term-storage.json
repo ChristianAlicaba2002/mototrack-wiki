@@ -1,0 +1,55 @@
+{
+  "kind": "guide",
+  "title": "Store your bike for a long time",
+  "category": "diy",
+  "summary": "Prepare a bike to sit for a month or more so it starts and rides normally when you come back.",
+  "difficulty": "easy",
+  "minutes": 30,
+  "keywords": [
+    "storage",
+    "parking",
+    "not riding",
+    "battery drain",
+    "stale fuel"
+  ],
+  "appliesTo": [],
+  "tools": [
+    "Smart motorcycle charger or battery tender",
+    "Tire pressure gauge",
+    "Breathable bike cover"
+  ],
+  "parts": [
+    "Fuel stabilizer",
+    "Fresh engine oil, if due"
+  ],
+  "steps": [
+    {
+      "text": "Change the oil if it's near its interval. Old oil holds acids that sit on the engine's internals.",
+      "caution": null
+    },
+    {
+      "text": "Fill the tank and add fuel stabilizer, then ride a few minutes to get it through the system.",
+      "caution": "A full tank limits rust and condensation. Store away from flames and pilot lights."
+    },
+    {
+      "text": "Wash and dry the bike, then lube the chain on chain bikes.",
+      "caution": null
+    },
+    {
+      "text": "Inflate the tires to the pressure on your spec sheet, and use the center stand to keep weight off them.",
+      "caution": null
+    },
+    {
+      "text": "Connect a battery tender, or remove the battery and charge it every month.",
+      "caution": null
+    },
+    {
+      "text": "Cover the bike with a breathable cover in a dry place. Avoid plastic tarps that trap moisture.",
+      "caution": null
+    },
+    {
+      "text": "Before riding again, check tire pressure, brakes, lights and the oil level, and let the engine warm up gently.",
+      "caution": null
+    }
+  ]
+}

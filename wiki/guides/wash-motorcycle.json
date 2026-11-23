@@ -1,0 +1,56 @@
+{
+  "kind": "guide",
+  "title": "Wash your motorcycle safely",
+  "category": "diy",
+  "summary": "Clean the bike without forcing water into bearings, connectors and the air intake.",
+  "difficulty": "easy",
+  "minutes": 30,
+  "keywords": [
+    "wash",
+    "car wash",
+    "hugas",
+    "cleaning",
+    "detailing"
+  ],
+  "appliesTo": [],
+  "tools": [
+    "Two buckets",
+    "Soft sponge or mitt",
+    "Microfiber towels",
+    "Soft brush for wheels"
+  ],
+  "parts": [
+    "Motorcycle or car wash soap",
+    "Chain lube, for chain bikes"
+  ],
+  "steps": [
+    {
+      "text": "Wash when the engine and exhaust are cool. Plug the muffler opening with a rag.",
+      "caution": null
+    },
+    {
+      "text": "Rinse with low-pressure water to lift loose dirt.",
+      "caution": "Don't aim a pressure washer at wheel bearings, the instrument panel, switches, electrical connectors or the CVT air intake."
+    },
+    {
+      "text": "Wash from the top down with soapy water and the mitt, using the second bucket to rinse the mitt.",
+      "caution": null
+    },
+    {
+      "text": "Scrub wheels and the lower body last with the brush so grit doesn't scratch the paint.",
+      "caution": null
+    },
+    {
+      "text": "Rinse again, then dry with microfiber towels. Blow water out of switches and connectors if you have a blower.",
+      "caution": null
+    },
+    {
+      "text": "Remove the muffler rag, start the engine and let it run for a few minutes to dry off.",
+      "caution": null
+    },
+    {
+      "text": "Test the brakes at low speed before riding normally, and re-lube the chain on chain bikes.",
+      "caution": "Wet discs and soap residue reduce braking. Keep soap and polish off the discs."
+    }
+  ]
+}

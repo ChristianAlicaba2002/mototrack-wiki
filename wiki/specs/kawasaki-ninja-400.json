@@ -1,0 +1,99 @@
+{
+  "kind": "spec",
+  "title": "Kawasaki Ninja 400",
+  "make": "Kawasaki",
+  "model": "Ninja 400",
+  "aliases": [
+    "EX400"
+  ],
+  "yearFrom": 2018,
+  "yearTo": null,
+  "engineCc": 399,
+  "keywords": [
+    "sport",
+    "manual",
+    "chain",
+    "liquid-cooled",
+    "parallel twin",
+    "abs",
+    "big bike"
+  ],
+  "fluids": {
+    "engineOil": {
+      "grade": "SAE 10W-40, JASO MA",
+      "capacityL": 1.9
+    },
+    "gearOil": null,
+    "coolant": {
+      "grade": "Kawasaki Coolant",
+      "capacityL": 1.2
+    },
+    "brakeFluid": "DOT 4"
+  },
+  "tirePressure": {
+    "front": {
+      "soloPsi": 36,
+      "passengerPsi": 36
+    },
+    "rear": {
+      "soloPsi": 36,
+      "passengerPsi": 41
+    }
+  },
+  "torque": [
+    {
+      "item": "Engine oil drain bolt",
+      "nm": 30
+    },
+    {
+      "item": "Oil filter",
+      "nm": 17.5
+    },
+    {
+      "item": "Spark plug",
+      "nm": 13
+    }
+  ],
+  "intervals": [
+    {
+      "item": "Engine oil",
+      "everyKm": 6000,
+      "everyMonths": 12
+    },
+    {
+      "item": "Oil filter",
+      "everyKm": 12000,
+      "everyMonths": 12
+    },
+    {
+      "item": "Chain clean and lube",
+      "everyKm": 600,
+      "everyMonths": null
+    },
+    {
+      "item": "Air filter",
+      "everyKm": 18000,
+      "everyMonths": null
+    },
+    {
+      "item": "Spark plug",
+      "everyKm": 12000,
+      "everyMonths": null
+    },
+    {
+      "item": "Valve clearance",
+      "everyKm": 24000,
+      "everyMonths": null
+    },
+    {
+      "item": "Coolant",
+      "everyKm": null,
+      "everyMonths": 36
+    },
+    {
+      "item": "Brake fluid",
+      "everyKm": null,
+      "everyMonths": 24
+    }
+  ]
+}

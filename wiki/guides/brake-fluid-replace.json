@@ -1,0 +1,58 @@
+{
+  "kind": "guide",
+  "title": "Replace the brake fluid",
+  "category": "fluids",
+  "summary": "Flush old, moisture-filled brake fluid out of a hydraulic brake and bleed it with fresh fluid.",
+  "difficulty": "advanced",
+  "minutes": 60,
+  "keywords": [
+    "brake fluid",
+    "bleed",
+    "dot 4",
+    "dot 3",
+    "spongy brake",
+    "preno"
+  ],
+  "appliesTo": [],
+  "tools": [
+    "Box wrench for the bleed valve",
+    "Clear hose that fits the bleed valve",
+    "Catch bottle",
+    "Screwdriver for the reservoir cover",
+    "Rags and water spray bottle"
+  ],
+  "parts": [
+    "Sealed new brake fluid (DOT type on your spec sheet)",
+    "Reservoir diaphragm, if torn"
+  ],
+  "steps": [
+    {
+      "text": "Turn the handlebar so the brake reservoir sits level, and cover the paint and plastics around it with rags.",
+      "caution": "Brake fluid strips paint and damages plastic. Wipe drips immediately and rinse with water."
+    },
+    {
+      "text": "Open the reservoir cover and remove the diaphragm. Note the fluid's color; dark fluid is overdue.",
+      "caution": null
+    },
+    {
+      "text": "Fit the clear hose to the caliper's bleed valve and run it into the catch bottle.",
+      "caution": null
+    },
+    {
+      "text": "Squeeze and hold the brake lever, open the bleed valve a quarter turn, then close it before you release the lever. Repeat.",
+      "caution": null
+    },
+    {
+      "text": "Keep topping up the reservoir with fresh fluid as you go. Continue until clean, bubble-free fluid comes through the hose.",
+      "caution": "Never let the reservoir run dry, or air enters the line and you have to start over."
+    },
+    {
+      "text": "Tighten the bleed valve, fill the reservoir to the upper line and refit the diaphragm and cover.",
+      "caution": null
+    },
+    {
+      "text": "Pump the lever. It should feel firm and stop well short of the grip. Test the brake at walking pace before riding.",
+      "caution": "If the lever still feels spongy, don't ride. Bleed again or have a shop do it. Bikes with ABS may need a dealer tool to bleed fully."
+    }
+  ]
+}

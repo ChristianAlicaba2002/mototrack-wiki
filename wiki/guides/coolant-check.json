@@ -1,0 +1,50 @@
+{
+  "kind": "guide",
+  "title": "Check and top up the coolant",
+  "category": "fluids",
+  "summary": "Read the reservoir level and top up with the right coolant before a low level turns into overheating.",
+  "difficulty": "easy",
+  "minutes": 15,
+  "keywords": [
+    "coolant",
+    "radiator",
+    "overheat",
+    "reservoir",
+    "liquid-cooled"
+  ],
+  "appliesTo": [],
+  "tools": [
+    "Screwdriver for the reservoir cover",
+    "Funnel",
+    "Flashlight"
+  ],
+  "parts": [
+    "Pre-mixed coolant (type on your spec sheet)"
+  ],
+  "steps": [
+    {
+      "text": "Check with the engine cold and the bike upright on level ground.",
+      "caution": "Never open the radiator cap on a hot engine. Pressurized coolant can spray out and scald you."
+    },
+    {
+      "text": "Find the coolant reservoir. On most scooters it sits behind a small cover on the floorboard or under the front panel.",
+      "caution": null
+    },
+    {
+      "text": "Read the level against the LOWER and UPPER marks on the tank.",
+      "caution": null
+    },
+    {
+      "text": "If it is below LOWER, remove the reservoir cap and add pre-mixed coolant up to UPPER. Don't fill past it.",
+      "caution": null
+    },
+    {
+      "text": "Refit the cap and cover, then wipe off any spills.",
+      "caution": "Coolant is sweet and toxic to pets and children. Clean spills right away."
+    },
+    {
+      "text": "If you have to top up more than once a month, look for leaks at the hoses, radiator and water pump, or have a shop pressure-test the system.",
+      "caution": null
+    }
+  ]
+}

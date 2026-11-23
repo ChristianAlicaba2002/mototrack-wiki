@@ -1,0 +1,90 @@
+{
+  "kind": "spec",
+  "title": "Yamaha Sniper 155",
+  "make": "Yamaha",
+  "model": "Sniper 155",
+  "aliases": [
+    "Exciter 155",
+    "MX King 155"
+  ],
+  "yearFrom": 2021,
+  "yearTo": null,
+  "engineCc": 155,
+  "keywords": [
+    "underbone",
+    "manual",
+    "chain",
+    "liquid-cooled",
+    "vva",
+    "sniper 155r"
+  ],
+  "fluids": {
+    "engineOil": {
+      "grade": "SAE 10W-40, JASO MA",
+      "capacityL": 1.05
+    },
+    "gearOil": null,
+    "coolant": {
+      "grade": "Yamalube Coolant",
+      "capacityL": 0.6
+    },
+    "brakeFluid": "DOT 4"
+  },
+  "tirePressure": {
+    "front": {
+      "soloPsi": 29,
+      "passengerPsi": 29
+    },
+    "rear": {
+      "soloPsi": 33,
+      "passengerPsi": 36
+    }
+  },
+  "torque": [
+    {
+      "item": "Engine oil drain bolt",
+      "nm": 20
+    },
+    {
+      "item": "Spark plug",
+      "nm": 13
+    }
+  ],
+  "intervals": [
+    {
+      "item": "Engine oil",
+      "everyKm": 3000,
+      "everyMonths": 6
+    },
+    {
+      "item": "Oil filter",
+      "everyKm": 6000,
+      "everyMonths": null
+    },
+    {
+      "item": "Chain clean and lube",
+      "everyKm": 1000,
+      "everyMonths": null
+    },
+    {
+      "item": "Air filter",
+      "everyKm": 12000,
+      "everyMonths": null
+    },
+    {
+      "item": "Spark plug",
+      "everyKm": 8000,
+      "everyMonths": null
+    },
+    {
+      "item": "Coolant",
+      "everyKm": null,
+      "everyMonths": 24
+    },
+    {
+      "item": "Brake fluid",
+      "everyKm": null,
+      "everyMonths": 24
+    }
+  ]
+}
