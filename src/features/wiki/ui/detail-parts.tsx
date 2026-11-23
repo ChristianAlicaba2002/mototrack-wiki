@@ -1,5 +1,5 @@
 import { Children, Fragment, type ReactNode } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { type DimensionValue, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ChevronLeftIcon } from '@/components/icons/line-icons';
@@ -18,12 +18,13 @@ type DetailFrameProps = {
   title: string;
   context?: string;
   loadState: WikiDetailLoadState;
+  skeleton: ReactNode;
   error: string | null;
   back: () => void;
   children: ReactNode;
 };
 
-export function DetailFrame({ title, context, loadState, error, back, children }: DetailFrameProps) {
+export function DetailFrame({ title, context, loadState, skeleton, error, back, children }: DetailFrameProps) {
   return (
     <ThemedView style={styles.root}>
       <SafeAreaView style={styles.root} edges={['top', 'left', 'right']}>
@@ -41,7 +42,7 @@ export function DetailFrame({ title, context, loadState, error, back, children }
         />
         <ScrollView contentContainerStyle={styles.content}>
           {loadState === 'loading' ? (
-            <DetailSkeleton />
+            skeleton
           ) : loadState === 'ready' ? (
             children
           ) : loadState === 'error' ? (
@@ -73,31 +74,79 @@ function NotFound({ back }: { back: () => void }) {
   );
 }
 
-function DetailSkeleton() {
-  const theme = useTheme();
+const EYEBROW = { lineHeight: 14, fontSize: 11 };
+const SMALL = { lineHeight: 20, fontSize: 14 };
+
+export function DetailSkeleton({ children }: { children: ReactNode }) {
   return (
     <View style={styles.details} accessible accessibilityLabel="Loading" accessibilityState={{ busy: true }}>
-      <View style={styles.heading}>
-        <SkeletonText lineHeight={14} fontSize={11} width={72} />
-        <SkeletonText lineHeight={36} fontSize={32} width="70%" />
+      {children}
+    </View>
+  );
+}
+
+type HeadingSkeletonProps = {
+  eyebrow: number;
+  title: DimensionValue[];
+  children?: ReactNode;
+};
+
+export function DetailHeadingSkeleton({ eyebrow, title, children }: HeadingSkeletonProps) {
+  return (
+    <View style={styles.heading}>
+      <SkeletonText {...EYEBROW} width={eyebrow} />
+      {title.map((width, i) => (
+        <SkeletonText key={i} lineHeight={styles.title.lineHeight} fontSize={styles.title.fontSize} width={width} />
+      ))}
+      {children}
+    </View>
+  );
+}
+
+export function FactSkeleton({ label, value }: { label: number; value: number }) {
+  const theme = useTheme();
+  return (
+    <View style={[styles.fact, { borderBottomColor: theme.line }]}>
+      <SkeletonText {...EYEBROW} width={label} />
+      <SkeletonText lineHeight={20} fontSize={styles.factValue.fontSize} width={value} />
+    </View>
+  );
+}
+
+export function DetailSectionSkeleton({ title, children }: { title: number; children: ReactNode }) {
+  const theme = useTheme();
+  return (
+    <View style={[styles.section, { borderTopColor: theme.line }]}>
+      <SkeletonText {...EYEBROW} width={title} />
+      {children}
+    </View>
+  );
+}
+
+type LabeledRowSkeletonProps = {
+  label: DimensionValue;
+  note?: DimensionValue;
+  value: number;
+};
+
+export function LabeledRowSkeleton({ label, note, value }: LabeledRowSkeletonProps) {
+  return (
+    <View style={styles.row}>
+      <View style={styles.rowLabel}>
+        <SkeletonText {...SMALL} width={label} />
+        {note ? <SkeletonText {...SMALL} width={note} /> : null}
       </View>
-      <View style={[styles.facts, { borderTopColor: theme.text }]}>
-        {[0, 1].map((i) => (
-          <View key={i} style={[styles.fact, { borderBottomColor: theme.line }]}>
-            <SkeletonText lineHeight={14} fontSize={11} width={64} />
-            <SkeletonText lineHeight={20} fontSize={15} width={96} />
-          </View>
-        ))}
-      </View>
-      <View style={[styles.section, { borderTopColor: theme.line }]}>
-        <SkeletonText lineHeight={14} fontSize={11} width={88} />
-        {[0, 1, 2, 3].map((i) => (
-          <View key={i} style={styles.row}>
-            <SkeletonText lineHeight={20} fontSize={14} width="45%" />
-            <SkeletonText lineHeight={20} fontSize={14} width={64} />
-          </View>
-        ))}
-      </View>
+      <SkeletonText {...SMALL} width={value} />
+    </View>
+  );
+}
+
+export function FootnoteSkeleton({ lines }: { lines: DimensionValue[] }) {
+  return (
+    <View>
+      {lines.map((width, i) => (
+        <SkeletonText key={i} {...SMALL} width={width} />
+      ))}
     </View>
   );
 }

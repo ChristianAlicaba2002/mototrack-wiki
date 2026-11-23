@@ -85,6 +85,7 @@ export function useWikiViewModel() {
 
   return {
     loading: wiki.loading || garage.loading,
+    skeletonPinned: (garage.loading || activeBike !== null) && query.trim().length === 0,
     error: refreshError ?? wiki.error,
     isEmpty: !wiki.loading && !wiki.error && wiki.docs.length === 0,
     hasDocs: wiki.docs.length > 0,

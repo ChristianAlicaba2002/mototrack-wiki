@@ -1,6 +1,7 @@
 import { useLocalSearchParams } from 'expo-router';
-import { StyleSheet, View } from 'react-native';
+import { type DimensionValue, StyleSheet, View } from 'react-native';
 
+import { SkeletonText } from '@/components/skeleton';
 import { ThemedText } from '@/components/themed-text';
 import { Fonts, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
@@ -10,7 +11,27 @@ import { WIKI_CATEGORY_LABELS, WIKI_DIFFICULTY_LABELS } from '../model/categorie
 import { formatMinutes } from '../model/format';
 import { isGeneralDoc } from '../model/model-key';
 import { useWikiDetailViewModel } from '../model/wiki-detail-view-model';
-import { DetailFrame, DetailHeading, DetailSection, Fact, Facts, Rows } from './detail-parts';
+import {
+  DetailFrame,
+  DetailHeading,
+  DetailHeadingSkeleton,
+  DetailSection,
+  DetailSectionSkeleton,
+  DetailSkeleton,
+  Fact,
+  Facts,
+  FactSkeleton,
+  Rows,
+} from './detail-parts';
+
+const TOOL_ROWS = [230, 91, 63, 42, 70];
+const PART_ROWS = [300, 161, 250];
+const STEP_ROWS: DimensionValue[][] = [
+  ['100%', '92%', '40%'],
+  ['100%', '70%'],
+  ['100%', '96%', '60%'],
+  ['100%', '88%'],
+];
 
 export function WikiGuideScreen() {
   const { id } = useLocalSearchParams<{ id?: string }>();
@@ -21,6 +42,7 @@ export function WikiGuideScreen() {
       title="DIY guide"
       context={doc ? WIKI_CATEGORY_LABELS[doc.category] : 'Wiki'}
       loadState={loadState}
+      skeleton={<GuideSkeleton />}
       error={error}
       back={back}>
       {doc ? <Guide guide={doc} /> : null}
@@ -90,6 +112,62 @@ function Step({ number, step }: { number: number; step: WikiGuideStep }) {
         ) : null}
       </View>
     </View>
+  );
+}
+
+function GuideSkeleton() {
+  return (
+    <DetailSkeleton>
+      <DetailHeadingSkeleton eyebrow={48} title={['100%', '38%']}>
+        <View style={styles.summary}>
+          {(['100%', '97%', '30%'] as const).map((width, i) => (
+            <SkeletonText key={i} lineHeight={23} fontSize={16} width={width} />
+          ))}
+        </View>
+      </DetailHeadingSkeleton>
+
+      <Facts>
+        <FactSkeleton label={80} value={36} />
+        <FactSkeleton label={32} value={54} />
+        <FactSkeleton label={32} value={135} />
+      </Facts>
+
+      <ItemListSkeleton title={40} items={TOOL_ROWS} />
+      <ItemListSkeleton title={40} items={PART_ROWS} />
+
+      <DetailSectionSkeleton title={72}>
+        <Rows>
+          {STEP_ROWS.map((lines, i) => (
+            <View key={i} style={styles.step}>
+              <View style={styles.stepNumber}>
+                <SkeletonText lineHeight={23} fontSize={14} width={17} />
+              </View>
+              <View style={styles.stepBody}>
+                <View>
+                  {lines.map((width, line) => (
+                    <SkeletonText key={line} lineHeight={23} fontSize={16} width={width} />
+                  ))}
+                </View>
+              </View>
+            </View>
+          ))}
+        </Rows>
+      </DetailSectionSkeleton>
+    </DetailSkeleton>
+  );
+}
+
+function ItemListSkeleton({ title, items }: { title: number; items: number[] }) {
+  return (
+    <DetailSectionSkeleton title={title}>
+      <Rows>
+        {items.map((width, i) => (
+          <View key={i} style={styles.item}>
+            <SkeletonText lineHeight={20} fontSize={14} width={width} />
+          </View>
+        ))}
+      </Rows>
+    </DetailSectionSkeleton>
   );
 }
 
