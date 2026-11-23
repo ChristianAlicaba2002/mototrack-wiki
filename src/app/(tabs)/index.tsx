@@ -10,13 +10,9 @@ import { useAuth } from '@/hooks/use-auth';
 import { useTheme } from '@/hooks/use-theme';
 import { signOut } from '@/lib/firebase/google-sign-in';
 
-function todayKicker(): string {
-  return new Date().toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
-}
-
 export default function HomeScreen() {
   return (
-    <TabScreen title="MotoTrack" kicker={todayKicker()}>
+    <TabScreen>
       <ActiveBikeCard />
       <RecentServicesCard />
       <PlaceholderCard title="Upcoming maintenance" description="Reminders for what's due, by km or by date." />

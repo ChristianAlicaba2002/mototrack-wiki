@@ -29,9 +29,8 @@ export function GarageView({
 
   return (
     <TabScreen
-      title="Garage"
-      kicker={hasBikes ? summaryLine(bikes) : undefined}
-      headerAction={
+      summary={hasBikes ? summaryLine(bikes) : undefined}
+      action={
         hasBikes ? (
           <IconButton
             variant="primary"
