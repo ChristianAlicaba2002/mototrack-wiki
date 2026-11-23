@@ -48,3 +48,7 @@ firebase-debug.log
 firestore-debug.log
 storage-debug.log
 ui-debug.log
+
+# Firebase service account keys (wiki seed script)
+*firebase-adminsdk*.json
+*service-account*.json
