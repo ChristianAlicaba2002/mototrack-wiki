@@ -20,7 +20,6 @@ import {
   FormField,
   IconButton,
   OdometerReadout,
-  Panel,
   Rule,
   ScreenHeader,
   Section,
@@ -65,6 +64,7 @@ export function OdometerView({
           leading={
             <IconButton
               accessibilityLabel="Close"
+              variant="plain"
               onPress={cancel}
               disabled={saving}
               icon={(c) => <CloseIcon size={20} color={c} />}
@@ -85,7 +85,7 @@ export function OdometerView({
               contentContainerStyle={styles.content}
               keyboardShouldPersistTaps="handled"
               keyboardDismissMode="interactive">
-              <Panel>
+              <View style={styles.current}>
                 <ThemedText type="eyebrow" themeColor="textSecondary">
                   On the dash now
                 </ThemedText>
@@ -95,9 +95,9 @@ export function OdometerView({
                     +{formatKm(delta)} km since the last reading
                   </ThemedText>
                 ) : null}
-              </Panel>
+              </View>
 
-              <Section title="New reading">
+              <Section title="New reading" plain>
                 <FormField
                   label="Odometer"
                   mono
@@ -119,6 +119,7 @@ export function OdometerView({
 
               <Section
                 title="History"
+                plain
                 description={readings.length >= HISTORY_LIMIT ? `Your last ${HISTORY_LIMIT} readings.` : undefined}>
                 {readingsLoading ? (
                   <ActivityIndicator />
@@ -202,6 +203,9 @@ const styles = StyleSheet.create({
     maxWidth: FORM_MAX_WIDTH,
     alignSelf: 'center',
   },
+  current: {
+    gap: Spacing.two,
+  },
   historyRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -217,7 +221,6 @@ const styles = StyleSheet.create({
   },
   historyLatest: {
     fontFamily: Fonts.monoMedium,
-
   },
   historyDiff: {
     minWidth: 96,
