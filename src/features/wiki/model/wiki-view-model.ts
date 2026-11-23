@@ -43,7 +43,7 @@ export function useWikiViewModel() {
       pinnedSpec: pinned,
       specs: filtered.filter((d): d is WithId<WikiSpec> => d.kind === 'spec'),
       guides: filtered.filter((d): d is WithId<WikiGuide> => d.kind === 'guide'),
-      missingSpec: Boolean(activeBike) && !bikeSpec && !searching && (category === null || category === 'specs'),
+      missingSpec: Boolean(activeBike) && !bikeSpec && !searching && category === null,
     };
   }, [wiki.docs, activeBike, query, category, myBikeOnly]);
 
