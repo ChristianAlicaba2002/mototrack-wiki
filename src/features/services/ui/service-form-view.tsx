@@ -72,6 +72,7 @@ export function ServiceFormView({
           leading={
             <IconButton
               accessibilityLabel="Close"
+              variant="plain"
               onPress={cancel}
               disabled={busy}
               icon={(c) => <CloseIcon size={20} color={c} />}
@@ -92,7 +93,7 @@ export function ServiceFormView({
               contentContainerStyle={styles.content}
               keyboardShouldPersistTaps="handled"
               keyboardDismissMode="interactive">
-              <Section title="What was done">
+              <Section title="What was done" plain>
                 <TypePicker value={values.type} onChange={setType} error={errors.type} disabled={busy} />
                 <FormField
                   label="Title"
@@ -108,7 +109,7 @@ export function ServiceFormView({
                 />
               </Section>
 
-              <Section title="When">
+              <Section title="When" plain>
                 <View style={styles.field}>
                   <DateField
                     label="Date"
@@ -144,7 +145,7 @@ export function ServiceFormView({
                 />
               </Section>
 
-              <Section title="Cost & notes">
+              <Section title="Cost & notes" plain>
                 <FormField
                   label="Cost"
                   mono
