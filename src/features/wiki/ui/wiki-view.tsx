@@ -8,7 +8,7 @@ import { ErrorMessage, TextAction } from '@/features/garage/ui/controls';
 
 import type { WikiViewModel } from '../model/wiki-view-model';
 import { SearchField } from './search-field';
-import { CategoryChips, MyBikeToggle } from './wiki-filters';
+import { FilterButton, WikiFilterDrawer } from './wiki-filters';
 import { GuideRow, MissingSpecNote, PinnedSpec, SpecRow, WikiList, WikiListSkeleton } from './wiki-rows';
 
 export function WikiView({
@@ -19,11 +19,14 @@ export function WikiView({
   query,
   setQuery,
   category,
-  setCategory,
   bikeName,
   bikeModel,
-  myBikeOnly,
-  toggleMyBikeOnly,
+  filters,
+  filtersApplied,
+  filtersOpen,
+  openFilters,
+  closeFilters,
+  applyFilters,
   hasFilters,
   pinnedSpec,
   specs,
@@ -39,9 +42,12 @@ export function WikiView({
 
   return (
     <TabScreen onRefresh={refresh} refreshing={refreshing} keyboardShouldPersistTaps="handled">
-      <SearchField value={query} onChangeText={setQuery} placeholder="Search specs, fluids, guides" />
-      <CategoryChips selected={category} onSelect={setCategory} />
-      {bikeName ? <MyBikeToggle bikeName={bikeName} value={myBikeOnly} onToggle={toggleMyBikeOnly} /> : null}
+      <View style={styles.searchRow}>
+        <View style={styles.searchField}>
+          <SearchField value={query} onChangeText={setQuery} placeholder="Search specs, fluids, guides" />
+        </View>
+        <FilterButton active={filtersApplied} onPress={openFilters} />
+      </View>
 
       {error && hasDocs ? <ErrorMessage>{error}</ErrorMessage> : null}
 
@@ -92,6 +98,14 @@ export function WikiView({
           ) : null}
         </>
       )}
+
+      <WikiFilterDrawer
+        open={filtersOpen}
+        onClosed={closeFilters}
+        filters={filters}
+        bikeName={bikeName}
+        onApply={applyFilters}
+      />
     </TabScreen>
   );
 }
@@ -120,6 +134,15 @@ function EmptyState({ eyebrow, eyebrowColor = 'textSecondary', title, message, a
 }
 
 const styles = StyleSheet.create({
+  searchRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.one,
+    marginRight: -Spacing.two,
+  },
+  searchField: {
+    flex: 1,
+  },
   empty: {
     flex: 1,
     alignItems: 'center',
