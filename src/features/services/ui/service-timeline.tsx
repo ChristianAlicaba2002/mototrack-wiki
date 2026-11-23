@@ -17,12 +17,13 @@ const DOT_SIZE = 11;
 type ServiceTimelineProps = {
   timeline: TimelineYear[];
   deletingId: string | null;
+  onView: (serviceId: string) => void;
   onEdit: (serviceId: string) => void;
   onDelete: (serviceId: string) => void;
 };
 
 /** A bike's services on a vertical rail, newest at the top, grouped by year. */
-export function ServiceTimeline({ timeline, deletingId, onEdit, onDelete }: ServiceTimelineProps) {
+export function ServiceTimeline({ timeline, deletingId, onView, onEdit, onDelete }: ServiceTimelineProps) {
   const lastYear = timeline.length - 1;
   return (
     <View>
@@ -37,6 +38,7 @@ export function ServiceTimeline({ timeline, deletingId, onEdit, onDelete }: Serv
               isOldest={gi === lastYear && ei === group.entries.length - 1}
               deleting={deletingId === entry.service.id}
               busy={deletingId !== null}
+              onView={() => onView(entry.service.id)}
               onEdit={() => onEdit(entry.service.id)}
               onDelete={() => confirmDeleteService(() => onDelete(entry.service.id), entry.service.title)}
             />
@@ -79,11 +81,12 @@ type TimelineRowProps = {
   isOldest: boolean;
   deleting: boolean;
   busy: boolean;
+  onView: () => void;
   onEdit: () => void;
   onDelete: () => void;
 };
 
-function TimelineRow({ entry, isLatest, isOldest, deleting, busy, onEdit, onDelete }: TimelineRowProps) {
+function TimelineRow({ entry, isLatest, isOldest, deleting, busy, onView, onEdit, onDelete }: TimelineRowProps) {
   const theme = useTheme();
   const { service, kmSincePrevious } = entry;
   const typeLabel = SERVICE_TYPE_LABELS[service.type];
@@ -109,13 +112,13 @@ function TimelineRow({ entry, isLatest, isOldest, deleting, busy, onEdit, onDele
       </View>
 
       <Pressable
-        onPress={onEdit}
+        onPress={onView}
         disabled={busy}
         accessibilityRole="button"
         accessibilityLabel={[service.title, typeLabel, formatServiceDate(service.date), `${formatKm(service.odometerKm)} kilometres`, cost]
           .filter(Boolean)
           .join(', ')}
-        accessibilityHint="Opens the service to edit it"
+        accessibilityHint="Opens the service details"
         style={({ pressed }) => [
           styles.card,
           { backgroundColor: theme.backgroundElement, borderColor: theme.line },

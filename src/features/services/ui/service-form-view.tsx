@@ -36,7 +36,6 @@ import {
   startOfDay,
 } from '../model/service-form';
 import type { ServiceFormViewModel } from '../model/service-form-view-model';
-import { confirmDeleteService } from './confirm-delete';
 import { DateField } from './date-field';
 
 const FORM_MAX_WIDTH = 560;
@@ -58,7 +57,6 @@ export function ServiceFormView({
   setDate,
   blurField,
   save,
-  remove,
   cancel,
 }: ServiceFormViewModel) {
   const theme = useTheme();
@@ -175,16 +173,6 @@ export function ServiceFormView({
                   editable={!busy}
                 />
               </Section>
-
-              {isEdit && (
-                <Button
-                  label="Delete this entry"
-                  variant="danger"
-                  onPress={() => confirmDeleteService(remove)}
-                  loading={pending === 'delete'}
-                  disabled={busy}
-                />
-              )}
             </ScrollView>
 
             <View style={[styles.footer, { borderColor: theme.line, backgroundColor: theme.background }]}>

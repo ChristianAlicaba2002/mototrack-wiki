@@ -33,6 +33,7 @@ export function ServiceLogView({
   deletingId,
   error,
   addService,
+  viewService,
   editService,
   removeService,
   back,
@@ -91,6 +92,7 @@ export function ServiceLogView({
                   <ServiceTimeline
                     timeline={timeline}
                     deletingId={deletingId}
+                    onView={viewService}
                     onEdit={editService}
                     onDelete={removeService}
                   />

@@ -65,6 +65,19 @@ export function subscribeToAllServices(
   return onSnapshot(q, (snapshot) => onChange(withIds(snapshot)), onError);
 }
 
+export function subscribeToService(
+  uid: string,
+  serviceId: string,
+  onChange: (service: WithId<ServiceRecord> | null) => void,
+  onError: (error: Error) => void
+): Unsubscribe {
+  return onSnapshot(
+    serviceDoc(uid, serviceId),
+    (snapshot) => onChange(snapshot.exists() ? { ...snapshot.data(), id: snapshot.id } : null),
+    onError
+  );
+}
+
 export async function getService(uid: string, serviceId: string): Promise<WithId<ServiceRecord> | null> {
   const snapshot = await getDoc(serviceDoc(uid, serviceId));
   return snapshot.exists() ? { ...snapshot.data(), id: snapshot.id } : null;

@@ -43,7 +43,7 @@ export function ServiceRow({ service, onPress, showNotes }: ServiceRowProps) {
       ]
         .filter(Boolean)
         .join(', ')}
-      accessibilityHint="Opens the service to edit or delete it"
+      accessibilityHint="Opens the service details"
       style={({ pressed }) => [styles.row, pressed && { backgroundColor: theme.backgroundSelected }]}>
       <View style={[styles.stub, { borderRightColor: theme.line }]}>
         <ThemedText style={styles.day}>{day}</ThemedText>
