@@ -69,6 +69,7 @@ function RootNavigator() {
           <Stack.Screen name="expenses" />
           <Stack.Screen name="settings" />
           <Stack.Screen name="wiki-spec" />
+          <Stack.Screen name="wiki-guide" />
         </Stack.Protected>
         <Stack.Protected guard={!signedIn}>
           <Stack.Screen name="login" />
