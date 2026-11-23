@@ -1,0 +1,56 @@
+{
+  "kind": "guide",
+  "title": "Check and charge the battery",
+  "category": "diy",
+  "summary": "Test the voltage, clean the terminals and charge or replace a battery that keeps going flat.",
+  "difficulty": "easy",
+  "minutes": 20,
+  "keywords": [
+    "battery",
+    "baterya",
+    "voltage",
+    "starter",
+    "terminals"
+  ],
+  "appliesTo": [],
+  "tools": [
+    "Screwdriver for the battery cover",
+    "Multimeter",
+    "Small wire brush",
+    "Smart motorcycle charger"
+  ],
+  "parts": [
+    "Dielectric grease or petroleum jelly",
+    "Replacement battery, if needed"
+  ],
+  "steps": [
+    {
+      "text": "Switch the ignition off and open the battery compartment. On most scooters it sits under the floorboard or seat.",
+      "caution": null
+    },
+    {
+      "text": "Measure across the terminals with the multimeter. A healthy, rested battery reads 12.6 V or more; below 12.2 V it needs charging.",
+      "caution": null
+    },
+    {
+      "text": "To clean the terminals, disconnect the negative (−) cable first, then the positive (+).",
+      "caution": "Removing positive first lets the wrench short against the frame. Always negative off first, positive on first."
+    },
+    {
+      "text": "Brush the terminals and cable ends until bright, then reconnect positive first and negative last.",
+      "caution": null
+    },
+    {
+      "text": "Coat the terminals lightly with dielectric grease to slow corrosion.",
+      "caution": null
+    },
+    {
+      "text": "If the voltage was low, charge with a smart motorcycle charger set to the battery's type. Don't use a car charger.",
+      "caution": null
+    },
+    {
+      "text": "Recheck the voltage a few hours after charging. If it drops below 12.4 V again, replace the battery.",
+      "caution": null
+    }
+  ]
+}
