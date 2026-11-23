@@ -6,7 +6,7 @@ import { Fragment } from 'react';
 import { CloseIcon } from '@/components/icons/line-icons';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Spacing } from '@/constants/theme';
+import { Fonts, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import type { WithId } from '@/lib/firestore/collections';
 import type { OdometerReading } from '@/lib/firestore/types';
@@ -216,7 +216,8 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
   historyLatest: {
-    fontWeight: 700,
+    fontFamily: Fonts.monoMedium,
+
   },
   historyDiff: {
     minWidth: 96,

@@ -2,7 +2,7 @@ import { router } from 'expo-router';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
-import { Spacing } from '@/constants/theme';
+import { Fonts, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
 import { bikeDisplayName } from '../model/active-bike';
@@ -104,16 +104,16 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   title: {
-    fontSize: 26,
-    lineHeight: 31,
-    fontWeight: 800,
-    letterSpacing: -0.6,
+    fontFamily: Fonts.display,
+    fontSize: 30,
+    lineHeight: 34,
+    letterSpacing: -0.2,
   },
   emptyTitle: {
-    fontSize: 22,
-    lineHeight: 27,
-    fontWeight: 800,
-    letterSpacing: -0.4,
+    fontFamily: Fonts.display,
+    fontSize: 26,
+    lineHeight: 30,
+    letterSpacing: -0.2,
   },
   readoutRow: {
     paddingVertical: Spacing.one,

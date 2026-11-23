@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { ChevronRightIcon, CoinIcon, PlusIcon } from '@/components/icons/line-icons';
 import { TabScreen } from '@/components/screen/tab-screen';
 import { ThemedText } from '@/components/themed-text';
-import { Spacing } from '@/constants/theme';
+import { Fonts, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import type { WithId } from '@/lib/firestore/collections';
 import type { Bike } from '@/lib/firestore/types';
@@ -247,10 +247,10 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   cardTitle: {
-    fontSize: 21,
-    lineHeight: 26,
-    fontWeight: 800,
-    letterSpacing: -0.4,
+    fontFamily: Fonts.display,
+    fontSize: 25,
+    lineHeight: 29,
+    letterSpacing: -0.2,
   },
   odometerRow: {
     flexDirection: 'row',
@@ -266,9 +266,9 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
   },
   plateText: {
+    fontFamily: Fonts.monoMedium,
     fontSize: 13,
     lineHeight: 18,
-    fontWeight: 700,
     letterSpacing: 1,
   },
   actions: {
@@ -282,10 +282,10 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.four,
   },
   emptyTitle: {
-    fontSize: 22,
-    lineHeight: 27,
-    fontWeight: 800,
-    letterSpacing: -0.4,
+    fontFamily: Fonts.display,
+    fontSize: 26,
+    lineHeight: 30,
+    letterSpacing: -0.2,
   },
   skeleton: {
     gap: Spacing.two,

@@ -400,10 +400,10 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   screenHeaderTitle: {
-    fontSize: 20,
-    lineHeight: 25,
-    fontWeight: 800,
-    letterSpacing: -0.4,
+    fontFamily: Fonts.display,
+    fontSize: 24,
+    lineHeight: 28,
+    letterSpacing: -0.2,
   },
   section: {
     gap: Spacing.two,
@@ -438,17 +438,15 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   wheelTextMd: {
-    fontFamily: Fonts.mono,
+    fontFamily: Fonts.monoMedium,
     fontSize: 18,
     lineHeight: 22,
-    fontWeight: 600,
     fontVariant: ['tabular-nums'],
   },
   wheelTextLg: {
-    fontFamily: Fonts.mono,
+    fontFamily: Fonts.monoMedium,
     fontSize: 30,
     lineHeight: 36,
-    fontWeight: 600,
     fontVariant: ['tabular-nums'],
   },
   field: {
@@ -473,6 +471,7 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.three - 4,
   },
   input: {
+    fontFamily: Fonts.sans,
     flex: 1,
     height: '100%',
     fontSize: 16,

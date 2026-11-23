@@ -1,7 +1,7 @@
 import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
-import { Spacing } from '@/constants/theme';
+import { Fonts, Spacing } from '@/constants/theme';
 import { formatKm } from '@/features/garage/model/odometer';
 import { TextAction } from '@/features/garage/ui/controls';
 import { useTheme } from '@/hooks/use-theme';
@@ -212,10 +212,10 @@ const styles = StyleSheet.create({
     paddingTop: Spacing.three,
   },
   year: {
-    fontSize: 22,
-    lineHeight: 28,
-    fontWeight: 800,
-    letterSpacing: -0.4,
+    fontFamily: Fonts.display,
+    fontSize: 26,
+    lineHeight: 31,
+    letterSpacing: -0.2,
     fontVariant: ['tabular-nums'],
   },
   card: {
@@ -243,7 +243,8 @@ const styles = StyleSheet.create({
     lineHeight: 16,
   },
   cost: {
-    fontWeight: 600,
+    fontFamily: Fonts.monoMedium,
+
   },
   cardFooter: {
     flexDirection: 'row',

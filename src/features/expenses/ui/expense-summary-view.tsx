@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronLeftIcon } from '@/components/icons/line-icons';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Spacing } from '@/constants/theme';
+import { Fonts, Spacing } from '@/constants/theme';
 import { bikeDisplayName } from '@/features/garage/model/active-bike';
 import { ErrorMessage, IconButton, Panel, PanelHeading, Radius, ScreenHeader } from '@/features/garage/ui/controls';
 import { formatCost } from '@/features/services/model/format';
@@ -302,9 +302,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.three - 4,
   },
   statValue: {
+    fontFamily: Fonts.monoMedium,
     fontSize: 17,
     lineHeight: 22,
-    fontWeight: 700,
   },
   lines: {
     gap: Spacing.three,
@@ -325,7 +325,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   lineAmount: {
-    fontWeight: 600,
+    fontFamily: Fonts.monoMedium,
+
   },
   track: {
     height: BAR_HEIGHT,
@@ -349,9 +350,9 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.four,
   },
   emptyTitle: {
-    fontSize: 22,
-    lineHeight: 27,
-    fontWeight: 800,
-    letterSpacing: -0.4,
+    fontFamily: Fonts.display,
+    fontSize: 26,
+    lineHeight: 30,
+    letterSpacing: -0.2,
   },
 });
