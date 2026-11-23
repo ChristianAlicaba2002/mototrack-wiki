@@ -1,0 +1,101 @@
+{
+  "kind": "spec",
+  "title": "Suzuki Raider R150 Fi",
+  "make": "Suzuki",
+  "model": "Raider R150 Fi",
+  "aliases": [
+    "Raider R150",
+    "Raider 150 Fi"
+  ],
+  "yearFrom": 2017,
+  "yearTo": null,
+  "engineCc": 147,
+  "keywords": [
+    "underbone",
+    "manual",
+    "chain",
+    "liquid-cooled",
+    "dohc"
+  ],
+  "fluids": {
+    "engineOil": {
+      "grade": "SAE 10W-40, JASO MA",
+      "capacityL": 1.0
+    },
+    "gearOil": null,
+    "coolant": {
+      "grade": "Suzuki Super Long Life Coolant",
+      "capacityL": 0.8
+    },
+    "brakeFluid": "DOT 4"
+  },
+  "tirePressure": {
+    "front": {
+      "soloPsi": 25,
+      "passengerPsi": 25
+    },
+    "rear": {
+      "soloPsi": 29,
+      "passengerPsi": 33
+    }
+  },
+  "torque": [
+    {
+      "item": "Engine oil drain plug",
+      "nm": 18
+    },
+    {
+      "item": "Spark plug",
+      "nm": 11
+    },
+    {
+      "item": "Front axle nut",
+      "nm": 42
+    },
+    {
+      "item": "Rear axle nut",
+      "nm": 65
+    },
+    {
+      "item": "Rear sprocket nut",
+      "nm": 32
+    }
+  ],
+  "intervals": [
+    {
+      "item": "Engine oil",
+      "everyKm": 3000,
+      "everyMonths": 6
+    },
+    {
+      "item": "Oil filter",
+      "everyKm": 6000,
+      "everyMonths": null
+    },
+    {
+      "item": "Chain clean and lube",
+      "everyKm": 1000,
+      "everyMonths": null
+    },
+    {
+      "item": "Air filter",
+      "everyKm": 12000,
+      "everyMonths": null
+    },
+    {
+      "item": "Spark plug",
+      "everyKm": 12000,
+      "everyMonths": null
+    },
+    {
+      "item": "Coolant",
+      "everyKm": null,
+      "everyMonths": 24
+    },
+    {
+      "item": "Brake fluid",
+      "everyKm": null,
+      "everyMonths": 24
+    }
+  ]
+}
