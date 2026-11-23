@@ -1,6 +1,7 @@
 import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { useConfirmDrawer } from '@/components/confirm-drawer';
 import { ChevronLeftIcon } from '@/components/icons/line-icons';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -14,7 +15,7 @@ import type { ServiceRecord } from '@/lib/firestore/types';
 import { formatCost, formatLongDate } from '../model/format';
 import { SERVICE_TYPE_LABELS } from '../model/service-form';
 import type { ServiceDetailViewModel } from '../model/service-detail-view-model';
-import { confirmDeleteService } from './confirm-delete';
+import { deleteServiceRequest } from './confirm-delete';
 
 const CONTENT_MAX_WIDTH = 560;
 
@@ -29,9 +30,11 @@ export function ServiceDetailView({
   back,
 }: ServiceDetailViewModel) {
   const theme = useTheme();
+  const { confirm, drawer } = useConfirmDrawer();
 
   return (
     <ThemedView style={styles.root}>
+      {drawer}
       <SafeAreaView style={styles.root} edges={['top', 'left', 'right', 'bottom']}>
         <ScreenHeader
           title="Logbook entry"
@@ -63,7 +66,7 @@ export function ServiceDetailView({
               <Button
                 label="Delete entry"
                 variant="danger"
-                onPress={() => confirmDeleteService(remove, service.title)}
+                onPress={() => confirm(deleteServiceRequest(remove, service.title))}
                 loading={deleting}
               />
             </View>

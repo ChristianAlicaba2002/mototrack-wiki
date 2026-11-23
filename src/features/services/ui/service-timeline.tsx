@@ -1,5 +1,6 @@
 import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 
+import { useConfirmDrawer } from '@/components/confirm-drawer';
 import { ThemedText } from '@/components/themed-text';
 import { Fonts, Spacing } from '@/constants/theme';
 import { formatKm } from '@/features/garage/model/odometer';
@@ -9,7 +10,7 @@ import { useTheme } from '@/hooks/use-theme';
 import { formatCost, formatServiceDate } from '../model/format';
 import { SERVICE_TYPE_LABELS } from '../model/service-form';
 import type { TimelineEntry, TimelineYear } from '../model/service-timeline';
-import { confirmDeleteService } from './confirm-delete';
+import { deleteServiceRequest } from './confirm-delete';
 
 const RAIL_WIDTH = 22;
 const DOT_SIZE = 11;
@@ -25,8 +26,10 @@ type ServiceTimelineProps = {
 /** A bike's services on a vertical rail, newest at the top, grouped by year. */
 export function ServiceTimeline({ timeline, deletingId, onView, onEdit, onDelete }: ServiceTimelineProps) {
   const lastYear = timeline.length - 1;
+  const { confirm, drawer } = useConfirmDrawer();
   return (
     <View>
+      {drawer}
       {timeline.map((group, gi) => (
         <View key={group.year}>
           <YearHeader group={group} isFirst={gi === 0} />
@@ -40,7 +43,7 @@ export function ServiceTimeline({ timeline, deletingId, onView, onEdit, onDelete
               busy={deletingId !== null}
               onView={() => onView(entry.service.id)}
               onEdit={() => onEdit(entry.service.id)}
-              onDelete={() => confirmDeleteService(() => onDelete(entry.service.id), entry.service.title)}
+              onDelete={() => confirm(deleteServiceRequest(() => onDelete(entry.service.id), entry.service.title))}
             />
           ))}
         </View>
