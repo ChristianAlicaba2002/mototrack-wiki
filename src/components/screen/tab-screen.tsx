@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
+import { RefreshControl, ScrollView, type ScrollViewProps, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
@@ -12,9 +12,17 @@ type TabScreenProps = {
   children?: ReactNode;
   onRefresh?: () => void;
   refreshing?: boolean;
+  keyboardShouldPersistTaps?: ScrollViewProps['keyboardShouldPersistTaps'];
 };
 
-export function TabScreen({ summary, action, children, onRefresh, refreshing = false }: TabScreenProps) {
+export function TabScreen({
+  summary,
+  action,
+  children,
+  onRefresh,
+  refreshing = false,
+  keyboardShouldPersistTaps,
+}: TabScreenProps) {
   const theme = useTheme();
 
   return (
@@ -22,6 +30,8 @@ export function TabScreen({ summary, action, children, onRefresh, refreshing = f
       <ScrollView
         contentContainerStyle={styles.content}
         alwaysBounceVertical={Boolean(onRefresh)}
+        keyboardShouldPersistTaps={keyboardShouldPersistTaps}
+        keyboardDismissMode={keyboardShouldPersistTaps ? 'on-drag' : undefined}
         refreshControl={
           onRefresh ? (
             <RefreshControl
