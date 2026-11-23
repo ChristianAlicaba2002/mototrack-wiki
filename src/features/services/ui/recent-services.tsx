@@ -1,8 +1,9 @@
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
+import { Spacing } from '@/constants/theme';
 import { useGarageData } from '@/features/garage/model/use-garage-data';
-import { Button, ErrorMessage, Panel, PanelHeading, TextAction } from '@/features/garage/ui/controls';
+import { Button, ErrorMessage, PanelHeading, TextAction } from '@/features/garage/ui/controls';
 import { useTheme } from '@/hooks/use-theme';
 
 import { openServiceForm, openServiceLog } from '../model/navigation';
@@ -11,8 +12,7 @@ import { ServiceList } from './service-row';
 
 const RECENT_COUNT = 3;
 
-/** The active bike's latest services, with shortcuts to log one or see them all. Hidden without a bike. */
-export function RecentServicesCard() {
+export function RecentServices() {
   const theme = useTheme();
   const { activeBike } = useGarageData();
   const bikeId = activeBike?.id;
@@ -21,7 +21,7 @@ export function RecentServicesCard() {
   if (!bikeId) return null;
 
   return (
-    <Panel>
+    <View style={[styles.section, { borderTopColor: theme.line }]}>
       <PanelHeading
         title="Logbook"
         action={
@@ -46,11 +46,16 @@ export function RecentServicesCard() {
       )}
 
       <Button label="Log a service" variant="secondary" onPress={() => openServiceForm(bikeId)} />
-    </Panel>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  section: {
+    gap: Spacing.three,
+    paddingTop: Spacing.three + 4,
+    borderTopWidth: StyleSheet.hairlineWidth,
+  },
   loading: {
     paddingVertical: 24,
   },
