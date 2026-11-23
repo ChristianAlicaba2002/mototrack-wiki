@@ -86,11 +86,28 @@ export function ScreenHeader({ title, context, leading, trailing }: ScreenHeader
 type SectionProps = {
   title: string;
   description?: string;
+  plain?: boolean;
   children: ReactNode;
 };
 
 /** A titled group of fields: stamped label, then a bordered sheet. */
-export function Section({ title, description, children }: SectionProps) {
+export function Section({ title, description, plain, children }: SectionProps) {
+  const theme = useTheme();
+  if (plain) {
+    return (
+      <View style={[styles.sectionPlain, { borderTopColor: theme.line }]}>
+        <ThemedText type="eyebrow" themeColor="textSecondary" accessibilityRole="header">
+          {title}
+        </ThemedText>
+        {description ? (
+          <ThemedText type="small" themeColor="textSecondary">
+            {description}
+          </ThemedText>
+        ) : null}
+        {children}
+      </View>
+    );
+  }
   return (
     <View style={styles.section}>
       <View style={styles.sectionHeading}>
@@ -407,6 +424,11 @@ const styles = StyleSheet.create({
   },
   section: {
     gap: Spacing.two,
+  },
+  sectionPlain: {
+    gap: Spacing.three + 4,
+    paddingTop: Spacing.three + 4,
+    borderTopWidth: StyleSheet.hairlineWidth,
   },
   sectionHeading: {
     gap: Spacing.one,

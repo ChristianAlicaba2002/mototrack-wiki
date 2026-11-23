@@ -17,7 +17,7 @@ import { useTheme } from '@/hooks/use-theme';
 
 import { BIKE_LIMITS, type BikeFormValues } from '../model/bike-form';
 import type { BikeFormViewModel } from '../model/bike-form-view-model';
-import { Button, ErrorMessage, FormField, IconButton, Panel, ScreenHeader, Section } from './controls';
+import { Button, ErrorMessage, FormField, IconButton, ScreenHeader, Section } from './controls';
 
 const FORM_MAX_WIDTH = 560;
 
@@ -63,6 +63,7 @@ export function BikeFormView({
           leading={
             <IconButton
               accessibilityLabel="Close"
+              variant="plain"
               onPress={cancel}
               disabled={busy}
               icon={(c) => <CloseIcon size={20} color={c} />}
@@ -85,7 +86,7 @@ export function BikeFormView({
               keyboardDismissMode="interactive">
               <Preview values={values} />
 
-              <Section title="Basics">
+              <Section title="Basics" plain>
                 <FormField
                   label="Make"
                   value={values.make}
@@ -111,7 +112,7 @@ export function BikeFormView({
                 />
               </Section>
 
-              <Section title="Specs">
+              <Section title="Specs" plain>
                 <View style={styles.row}>
                   <View style={styles.rowItem}>
                     <FormField
@@ -159,7 +160,7 @@ export function BikeFormView({
                 />
               </Section>
 
-              <Section title="Details">
+              <Section title="Details" plain>
                 <FormField
                   label="Nickname"
                   optional
@@ -229,7 +230,7 @@ function Preview({ values }: { values: BikeFormValues }) {
   const plate = values.plateNumber.trim().toUpperCase();
 
   return (
-    <Panel style={styles.preview}>
+    <View style={styles.preview}>
       <View accessible={false} style={styles.previewText}>
         <ThemedText type="eyebrow" themeColor="textSecondary">
           Preview
@@ -246,7 +247,7 @@ function Preview({ values }: { values: BikeFormValues }) {
           {plate}
         </ThemedText>
       ) : null}
-    </Panel>
+    </View>
   );
 }
 
