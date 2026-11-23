@@ -1,7 +1,7 @@
 import { router } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 
-import { SkeletonBlock, SkeletonText } from '@/components/skeleton';
+import { SkeletonText } from '@/components/skeleton';
 import { ThemedText } from '@/components/themed-text';
 import { Fonts, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
@@ -12,11 +12,9 @@ import { bikeDisplayName } from '../model/active-bike';
 import { openOdometer } from '../model/garage-view-model';
 import {
   Button,
-  ButtonSkeleton,
   ErrorMessage,
   OdometerReadout,
   OdometerReadoutSkeleton,
-  Panel,
   TextAction,
 } from './controls';
 
@@ -27,7 +25,6 @@ type ActiveBikeCardProps = {
   error: string | null;
 };
 
-/** The bike the app is focused on, with a shortcut to update its odometer. */
 export function ActiveBikeCard({ bikes, activeBike, loading, error }: ActiveBikeCardProps) {
   const theme = useTheme();
 
@@ -36,16 +33,18 @@ export function ActiveBikeCard({ bikes, activeBike, loading, error }: ActiveBike
 
   if (!activeBike) {
     return (
-      <Panel>
+      <View style={styles.root}>
         <ThemedText type="eyebrow" themeColor="textSecondary">
           Garage is empty
         </ThemedText>
-        <ThemedText style={styles.emptyTitle}>Add the bike you ride.</ThemedText>
-        <ThemedText type="small" themeColor="textSecondary">
-          Its odometer and service history will show up here.
-        </ThemedText>
+        <View style={styles.heading}>
+          <ThemedText style={styles.title}>Add the bike you ride.</ThemedText>
+          <ThemedText type="small" themeColor="textSecondary">
+            Its odometer and service history will show up here.
+          </ThemedText>
+        </View>
         <Button label="Add motorcycle" onPress={() => router.push('/bike-form')} />
-      </Panel>
+      </View>
     );
   }
 
@@ -56,14 +55,11 @@ export function ActiveBikeCard({ bikes, activeBike, loading, error }: ActiveBike
     .join(' · ');
 
   return (
-    <Panel>
+    <View style={styles.root}>
       <View style={styles.top}>
-        <View style={styles.kicker}>
-          <View style={[styles.mark, { backgroundColor: theme.brand }]} />
-          <ThemedText type="eyebrow" themeColor="textSecondary">
-            Riding now
-          </ThemedText>
-        </View>
+        <ThemedText type="eyebrow" style={{ color: theme.brand }}>
+          Riding now
+        </ThemedText>
         {bikes.length > 1 ? (
           <TextAction
             label="Switch"
@@ -74,80 +70,83 @@ export function ActiveBikeCard({ bikes, activeBike, loading, error }: ActiveBike
       </View>
 
       <View style={styles.heading}>
-        <ThemedText style={styles.title} numberOfLines={1}>
+        <ThemedText style={styles.title} numberOfLines={2} accessibilityRole="header">
           {title}
         </ThemedText>
-        <ThemedText type="small" themeColor="textSecondary" numberOfLines={1}>
+        <ThemedText themeColor="textSecondary" style={styles.specs} numberOfLines={1}>
           {specs}
         </ThemedText>
       </View>
 
       <View style={styles.readoutRow}>
         <OdometerReadout km={activeBike.odometerKm} size="lg" />
+        <TextAction
+          label="Update"
+          accessibilityLabel="Update odometer"
+          onPress={() => openOdometer(activeBike.id)}
+        />
       </View>
-
-      <Button label="Update odometer" onPress={() => openOdometer(activeBike.id)} />
-    </Panel>
+    </View>
   );
 }
 
 function ActiveBikeCardSkeleton() {
   return (
-    <View accessible accessibilityLabel="Loading your motorcycle" accessibilityState={{ busy: true }}>
-      <Panel>
-        <View style={styles.top}>
-          <View style={styles.kicker}>
-            <SkeletonBlock width={styles.mark.width} height={styles.mark.height} radius={0} />
-            <SkeletonText lineHeight={14} fontSize={11} width={84} />
-          </View>
-        </View>
+    <View
+      accessible
+      accessibilityLabel="Loading your motorcycle"
+      accessibilityState={{ busy: true }}
+      style={styles.root}>
+      <View style={styles.top}>
+        <SkeletonText lineHeight={14} fontSize={11} width={76} />
+      </View>
 
-        <View style={styles.heading}>
-          <SkeletonText lineHeight={styles.title.lineHeight} fontSize={styles.title.fontSize} width="62%" />
-          <SkeletonText lineHeight={20} fontSize={14} width="46%" />
-        </View>
+      <View style={styles.heading}>
+        <SkeletonText lineHeight={styles.title.lineHeight} fontSize={styles.title.fontSize} width="70%" />
+        <SkeletonText lineHeight={styles.specs.lineHeight} fontSize={styles.specs.fontSize} width="36%" />
+      </View>
 
-        <View style={styles.readoutRow}>
-          <OdometerReadoutSkeleton size="lg" />
-        </View>
-
-        <ButtonSkeleton />
-      </Panel>
+      <View style={styles.readoutRow}>
+        <OdometerReadoutSkeleton size="lg" />
+        <SkeletonText lineHeight={20} fontSize={14} width={52} />
+      </View>
     </View>
   );
 }
 
+
 const styles = StyleSheet.create({
+  root: {
+    gap: Spacing.three + 4,
+    paddingTop: Spacing.two,
+    paddingBottom: Spacing.three,
+  },
   top: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
   },
-  kicker: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.two,
-  },
-  mark: {
-    width: 8,
-    height: 8,
-  },
   heading: {
-    gap: 2,
+    gap: Spacing.one,
   },
   title: {
     fontFamily: Fonts.display,
-    fontSize: 30,
-    lineHeight: 34,
-    letterSpacing: -0.2,
+    fontSize: 42,
+    lineHeight: 46,
+    letterSpacing: -0.4,
   },
-  emptyTitle: {
-    fontFamily: Fonts.display,
-    fontSize: 26,
-    lineHeight: 30,
-    letterSpacing: -0.2,
+  specs: {
+    fontFamily: Fonts.mono,
+    fontSize: 13,
+    lineHeight: 18,
+    letterSpacing: 0.4,
+    textTransform: 'uppercase',
   },
   readoutRow: {
-    paddingVertical: Spacing.one,
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    justifyContent: 'space-between',
+    flexWrap: 'wrap',
+    gap: Spacing.three,
   },
 });
