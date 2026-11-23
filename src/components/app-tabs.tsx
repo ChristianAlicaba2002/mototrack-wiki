@@ -28,9 +28,10 @@ export default function AppTabs() {
         title={activeTab.label}
         trailing={
           <IconButton
+            variant="plain"
             accessibilityLabel="Settings"
             onPress={() => router.push('/settings')}
-            icon={(color) => <SettingsIcon size={20} color={color} />}
+            icon={(color) => <SettingsIcon size={24} color={color} />}
           />
         }
       />

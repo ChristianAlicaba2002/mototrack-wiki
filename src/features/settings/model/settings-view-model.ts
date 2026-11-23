@@ -5,9 +5,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { signOut } from '@/lib/firebase/google-sign-in';
 
 export type SettingsViewModel = {
-  name: string;
-  email: string | null;
-  initial: string;
+  account: string;
   signingOut: boolean;
   error: string | null;
   signOut: () => void;
@@ -24,9 +22,6 @@ export function useSettingsViewModel(): SettingsViewModel {
   const [signingOut, setSigningOut] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const email = user?.email ?? null;
-  const name = user?.displayName?.trim() || email?.split('@')[0] || 'Rider';
-
   const handleSignOut = async () => {
     setError(null);
     setSigningOut(true);
@@ -39,9 +34,7 @@ export function useSettingsViewModel(): SettingsViewModel {
   };
 
   return {
-    name,
-    email,
-    initial: name.charAt(0).toUpperCase(),
+    account: user?.email ?? user?.displayName ?? 'Rider',
     signingOut,
     error,
     signOut: () => void handleSignOut(),

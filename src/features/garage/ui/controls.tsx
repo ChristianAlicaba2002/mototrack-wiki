@@ -319,7 +319,7 @@ type IconButtonProps = {
   accessibilityLabel: string;
   onPress: () => void;
   icon: (color: string) => ReactNode;
-  variant?: 'primary' | 'secondary';
+  variant?: 'primary' | 'secondary' | 'plain';
   disabled?: boolean;
   size?: number;
 };
@@ -348,7 +348,7 @@ export function IconButton({
           width: size,
           height: size,
           backgroundColor: isPrimary ? theme.accent : 'transparent',
-          borderColor: isPrimary ? theme.accent : theme.line,
+          borderColor: isPrimary ? theme.accent : variant === 'plain' ? 'transparent' : theme.line,
         },
         disabled && styles.disabled,
         pressed && styles.pressed,

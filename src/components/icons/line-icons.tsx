@@ -237,12 +237,3 @@ export function SettingsIcon({ size, color }: IconProps) {
     </Icon>
   );
 }
-
-export function SignOutIcon({ size, color }: IconProps) {
-  return (
-    <Icon size={size}>
-      <Path d="M9 20.5H6a1.5 1.5 0 0 1-1.5-1.5V5A1.5 1.5 0 0 1 6 3.5h3" {...stroke(color)} />
-      <Path d="M10 12h10M16 8l4 4-4 4" {...stroke(color)} />
-    </Icon>
-  );
-}
