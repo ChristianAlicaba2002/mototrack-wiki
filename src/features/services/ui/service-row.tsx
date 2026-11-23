@@ -2,7 +2,7 @@ import { Fragment } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
-import { Spacing } from '@/constants/theme';
+import { Fonts, Spacing } from '@/constants/theme';
 import { formatKm } from '@/features/garage/model/odometer';
 import { Rule } from '@/features/garage/ui/controls';
 import { useTheme } from '@/hooks/use-theme';
@@ -112,9 +112,9 @@ const styles = StyleSheet.create({
     borderRightWidth: StyleSheet.hairlineWidth,
   },
   day: {
-    fontSize: 20,
-    lineHeight: 22,
-    fontWeight: 800,
+    fontFamily: Fonts.display,
+    fontSize: 24,
+    lineHeight: 25,
     fontVariant: ['tabular-nums'],
   },
   year: {
@@ -134,6 +134,7 @@ const styles = StyleSheet.create({
     lineHeight: 16,
   },
   cost: {
-    fontWeight: 600,
+    fontFamily: Fonts.monoMedium,
+
   },
 });

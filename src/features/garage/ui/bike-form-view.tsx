@@ -12,7 +12,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { CloseIcon } from '@/components/icons/line-icons';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Spacing } from '@/constants/theme';
+import { Fonts, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
 import { BIKE_LIMITS, type BikeFormValues } from '../model/bike-form';
@@ -273,14 +273,14 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   previewTitle: {
-    fontSize: 22,
-    lineHeight: 27,
-    fontWeight: 800,
-    letterSpacing: -0.4,
+    fontFamily: Fonts.display,
+    fontSize: 26,
+    lineHeight: 30,
+    letterSpacing: -0.2,
   },
   plate: {
+    fontFamily: Fonts.monoMedium,
     alignSelf: 'flex-start',
-    fontWeight: 700,
     letterSpacing: 1,
     borderWidth: 1.5,
     borderRadius: 3,

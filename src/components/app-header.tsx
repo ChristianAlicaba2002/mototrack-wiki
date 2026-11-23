@@ -7,7 +7,7 @@ import { MaxContentWidth, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { useTodayLabel } from '@/hooks/use-today-label';
 
-const TitleHeight = 36;
+const TitleHeight = 40;
 
 type AppHeaderProps = {
   title: string;

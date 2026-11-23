@@ -18,7 +18,7 @@ import { ArrowRightIcon, EyeIcon, EyeOffIcon, LockIcon, MailIcon } from '@/compo
 import { MotoTrackLogo } from '@/components/icons/moto-track-logo';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Spacing } from '@/constants/theme';
+import { Fonts, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
 import type { LoginViewModel } from '../model/login-view-model';
@@ -325,10 +325,10 @@ const styles = StyleSheet.create({
     gap: Spacing.two + 4,
   },
   wordmark: {
-    fontSize: 20,
-    lineHeight: 24,
-    fontWeight: 800,
-    letterSpacing: -0.4,
+    fontFamily: Fonts.display,
+    fontSize: 24,
+    lineHeight: 27,
+    letterSpacing: -0.2,
   },
   brandRule: {
     height: 2,
@@ -360,6 +360,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.three,
   },
   input: {
+    fontFamily: Fonts.sans,
     flex: 1,
     height: '100%',
     fontSize: 16,

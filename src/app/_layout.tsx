@@ -4,7 +4,8 @@ import { ActivityIndicator, StyleSheet, useColorScheme } from 'react-native';
 
 import { AnimatedSplashOverlay } from '@/components/animated-icon';
 import { ThemedView } from '@/components/themed-view';
-import { Colors } from '@/constants/theme';
+import { Colors, Fonts } from '@/constants/theme';
+import { useAppFonts } from '@/hooks/use-app-fonts';
 import { AuthProvider, useAuth } from '@/hooks/use-auth';
 
 SplashScreen.preventAutoHideAsync();
@@ -12,6 +13,12 @@ SplashScreen.preventAutoHideAsync();
 function navigationTheme(base: typeof DefaultTheme, colors: (typeof Colors)['light' | 'dark']) {
   return {
     ...base,
+    fonts: {
+      regular: { fontFamily: Fonts.sans, fontWeight: '400' as const },
+      medium: { fontFamily: Fonts.sansMedium, fontWeight: '500' as const },
+      bold: { fontFamily: Fonts.sansSemiBold, fontWeight: '600' as const },
+      heavy: { fontFamily: Fonts.sansBold, fontWeight: '700' as const },
+    },
     colors: {
       ...base.colors,
       primary: colors.accent,
@@ -29,6 +36,12 @@ const DarkNavTheme = navigationTheme(DarkTheme, Colors.dark);
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
+  const fontsReady = useAppFonts();
+
+  if (!fontsReady) {
+    return null;
+  }
+
   return (
     <AuthProvider>
       <ThemeProvider value={colorScheme === 'dark' ? DarkNavTheme : LightNavTheme}>

@@ -3,7 +3,7 @@ import { StyleSheet, useColorScheme, View } from 'react-native';
 
 import { AppHeader } from '@/components/app-header';
 import { Tabs } from '@/constants/tabs';
-import { Colors } from '@/constants/theme';
+import { Colors, Fonts } from '@/constants/theme';
 import { useActiveTab } from '@/hooks/use-active-tab';
 
 export default function AppTabs() {
@@ -19,7 +19,10 @@ export default function AppTabs() {
         indicatorColor={colors.backgroundSelected}
         tintColor={colors.text}
         labelVisibilityMode="labeled"
-        labelStyle={{ selected: { color: colors.text } }}>
+        labelStyle={{
+          default: { fontFamily: Fonts.sansMedium },
+          selected: { fontFamily: Fonts.sansSemiBold, color: colors.text },
+        }}>
         {Tabs.map((tab) => (
           <NativeTabs.Trigger key={tab.name} name={tab.name}>
             <NativeTabs.Trigger.Label>{tab.label}</NativeTabs.Trigger.Label>

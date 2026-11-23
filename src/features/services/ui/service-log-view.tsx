@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronLeftIcon, PlusIcon } from '@/components/icons/line-icons';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Spacing } from '@/constants/theme';
+import { Fonts, Spacing } from '@/constants/theme';
 import {
   Button,
   ErrorMessage,
@@ -178,9 +178,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.three - 4,
   },
   statValue: {
+    fontFamily: Fonts.monoMedium,
     fontSize: 17,
     lineHeight: 22,
-    fontWeight: 700,
   },
   history: {
     gap: Spacing.two,
@@ -190,9 +190,9 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.four,
   },
   emptyTitle: {
-    fontSize: 22,
-    lineHeight: 27,
-    fontWeight: 800,
-    letterSpacing: -0.4,
+    fontFamily: Fonts.display,
+    fontSize: 26,
+    lineHeight: 30,
+    letterSpacing: -0.2,
   },
 });
