@@ -43,8 +43,7 @@ export function ChatListView({ rows, loading, error, openChat, newChat, startWit
           <View style={styles.emptyText}>
             <ThemedText style={styles.emptyTitle}>Ask the mechanic</ThemedText>
             <ThemedText themeColor="textSecondary">
-              Describe what your bike is doing in English, Filipino or Taglish. Answers use your active bike and its
-              service log.
+              Describe what your bike is doing. Answers use your active bike and its service log.
             </ThemedText>
           </View>
           <ExamplePrompts onPick={startWith} />

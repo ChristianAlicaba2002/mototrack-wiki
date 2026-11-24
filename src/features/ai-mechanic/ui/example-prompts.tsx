@@ -8,7 +8,7 @@ import { useTheme } from '@/hooks/use-theme';
 export const EXAMPLE_PROMPTS = [
   'Hard to start in the morning',
   'When should I change my CVT belt?',
-  'May kalampag sa harap pag dumadaan sa lubak',
+  'Front end rattles over bumps',
   'What tire pressure should I run with a passenger?',
 ] as const;
 
