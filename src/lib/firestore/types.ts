@@ -22,8 +22,26 @@ export type UserProfile = {
    * them; treat that as the defaults (DEFAULT_SERVICE_INTERVALS).
    */
   serviceIntervals?: ServiceIntervals;
+  /**
+   * Which reminders the rider wants. Missing on profiles that never changed
+   * them; treat that as DEFAULT_NOTIFICATION_PREFS.
+   */
+  notificationPrefs?: NotificationPrefs;
   createdAt: Timestamp;
   updatedAt: Timestamp;
+};
+
+/** Reminder types a rider can turn on or off. Keep in sync with firestore.rules. */
+export type NotificationPrefs = {
+  /** A service is due soon or overdue (see service intervals). */
+  serviceDue: boolean;
+  /** A vault document (registration, insurance, license) is about to expire. */
+  documentExpiry: boolean;
+};
+
+export const DEFAULT_NOTIFICATION_PREFS: NotificationPrefs = {
+  serviceDue: true,
+  documentExpiry: true,
 };
 
 /** users/{uid}/bikes/{bikeId} */
