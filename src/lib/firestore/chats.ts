@@ -62,10 +62,13 @@ export function subscribeToMessages(
   return onSnapshot(q, (snapshot) => onChange(withEstimatedIds(snapshot)), onError);
 }
 
-export async function createChat(uid: string, input: Pick<Chat, 'title' | 'bikeId'>): Promise<string> {
+export function createChat(
+  uid: string,
+  input: Pick<Chat, 'title' | 'bikeId'>
+): { id: string; saved: Promise<void> } {
   const ref = doc(chatsCollection(uid));
-  await setDoc(ref, { ...input, createdAt: serverTimestamp(), updatedAt: serverTimestamp() });
-  return ref.id;
+  const saved = setDoc(ref, { ...input, createdAt: serverTimestamp(), updatedAt: serverTimestamp() });
+  return { id: ref.id, saved };
 }
 
 export async function addMessage(
@@ -73,13 +76,12 @@ export async function addMessage(
   chatId: string,
   role: ChatMessage['role'],
   text: string
-): Promise<string> {
-  const ref = await addDoc(messagesCollection(uid, chatId), { role, text, createdAt: serverTimestamp() });
-  return ref.id;
+): Promise<void> {
+  await addDoc(messagesCollection(uid, chatId), { role, text, createdAt: serverTimestamp() });
 }
 
-export function touchChat(uid: string, chatId: string): Promise<void> {
-  return updateDoc(chatDoc(uid, chatId), { updatedAt: serverTimestamp() });
+export function touchChat(uid: string, chatId: string, bikeId: string | null): Promise<void> {
+  return updateDoc(chatDoc(uid, chatId), { bikeId, updatedAt: serverTimestamp() });
 }
 
 export async function deleteChat(uid: string, chatId: string): Promise<void> {
