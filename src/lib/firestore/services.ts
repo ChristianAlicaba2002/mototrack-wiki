@@ -21,7 +21,10 @@ import { servicesCollection, type WithId, withIds } from './collections';
 import type { ServiceRecord } from './types';
 
 /** The fields a user fills in when logging a service. */
-export type ServiceInput = Pick<ServiceRecord, 'bikeId' | 'type' | 'title' | 'odometerKm' | 'cost' | 'notes'> & {
+export type ServiceInput = Pick<
+  ServiceRecord,
+  'bikeId' | 'type' | 'title' | 'odometerKm' | 'cost' | 'notes' | 'nextDueKm'
+> & {
   /** The day the service was done (local midnight). */
   date: Date;
 };
@@ -94,8 +97,7 @@ export async function createService(uid: string, input: ServiceInput, bikeOdomet
   const batch = writeBatch(db);
   batch.set(ref, {
     ...toFields(input),
-    // Reminders are a separate feature; nothing sets these yet.
-    nextDueKm: null,
+    // Time-based reminders aren't built yet.
     nextDueDate: null,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
@@ -105,7 +107,7 @@ export async function createService(uid: string, input: ServiceInput, bikeOdomet
   return ref.id;
 }
 
-/** Updates the editable fields; reminders and createdAt are left as they are. */
+/** Updates the editable fields, including nextDueKm; nextDueDate and createdAt are left as they are. */
 export function updateService(
   uid: string,
   serviceId: string,
