@@ -10,6 +10,7 @@ import type { WithId } from '@/lib/firestore/collections';
 import { createService, getService, updateService } from '@/lib/firestore/services';
 import type { Bike, ServiceType } from '@/lib/firestore/types';
 
+import { computeNextDueKm } from './intervals';
 import { closeServiceScreen } from './navigation';
 import {
   earliestServiceDate,
@@ -20,8 +21,10 @@ import {
   type ServiceFormValues,
   startOfDay,
   toFormValues,
+  SERVICE_TYPE_LABELS,
   validateServiceForm,
 } from './service-form';
+import { useServiceIntervals } from './use-service-intervals';
 
 export type ServiceFormLoadState = 'loading' | 'ready' | 'notFound' | 'error';
 export type ServiceFormPending = 'save' | null;
@@ -44,6 +47,7 @@ export function useServiceFormViewModel(bikeId: string, serviceId: string | unde
   const [pending, setPending] = useState<ServiceFormPending>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const { intervals } = useServiceIntervals();
 
   // The bike, live: its odometer decides whether saving also moves it up.
   useEffect(() => {
@@ -116,6 +120,17 @@ export function useServiceFormViewModel(bikeId: string, serviceId: string | unde
       ? `Saving also updates ${bikeName}’s odometer from ${formatKm(bike.odometerKm)} to ${formatKm(typedKm)} km.`
       : 'The reading on the dashboard when the work was done.';
 
+  // When this type of service is due again, from the rider's interval for it.
+  const interval = values.type ? intervals[values.type] : null;
+  const nextDueKm = values.type && typedKm !== null ? computeNextDueKm(values.type, typedKm, intervals) : null;
+  const nextDueHint = !values.type
+    ? null
+    : interval === null
+      ? `No reminder for ${SERVICE_TYPE_LABELS[values.type].toLowerCase()}. Set an interval in Settings › Service intervals.`
+      : nextDueKm === null
+        ? `Due again every ${formatKm(interval)} km.`
+        : `Next due at ${formatKm(nextDueKm)} km (every ${formatKm(interval)} km).`;
+
   function setField(field: Exclude<ServiceFormField, 'type' | 'date'>, text: string) {
     setValues((v) => ({ ...v, [field]: text }));
   }
@@ -140,8 +155,10 @@ export function useServiceFormViewModel(bikeId: string, serviceId: string | unde
     setPending('save');
     setError(null);
     try {
-      if (serviceId) await updateService(uid, serviceId, input, bike.odometerKm);
-      else await createService(uid, input, bike.odometerKm);
+      // Worked out at save time: changing an interval later doesn't move existing entries.
+      const withNextDue = { ...input, nextDueKm: computeNextDueKm(input.type, input.odometerKm, intervals) };
+      if (serviceId) await updateService(uid, serviceId, withNextDue, bike.odometerKm);
+      else await createService(uid, withNextDue, bike.odometerKm);
       closeServiceScreen();
     } catch (e) {
       setError(toGarageErrorMessage(e));
@@ -156,6 +173,7 @@ export function useServiceFormViewModel(bikeId: string, serviceId: string | unde
     values,
     errors: visibleErrors,
     odometerHint,
+    nextDueHint,
     minimumDate,
     maximumDate,
     loadState,
