@@ -34,7 +34,7 @@ export function useChat(initialChatId: string | null, initialPrompt = '') {
   const [chatId, setChatId] = useState<string | null>(initialChatId);
   const [startedHere] = useState(initialChatId === null);
   const [chat, setChat] = useState<WithId<Chat> | null | undefined>(undefined);
-  const [messages, setMessages] = useState<WithId<ChatMessage>[]>([]);
+  const [loadedMessages, setMessages] = useState<WithId<ChatMessage>[] | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [draft, setDraft] = useState(initialPrompt);
   const [waiting, setWaiting] = useState(false);
@@ -71,6 +71,7 @@ export function useChat(initialChatId: string | null, initialPrompt = '') {
     };
   }, [uid, chatId]);
 
+  const messages = loadedMessages ?? [];
   const isNew = chatId === null;
   const bike = chat ? (bikes.find((b) => b.id === chat.bikeId) ?? null) : activeBike;
 
@@ -78,7 +79,7 @@ export function useChat(initialChatId: string | null, initialPrompt = '') {
     ? 'ready'
     : chat === null
       ? 'notFound'
-      : chat === undefined
+      : chat === undefined || loadedMessages === null
         ? loadError
           ? 'error'
           : 'loading'
