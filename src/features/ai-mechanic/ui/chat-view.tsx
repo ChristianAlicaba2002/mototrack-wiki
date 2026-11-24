@@ -103,8 +103,7 @@ export function ChatView({
                   keyboardDismissMode="on-drag">
                   <ThemedText style={styles.emptyTitle}>What’s your bike doing?</ThemedText>
                   <ThemedText themeColor="textSecondary">
-                    Describe the symptom in English, Filipino or Taglish. Mention when it happens and any sounds or
-                    smells.
+                    Describe the symptom. Mention when it happens and any sounds or smells.
                   </ThemedText>
                   {failure ? <ErrorMessage>{failure.message}</ErrorMessage> : null}
                   <ExamplePrompts onPick={setDraft} />
