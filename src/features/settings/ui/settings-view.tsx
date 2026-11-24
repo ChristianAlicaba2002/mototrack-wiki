@@ -1,31 +1,57 @@
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AppHeader } from '@/components/app-header';
 import { useConfirmDrawer } from '@/components/confirm-drawer';
-import { ChevronLeftIcon, ChevronRightIcon } from '@/components/icons/line-icons';
+import {
+  BellIcon,
+  CalendarIcon,
+  ChevronLeftIcon,
+  GaugeIcon,
+  SignOutIcon,
+  TrashIcon,
+} from '@/components/icons/line-icons';
 import { ThemedText } from '@/components/themed-text';
-import { MaxContentWidth, Spacing } from '@/constants/theme';
-import { ErrorMessage, IconButton, TextAction } from '@/features/garage/ui/controls';
+import { Spacing } from '@/constants/theme';
+import { ErrorMessage, IconButton } from '@/features/garage/ui/controls';
 import { useTheme } from '@/hooks/use-theme';
 
 import type { SettingsViewModel } from '../model/settings-view-model';
+import { ProfileCard } from './profile-card';
+import { RowProgress, SettingsGroup, SettingsRow, ToggleRow } from './settings-list';
 
+/** Settings is a narrow list; on tablets keep it at a comfortable reading width. */
+const CONTENT_MAX_WIDTH = 560;
+
+/** Presentational only — all state and actions come from the view model. */
 export function SettingsView({
-  account,
+  name,
+  email,
+  photoURL,
+  initials,
+  signInMethod,
+  appVersion,
   signingOut,
+  notificationPrefs,
+  prefsLoaded,
   error,
   signOut,
+  setNotificationPref,
+  openDeleteAccount,
   openServiceIntervals,
   back,
 }: SettingsViewModel) {
   const theme = useTheme();
   const { confirm, drawer } = useConfirmDrawer();
+  const busy = signingOut;
 
   const confirmSignOut = () =>
     confirm({
       title: 'Sign out?',
-      message: 'You’ll need to sign in with Google again to see your garage.',
+      message:
+        signInMethod === 'google'
+          ? 'Your garage stays saved. Sign in with Google again to pick up where you left off.'
+          : 'Your garage stays saved. Sign in with your email and password to pick up where you left off.',
       confirmLabel: 'Sign out',
       tone: 'primary',
       onConfirm: signOut,
@@ -41,36 +67,84 @@ export function SettingsView({
             variant="plain"
             accessibilityLabel="Back"
             onPress={back}
+            disabled={busy}
             icon={(color) => <ChevronLeftIcon size={24} color={color} />}
           />
         }
       />
       <SafeAreaView edges={['left', 'right', 'bottom']} style={styles.root}>
         <ScrollView contentContainerStyle={styles.content}>
-          <View style={[styles.row, { borderBottomColor: theme.line }]}>
-            <View style={styles.text}>
-              <ThemedText type="eyebrow" themeColor="textSecondary">
-                Signed in as
-              </ThemedText>
-              <ThemedText numberOfLines={1}>{account}</ThemedText>
-            </View>
-            <TextAction label="Sign out" tone="text" disabled={signingOut} onPress={confirmSignOut} />
-          </View>
+          <ProfileCard
+            name={name}
+            email={email}
+            photoURL={photoURL}
+            initials={initials}
+            signInMethod={signInMethod}
+          />
+
           {error ? <ErrorMessage>{error}</ErrorMessage> : null}
-          <Pressable
-            onPress={openServiceIntervals}
-            accessibilityRole="button"
-            accessibilityLabel="Service intervals"
-            accessibilityHint="Set how many km between services of each kind"
-            style={({ pressed }) => [styles.row, { borderBottomColor: theme.line }, pressed && styles.pressed]}>
-            <View style={styles.text}>
-              <ThemedText type="eyebrow" themeColor="textSecondary">
-                Maintenance
-              </ThemedText>
-              <ThemedText>Service intervals</ThemedText>
-            </View>
-            <ChevronRightIcon size={18} color={theme.textSecondary} />
-          </Pressable>
+
+          <SettingsGroup
+            title="Reminders"
+            footnote="Reminders aren’t sent yet. Your choices are saved and used once they are.">
+            <ToggleRow
+              icon={(c) => <BellIcon size={18} color={c} />}
+              label="Service due"
+              description="When a service is coming up or overdue"
+              value={notificationPrefs.serviceDue}
+              onChange={(value) => setNotificationPref('serviceDue', value)}
+              disabled={!prefsLoaded || busy}
+            />
+            <ToggleRow
+              icon={(c) => <CalendarIcon size={18} color={c} />}
+              label="Document expiry"
+              description="Before registration, insurance or license expires"
+              value={notificationPrefs.documentExpiry}
+              onChange={(value) => setNotificationPref('documentExpiry', value)}
+              disabled={!prefsLoaded || busy}
+            />
+          </SettingsGroup>
+
+          <SettingsGroup title="Maintenance">
+            <SettingsRow
+              icon={(c) => <GaugeIcon size={18} color={c} />}
+              label="Service intervals"
+              description="Km between oil changes, chain, brakes and more"
+              onPress={openServiceIntervals}
+              disabled={busy}
+            />
+          </SettingsGroup>
+
+          <SettingsGroup title="Account">
+            <SettingsRow
+              icon={(c) => <SignOutIcon size={18} color={c} />}
+              label={signingOut ? 'Signing out…' : 'Sign out'}
+              description={email ?? undefined}
+              onPress={confirmSignOut}
+              disabled={busy}
+              accessibilityHint="Asks you to confirm first"
+              chevron={false}
+              trailing={signingOut ? <RowProgress /> : undefined}
+            />
+          </SettingsGroup>
+
+          <SettingsGroup title="Danger zone" tone="danger">
+            <SettingsRow
+              icon={(c) => <TrashIcon size={18} color={c} />}
+              tone="danger"
+              label="Delete account"
+              description="Permanently remove your account and everything in it"
+              onPress={openDeleteAccount}
+              disabled={busy}
+              accessibilityHint="Opens a screen to confirm it’s you before deleting"
+            />
+          </SettingsGroup>
+
+          {appVersion ? (
+            <ThemedText type="readout" themeColor="textSecondary" style={styles.version}>
+              MotoTrack {appVersion}
+            </ThemedText>
+          ) : null}
         </ScrollView>
       </SafeAreaView>
     </View>
@@ -82,27 +156,16 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
-    gap: Spacing.three,
-    paddingHorizontal: Spacing.three + 4,
-    paddingTop: Spacing.three + 4,
-    paddingBottom: Spacing.four,
+    gap: Spacing.four,
+    paddingHorizontal: Spacing.three,
+    paddingTop: Spacing.four,
+    paddingBottom: Spacing.five,
     width: '100%',
-    maxWidth: MaxContentWidth,
+    maxWidth: CONTENT_MAX_WIDTH,
     alignSelf: 'center',
   },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: Spacing.three,
-    paddingBottom: Spacing.three,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-  },
-  pressed: {
-    opacity: 0.6,
-  },
-  text: {
-    flexShrink: 1,
-    gap: 2,
+  version: {
+    textAlign: 'center',
+    fontSize: 12,
   },
 });
