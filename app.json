@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "mototrack-wiki",
+    "name": "MotoTrack",
     "slug": "mototrack-wiki",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -9,7 +9,6 @@
     "userInterfaceStyle": "automatic",
     "ios": {
       "bundleIdentifier": "com.mototrack.wiki",
-      "icon": "./assets/expo.icon",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
@@ -17,7 +16,7 @@
     "android": {
       "package": "com.mototrack.wiki",
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#C8102E",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
