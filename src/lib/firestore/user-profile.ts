@@ -2,7 +2,7 @@ import type { User } from 'firebase/auth';
 import { getDoc, getDocFromServer, onSnapshot, serverTimestamp, setDoc, type Unsubscribe, updateDoc } from 'firebase/firestore';
 
 import { userDoc } from './collections';
-import type { ServiceIntervals, UserProfile } from './types';
+import type { NotificationPrefs, ServiceIntervals, UserProfile } from './types';
 
 /** Creates users/{uid} the first time a user signs in. Does nothing if it already exists. */
 export async function ensureUserProfile(user: User): Promise<void> {
@@ -45,4 +45,10 @@ export async function setServiceIntervals(user: User, intervals: ServiceInterval
   // The profile is created in the background at sign-in and may not exist yet.
   await ensureUserProfile(user);
   await updateDoc(userDoc(user.uid), { serviceIntervals: intervals, updatedAt: serverTimestamp() });
+}
+
+/** Saves which reminders the rider wants. */
+export async function setNotificationPrefs(user: User, prefs: NotificationPrefs): Promise<void> {
+  await ensureUserProfile(user);
+  await updateDoc(userDoc(user.uid), { notificationPrefs: prefs, updatedAt: serverTimestamp() });
 }

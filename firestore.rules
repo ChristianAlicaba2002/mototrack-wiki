@@ -3,7 +3,8 @@ rules_version = '2';
 // MotoTrack Firestore security rules.
 //
 // Data model (TypeScript types: src/lib/firestore/types.ts):
-//   users/{uid}                              profile, owner only; optional serviceIntervals
+//   users/{uid}                              profile, owner only; optional serviceIntervals and
+//                                            notificationPrefs. The owner can delete it (account deletion)
 //   users/{uid}/bikes/{bikeId}               owner only
 //   users/{uid}/bikes/{bikeId}/odometerReadings/{id}
 //                                            owner only, append-only, matches the bike's odometerKm
@@ -104,14 +105,25 @@ service cloud.firestore {
           && validInterval(intervals, 'other');
       }
 
-      // activeBikeId and serviceIntervals are optional: profiles created before
-      // they existed don't have them.
+      // Optional; missing means every reminder is on.
+      function validNotificationPrefs() {
+        let prefs = data().get('notificationPrefs', {});
+        return prefs is map
+          && prefs.keys().hasOnly(['serviceDue', 'documentExpiry'])
+          && prefs.get('serviceDue', true) is bool
+          && prefs.get('documentExpiry', true) is bool;
+      }
+
+      // activeBikeId, serviceIntervals and notificationPrefs are optional:
+      // profiles created before they existed don't have them.
       function validProfile() {
         return data().keys().hasAll(['displayName', 'email', 'photoURL', 'createdAt', 'updatedAt'])
           && data().keys().hasOnly([
-            'displayName', 'email', 'photoURL', 'activeBikeId', 'serviceIntervals', 'createdAt', 'updatedAt'
+            'displayName', 'email', 'photoURL', 'activeBikeId', 'serviceIntervals', 'notificationPrefs',
+            'createdAt', 'updatedAt'
           ])
           && validServiceIntervals()
+          && validNotificationPrefs()
           && isOptionalText(data().displayName, 100)
           // Must match the signed-in account's email (null for accounts without one).
           && data().email == request.auth.token.get('email', null)
@@ -134,9 +146,9 @@ service cloud.firestore {
         && validCreateTimestamps();
       allow update: if isOwner(uid) && validProfile() && validActiveBikeChange()
         && validUpdateTimestamps();
-      // Deleting a profile would orphan its subcollections; account deletion
-      // belongs in a backend function using the Admin SDK.
-      allow delete: if false;
+      // Account deletion: the app deletes every subcollection first, then the
+      // profile, then the Auth user (src/lib/firestore/account.ts).
+      allow delete: if isOwner(uid);
 
       // ---------- bikes ----------
 
