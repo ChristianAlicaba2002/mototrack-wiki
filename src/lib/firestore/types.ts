@@ -17,6 +17,11 @@ export type UserProfile = {
    * Missing on profiles created before this field existed; treat that as null.
    */
   activeBikeId?: string | null;
+  /**
+   * The rider's own service intervals. Missing on profiles that never changed
+   * them; treat that as the defaults (DEFAULT_SERVICE_INTERVALS).
+   */
+  serviceIntervals?: ServiceIntervals;
   createdAt: Timestamp;
   updatedAt: Timestamp;
 };
@@ -61,6 +66,15 @@ export const SERVICE_TYPES = [
 ] as const;
 export type ServiceType = (typeof SERVICE_TYPES)[number];
 
+/**
+ * Km between services of each type. null means no reminder for that type.
+ * Each value is a whole number from SERVICE_INTERVAL_LIMITS.minKm to maxKm.
+ */
+export type ServiceIntervals = Record<ServiceType, number | null>;
+
+/** Keep in sync with firestore.rules. */
+export const SERVICE_INTERVAL_LIMITS = { minKm: 100, maxKm: 100_000 } as const;
+
 /** users/{uid}/services/{serviceId}: one maintenance log entry. */
 export type ServiceRecord = {
   /** Id of one of the owner's bikes. */
@@ -72,7 +86,13 @@ export type ServiceRecord = {
   odometerKm: number;
   cost: number | null;
   notes: string | null;
+  /**
+   * Odometer reading when this kind of service is due again: odometerKm plus
+   * the rider's interval for the type when it was saved. Null when the type has
+   * no interval, or for services logged before intervals existed.
+   */
   nextDueKm: number | null;
+  /** Not used yet; reserved for time-based reminders. Always null. */
   nextDueDate: Timestamp | null;
   createdAt: Timestamp;
   updatedAt: Timestamp;
