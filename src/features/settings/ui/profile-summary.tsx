@@ -11,7 +11,7 @@ import type { SignInMethod } from '@/lib/firebase/sign-in-method';
 
 const AVATAR_SIZE = 60;
 
-type ProfileCardProps = {
+type ProfileSummaryProps = {
   name: string;
   email: string | null;
   photoURL: string | null;
@@ -24,16 +24,14 @@ const METHOD_LABELS: Record<SignInMethod, string> = {
   password: 'Email account',
 };
 
-/** Who's signed in: photo (or initials), name, email and how they sign in. */
-export function ProfileCard({ name, email, photoURL, initials, signInMethod }: ProfileCardProps) {
+export function ProfileSummary({ name, email, photoURL, initials, signInMethod }: ProfileSummaryProps) {
   const theme = useTheme();
-  // Fall back to initials if the photo fails to load (offline, expired Google URL).
   const [photoFailed, setPhotoFailed] = useState(false);
   const showPhoto = photoURL !== null && !photoFailed;
 
   return (
     <View
-      style={[styles.card, { backgroundColor: theme.backgroundElement, borderColor: theme.line }]}
+      style={styles.profile}
       accessible
       accessibilityRole="summary"
       accessibilityLabel={`Signed in as ${name}${email ? `, ${email}` : ''}, ${METHOD_LABELS[signInMethod]}`}>
@@ -61,7 +59,6 @@ export function ProfileCard({ name, email, photoURL, initials, signInMethod }: P
           </ThemedText>
         ) : null}
         <View style={[styles.badge, { borderColor: theme.line }]}>
-          {/* Only a Google account gets the coloured dot; email accounts stay neutral. */}
           {signInMethod === 'google' ? (
             <View style={[styles.dot, { backgroundColor: theme.success }]} />
           ) : (
@@ -77,13 +74,10 @@ export function ProfileCard({ name, email, photoURL, initials, signInMethod }: P
 }
 
 const styles = StyleSheet.create({
-  card: {
+  profile: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.three,
-    padding: Spacing.three,
-    borderRadius: Radius.card,
-    borderWidth: StyleSheet.hairlineWidth * 2,
   },
   avatar: {
     width: AVATAR_SIZE,

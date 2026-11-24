@@ -17,23 +17,17 @@ import { useTheme } from '@/hooks/use-theme';
 
 type Tone = 'default' | 'danger';
 
-const ROW_PADDING_X = Spacing.three;
 const ICON_TILE = 34;
 const ICON_GAP = Spacing.three - 4;
-/** Rules between rows start under the label, not under the icon. */
-const RULE_INSET = ROW_PADDING_X + ICON_TILE + ICON_GAP;
-
-// ---------- Group ----------
+const RULE_INSET = ICON_TILE + ICON_GAP;
 
 type SettingsGroupProps = {
   title: string;
-  /** Small print under the panel. */
   footnote?: string;
   tone?: Tone;
   children: ReactNode;
 };
 
-/** An eyebrow title, a white panel of rows with inset rules between them, and optional small print. */
 export function SettingsGroup({ title, footnote, tone = 'default', children }: SettingsGroupProps) {
   const theme = useTheme();
   const rows = Children.toArray(children).filter(isValidElement);
@@ -43,18 +37,10 @@ export function SettingsGroup({ title, footnote, tone = 'default', children }: S
       <ThemedText
         type="eyebrow"
         themeColor={tone === 'danger' ? 'danger' : 'textSecondary'}
-        style={styles.groupTitle}
         accessibilityRole="header">
         {title}
       </ThemedText>
-      <View
-        style={[
-          styles.panel,
-          {
-            backgroundColor: theme.backgroundElement,
-            borderColor: tone === 'danger' ? theme.danger : theme.line,
-          },
-        ]}>
+      <View style={[styles.rows, { borderColor: theme.line }]}>
         {rows.map((row, i) => (
           <Fragment key={row.key ?? i}>
             {i > 0 ? <View style={[styles.rule, { backgroundColor: theme.line }]} /> : null}
@@ -63,7 +49,7 @@ export function SettingsGroup({ title, footnote, tone = 'default', children }: S
         ))}
       </View>
       {footnote ? (
-        <ThemedText type="small" themeColor="textSecondary" style={styles.footnote}>
+        <ThemedText type="small" themeColor="textSecondary">
           {footnote}
         </ThemedText>
       ) : null}
@@ -71,18 +57,11 @@ export function SettingsGroup({ title, footnote, tone = 'default', children }: S
   );
 }
 
-// ---------- Rows ----------
-
 type SettingsRowProps = {
   icon: (color: string) => ReactNode;
   label: string;
   description?: string;
-  /** Right-hand side: a switch, a value, a spinner. Replaces the chevron. */
   trailing?: ReactNode;
-  /**
-   * Show a chevron (when there's no trailing element). On for rows that open
-   * another screen; turn it off for rows that act in place, like Sign out.
-   */
   chevron?: boolean;
   onPress?: () => void;
   tone?: Tone;
@@ -92,10 +71,6 @@ type SettingsRowProps = {
   accessibilityHint?: string;
 };
 
-/**
- * One line in a settings panel: icon tile, label and description, trailing control.
- * The whole row is the touch target and is read as a single element.
- */
 export function SettingsRow({
   icon,
   label,
@@ -155,7 +130,7 @@ export function SettingsRow({
       {...a11y}
       style={({ pressed }) => [
         styles.row,
-        pressed && { backgroundColor: theme.backgroundSelected },
+        pressed && styles.pressed,
         disabled && styles.disabled,
       ]}>
       {content}
@@ -168,7 +143,6 @@ type ToggleRowProps = Pick<SettingsRowProps, 'icon' | 'label' | 'description' | 
   onChange: (value: boolean) => void;
 };
 
-/** A row that flips a setting. Tapping anywhere on it flips the switch. */
 export function ToggleRow({ value, onChange, disabled, ...row }: ToggleRowProps) {
   const theme = useTheme();
   return (
@@ -186,7 +160,6 @@ export function ToggleRow({ value, onChange, disabled, ...row }: ToggleRowProps)
           trackColor={{ false: theme.line, true: theme.accent }}
           thumbColor={theme.backgroundElement}
           ios_backgroundColor={theme.line}
-          // The row is the accessible element; don't announce the switch twice.
           accessibilityElementsHidden
           importantForAccessibility="no-hide-descendants"
         />
@@ -195,7 +168,6 @@ export function ToggleRow({ value, onChange, disabled, ...row }: ToggleRowProps)
   );
 }
 
-/** A trailing spinner with a short status, for rows doing work. */
 export function RowProgress({ tone = 'default' }: { tone?: Tone }) {
   const theme = useTheme();
   return <ActivityIndicator color={tone === 'danger' ? theme.danger : theme.textSecondary} />;
@@ -205,28 +177,23 @@ const styles = StyleSheet.create({
   group: {
     gap: Spacing.two,
   },
-  groupTitle: {
-    paddingHorizontal: Spacing.one,
-  },
-  panel: {
-    borderRadius: Radius.card,
-    borderWidth: StyleSheet.hairlineWidth * 2,
-    overflow: 'hidden',
+  rows: {
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderBottomWidth: StyleSheet.hairlineWidth,
   },
   rule: {
     height: StyleSheet.hairlineWidth,
     marginLeft: RULE_INSET,
-  },
-  footnote: {
-    paddingHorizontal: Spacing.one,
   },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: ICON_GAP,
     minHeight: 60,
-    paddingHorizontal: ROW_PADDING_X,
     paddingVertical: Spacing.three - 4,
+  },
+  pressed: {
+    opacity: 0.6,
   },
   disabled: {
     opacity: 0.5,
