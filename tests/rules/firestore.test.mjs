@@ -179,6 +179,57 @@ describe('users/{uid} activeBikeId', () => {
   });
 });
 
+describe('users/{uid} serviceIntervals', () => {
+  const intervals = (overrides = {}) => ({
+    oil_change: 3000,
+    tires: 15000,
+    brakes: 10000,
+    chain: 1000,
+    battery: null,
+    inspection: 5000,
+    repair: null,
+    other: null,
+    ...overrides,
+  });
+
+  const seedProfile = async (overrides = {}) => {
+    const t = Timestamp.fromDate(new Date('2026-01-01'));
+    await seed('users/alice', profile({ createdAt: t, updatedAt: t, ...overrides }));
+  };
+
+  test('owner can save intervals, with null to turn one off', async () => {
+    await seedProfile();
+    const ref = doc(asAlice(), 'users/alice');
+    await assertSucceeds(updateDoc(ref, { serviceIntervals: intervals(), updatedAt: now() }));
+    await assertSucceeds(updateDoc(ref, { serviceIntervals: intervals({ chain: null }), updatedAt: now() }));
+  });
+
+  test('can be included when the profile is created', async () => {
+    await assertSucceeds(setDoc(doc(asAlice(), 'users/alice'), profile({ serviceIntervals: intervals() })));
+  });
+
+  test('rejects unknown types and out-of-range or fractional values', async () => {
+    await seedProfile();
+    const ref = doc(asAlice(), 'users/alice');
+    const bad = [
+      intervals({ wash: 500 }),
+      intervals({ oil_change: 50 }),
+      intervals({ oil_change: 100001 }),
+      intervals({ oil_change: 2500.5 }),
+      intervals({ oil_change: '3000' }),
+    ];
+    for (const serviceIntervals of bad) {
+      await assertFails(updateDoc(ref, { serviceIntervals, updatedAt: now() }));
+    }
+    await assertFails(updateDoc(ref, { serviceIntervals: [3000], updatedAt: now() }));
+  });
+
+  test('other users cannot change them', async () => {
+    await seedProfile();
+    await assertFails(updateDoc(doc(asBob(), 'users/alice'), { serviceIntervals: intervals(), updatedAt: now() }));
+  });
+});
+
 describe('users/{uid}/bikes/{bikeId}/odometerReadings', () => {
   const readings = (db, bikeId = 'bike1') => collection(db, `users/alice/bikes/${bikeId}/odometerReadings`);
 
