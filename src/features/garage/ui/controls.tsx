@@ -57,12 +57,13 @@ type ScreenHeaderProps = {
   title: string;
   /** Small line above the title, e.g. the bike's name. */
   context?: string;
+  subtitle?: string;
   leading?: ReactNode;
   trailing?: ReactNode;
 };
 
 /** Header for stack and modal screens: left-aligned, ruled off from the content. */
-export function ScreenHeader({ title, context, leading, trailing }: ScreenHeaderProps) {
+export function ScreenHeader({ title, context, subtitle, leading, trailing }: ScreenHeaderProps) {
   const theme = useTheme();
   return (
     <View style={[styles.screenHeader, { borderBottomColor: theme.line }]}>
@@ -76,6 +77,11 @@ export function ScreenHeader({ title, context, leading, trailing }: ScreenHeader
         <ThemedText style={styles.screenHeaderTitle} accessibilityRole="header" numberOfLines={1}>
           {title}
         </ThemedText>
+        {subtitle ? (
+          <ThemedText type="small" themeColor="textSecondary" numberOfLines={1}>
+            {subtitle}
+          </ThemedText>
+        ) : null}
       </View>
       {trailing}
     </View>
