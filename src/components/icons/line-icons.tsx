@@ -256,3 +256,22 @@ export function SearchIcon({ size, color }: IconProps) {
     </Icon>
   );
 }
+
+export function SignOutIcon({ size, color }: IconProps) {
+  return (
+    <Icon size={size}>
+      <Path d="M14 4h3.5A2.5 2.5 0 0 1 20 6.5v11a2.5 2.5 0 0 1-2.5 2.5H14" {...stroke(color)} />
+      <Path d="M10 8l-4 4 4 4" {...stroke(color)} />
+      <Path d="M6 12h10" {...stroke(color)} />
+    </Icon>
+  );
+}
+
+export function BellIcon({ size, color }: IconProps) {
+  return (
+    <Icon size={size}>
+      <Path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z" {...stroke(color)} />
+      <Path d="M10 20.5a2 2 0 0 0 4 0" {...stroke(color)} />
+    </Icon>
+  );
+}
