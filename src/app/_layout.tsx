@@ -1,13 +1,13 @@
 import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import { ActivityIndicator, StyleSheet, useColorScheme } from 'react-native';
+import { useColorScheme } from 'react-native';
 
-import { AnimatedSplashOverlay } from '@/components/animated-icon';
-import { ThemedView } from '@/components/themed-view';
+import { LaunchScreen } from '@/components/launch-screen';
 import { Colors, Fonts } from '@/constants/theme';
 import { useAppFonts } from '@/hooks/use-app-fonts';
 import { AuthProvider, useAuth } from '@/hooks/use-auth';
 
+// The native splash stays up until LaunchScreen has drawn over it.
 SplashScreen.preventAutoHideAsync();
 
 function navigationTheme(base: typeof DefaultTheme, colors: (typeof Colors)['light' | 'dark']) {
@@ -38,6 +38,7 @@ export default function RootLayout() {
   const colorScheme = useColorScheme();
   const fontsReady = useAppFonts();
 
+  // Keep the native splash up until the fonts are in, so nothing renders in the system font.
   if (!fontsReady) {
     return null;
   }
@@ -45,7 +46,6 @@ export default function RootLayout() {
   return (
     <AuthProvider>
       <ThemeProvider value={colorScheme === 'dark' ? DarkNavTheme : LightNavTheme}>
-        <AnimatedSplashOverlay />
         <RootNavigator />
       </ThemeProvider>
     </AuthProvider>
@@ -77,17 +77,7 @@ function RootNavigator() {
       </Stack>
       {/* Cover the navigator while Firebase restores a saved session, so a
           signed-in user doesn't see the login screen flash. */}
-      {initializing && (
-        <ThemedView style={StyleSheet.absoluteFill}>
-          <ActivityIndicator style={styles.loader} />
-        </ThemedView>
-      )}
+      <LaunchScreen ready={!initializing} />
     </>
   );
 }
-
-const styles = StyleSheet.create({
-  loader: {
-    flex: 1,
-  },
-});
