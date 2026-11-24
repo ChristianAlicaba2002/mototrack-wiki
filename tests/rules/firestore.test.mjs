@@ -129,13 +129,20 @@ describe('users/{uid}', () => {
     await assertFails(setDoc(doc(db, 'users/alice'), profile({ createdAt: Timestamp.now() })));
   });
 
-  test('update keeps createdAt; delete is not allowed', async () => {
+  test('update keeps createdAt', async () => {
     const t = Timestamp.fromDate(new Date('2026-01-01'));
     await seed('users/alice', profile({ createdAt: t, updatedAt: t }));
     const ref = doc(asAlice(), 'users/alice');
     await assertSucceeds(updateDoc(ref, { displayName: 'Ally', updatedAt: now() }));
     await assertFails(updateDoc(ref, { createdAt: now(), updatedAt: now() }));
-    await assertFails(deleteDoc(ref));
+  });
+
+  test('only the owner can delete it (account deletion)', async () => {
+    const t = Timestamp.fromDate(new Date('2026-01-01'));
+    await seed('users/alice', profile({ createdAt: t, updatedAt: t }));
+    await assertFails(deleteDoc(doc(asBob(), 'users/alice')));
+    await assertFails(deleteDoc(doc(asGuest(), 'users/alice')));
+    await assertSucceeds(deleteDoc(doc(asAlice(), 'users/alice')));
   });
 });
 
@@ -227,6 +234,30 @@ describe('users/{uid} serviceIntervals', () => {
   test('other users cannot change them', async () => {
     await seedProfile();
     await assertFails(updateDoc(doc(asBob(), 'users/alice'), { serviceIntervals: intervals(), updatedAt: now() }));
+  });
+});
+
+describe('users/{uid} notificationPrefs', () => {
+  const seedProfile = async () => {
+    const t = Timestamp.fromDate(new Date('2026-01-01'));
+    await seed('users/alice', profile({ createdAt: t, updatedAt: t }));
+  };
+
+  test('owner can save which reminders they want', async () => {
+    await seedProfile();
+    const ref = doc(asAlice(), 'users/alice');
+    await assertSucceeds(
+      updateDoc(ref, { notificationPrefs: { serviceDue: false, documentExpiry: true }, updatedAt: now() })
+    );
+    await assertSucceeds(updateDoc(ref, { notificationPrefs: { serviceDue: true }, updatedAt: now() }));
+  });
+
+  test('rejects unknown keys and non-boolean values', async () => {
+    await seedProfile();
+    const ref = doc(asAlice(), 'users/alice');
+    await assertFails(updateDoc(ref, { notificationPrefs: { marketing: true }, updatedAt: now() }));
+    await assertFails(updateDoc(ref, { notificationPrefs: { serviceDue: 'yes' }, updatedAt: now() }));
+    await assertFails(updateDoc(ref, { notificationPrefs: true, updatedAt: now() }));
   });
 });
 
