@@ -1,9 +1,9 @@
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AppHeader } from '@/components/app-header';
 import { useConfirmDrawer } from '@/components/confirm-drawer';
-import { ChevronLeftIcon } from '@/components/icons/line-icons';
+import { ChevronLeftIcon, ChevronRightIcon } from '@/components/icons/line-icons';
 import { ThemedText } from '@/components/themed-text';
 import { MaxContentWidth, Spacing } from '@/constants/theme';
 import { ErrorMessage, IconButton, TextAction } from '@/features/garage/ui/controls';
@@ -11,7 +11,14 @@ import { useTheme } from '@/hooks/use-theme';
 
 import type { SettingsViewModel } from '../model/settings-view-model';
 
-export function SettingsView({ account, signingOut, error, signOut, back }: SettingsViewModel) {
+export function SettingsView({
+  account,
+  signingOut,
+  error,
+  signOut,
+  openServiceIntervals,
+  back,
+}: SettingsViewModel) {
   const theme = useTheme();
   const { confirm, drawer } = useConfirmDrawer();
 
@@ -50,6 +57,20 @@ export function SettingsView({ account, signingOut, error, signOut, back }: Sett
             <TextAction label="Sign out" tone="text" disabled={signingOut} onPress={confirmSignOut} />
           </View>
           {error ? <ErrorMessage>{error}</ErrorMessage> : null}
+          <Pressable
+            onPress={openServiceIntervals}
+            accessibilityRole="button"
+            accessibilityLabel="Service intervals"
+            accessibilityHint="Set how many km between services of each kind"
+            style={({ pressed }) => [styles.row, { borderBottomColor: theme.line }, pressed && styles.pressed]}>
+            <View style={styles.text}>
+              <ThemedText type="eyebrow" themeColor="textSecondary">
+                Maintenance
+              </ThemedText>
+              <ThemedText>Service intervals</ThemedText>
+            </View>
+            <ChevronRightIcon size={18} color={theme.textSecondary} />
+          </Pressable>
         </ScrollView>
       </SafeAreaView>
     </View>
@@ -76,6 +97,9 @@ const styles = StyleSheet.create({
     gap: Spacing.three,
     paddingBottom: Spacing.three,
     borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  pressed: {
+    opacity: 0.6,
   },
   text: {
     flexShrink: 1,

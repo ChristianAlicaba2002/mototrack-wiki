@@ -1,6 +1,7 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
 
+import { openServiceIntervals } from '@/features/services/model/navigation';
 import { useAuth } from '@/hooks/use-auth';
 import { signOut } from '@/lib/firebase/google-sign-in';
 
@@ -9,6 +10,7 @@ export type SettingsViewModel = {
   signingOut: boolean;
   error: string | null;
   signOut: () => void;
+  openServiceIntervals: () => void;
   back: () => void;
 };
 
@@ -38,6 +40,7 @@ export function useSettingsViewModel(): SettingsViewModel {
     signingOut,
     error,
     signOut: () => void handleSignOut(),
+    openServiceIntervals,
     back: closeSettings,
   };
 }

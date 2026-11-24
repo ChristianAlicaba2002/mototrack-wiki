@@ -8,9 +8,11 @@ import type { WithId } from '@/lib/firestore/collections';
 import { deleteService } from '@/lib/firestore/services';
 import type { Bike } from '@/lib/firestore/types';
 
-import { closeServiceScreen, openServiceDetail, openServiceForm } from './navigation';
+import { upcomingServices } from './intervals';
+import { closeServiceScreen, openServiceDetail, openServiceForm, openServiceIntervals } from './navigation';
 import { buildTimeline } from './service-timeline';
 import { totalCost, useBikeServices } from './use-bike-services';
+import { useServiceIntervals } from './use-service-intervals';
 
 /** The log shows this many entries; older ones need a "load more" later. */
 export const SERVICE_LOG_LIMIT = 200;
@@ -37,6 +39,12 @@ export function useServiceLogViewModel(bikeId: string) {
   }, [uid, bikeId]);
 
   const timeline = useMemo(() => buildTimeline(services), [services]);
+  const { intervals } = useServiceIntervals();
+  const bikeOdometerKm = bike?.odometerKm;
+  const upcoming = useMemo(
+    () => (bikeOdometerKm === undefined ? [] : upcomingServices(services, bikeOdometerKm, intervals)),
+    [services, bikeOdometerKm, intervals]
+  );
 
   const loadState: ServiceLogLoadState =
     !bikeId || bike === null
@@ -67,6 +75,8 @@ export function useServiceLogViewModel(bikeId: string) {
     odometerKm: bike?.odometerKm ?? 0,
     services,
     timeline,
+    /** For each service type with an interval: when it's due next, soonest first. */
+    upcoming,
     servicesLoading,
     totalCost: totalCost(services),
     isTruncated: services.length >= SERVICE_LOG_LIMIT,
@@ -76,6 +86,7 @@ export function useServiceLogViewModel(bikeId: string) {
     viewService: (serviceId: string) => openServiceDetail(bikeId, serviceId),
     editService: (serviceId: string) => openServiceForm(bikeId, serviceId),
     removeService,
+    editIntervals: openServiceIntervals,
     back: closeServiceScreen,
   };
 }

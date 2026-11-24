@@ -12,11 +12,13 @@ import {
   Panel,
   PanelHeading,
   ScreenHeader,
+  TextAction,
 } from '@/features/garage/ui/controls';
 import { useTheme } from '@/hooks/use-theme';
 
 import { formatCost, formatServiceDate } from '../model/format';
 import { SERVICE_LOG_LIMIT, type ServiceLogViewModel } from '../model/service-log-view-model';
+import { DueNextList } from './due-next-list';
 import { ServiceTimeline } from './service-timeline';
 
 const CONTENT_MAX_WIDTH = 560;
@@ -27,6 +29,7 @@ export function ServiceLogView({
   title,
   services,
   timeline,
+  upcoming,
   servicesLoading,
   totalCost,
   isTruncated,
@@ -36,6 +39,7 @@ export function ServiceLogView({
   viewService,
   editService,
   removeService,
+  editIntervals,
   back,
 }: ServiceLogViewModel) {
   const theme = useTheme();
@@ -87,6 +91,13 @@ export function ServiceLogView({
                   totalCost={totalCost}
                   lastDate={formatServiceDate(services[0].date)}
                 />
+                <View style={styles.history}>
+                  <PanelHeading
+                    title="Due next"
+                    action={<TextAction label="Intervals" tone="text" onPress={editIntervals} />}
+                  />
+                  <DueNextList upcoming={upcoming} onView={viewService} onEditIntervals={editIntervals} />
+                </View>
                 <View style={styles.history}>
                   <PanelHeading title={isTruncated ? `Timeline · last ${SERVICE_LOG_LIMIT} entries` : 'Timeline'} />
                   <ServiceTimeline
