@@ -3,7 +3,7 @@ rules_version = '2';
 // MotoTrack Firestore security rules.
 //
 // Data model (TypeScript types: src/lib/firestore/types.ts):
-//   users/{uid}                              profile, owner only
+//   users/{uid}                              profile, owner only; optional serviceIntervals
 //   users/{uid}/bikes/{bikeId}               owner only
 //   users/{uid}/bikes/{bikeId}/odometerReadings/{id}
 //                                            owner only, append-only, matches the bike's odometerKm
@@ -79,12 +79,39 @@ service cloud.firestore {
     // ---------- users/{uid} ----------
 
     match /users/{uid} {
-      // activeBikeId is optional: profiles created before it existed don't have it.
+      // A km interval for one service type: missing, null (no reminder), or a
+      // whole number from 100 to 100,000. Keep in sync with SERVICE_INTERVAL_LIMITS.
+      function validInterval(intervals, type) {
+        return !(type in intervals)
+          || intervals[type] == null
+          || (intervals[type] is int && intervals[type] >= 100 && intervals[type] <= 100000);
+      }
+
+      // Optional; missing means the app's default intervals.
+      function validServiceIntervals() {
+        let intervals = data().get('serviceIntervals', {});
+        return intervals is map
+          && intervals.keys().hasOnly([
+            'oil_change', 'tires', 'brakes', 'chain', 'battery', 'inspection', 'repair', 'other'
+          ])
+          && validInterval(intervals, 'oil_change')
+          && validInterval(intervals, 'tires')
+          && validInterval(intervals, 'brakes')
+          && validInterval(intervals, 'chain')
+          && validInterval(intervals, 'battery')
+          && validInterval(intervals, 'inspection')
+          && validInterval(intervals, 'repair')
+          && validInterval(intervals, 'other');
+      }
+
+      // activeBikeId and serviceIntervals are optional: profiles created before
+      // they existed don't have them.
       function validProfile() {
         return data().keys().hasAll(['displayName', 'email', 'photoURL', 'createdAt', 'updatedAt'])
           && data().keys().hasOnly([
-            'displayName', 'email', 'photoURL', 'activeBikeId', 'createdAt', 'updatedAt'
+            'displayName', 'email', 'photoURL', 'activeBikeId', 'serviceIntervals', 'createdAt', 'updatedAt'
           ])
+          && validServiceIntervals()
           && isOptionalText(data().displayName, 100)
           // Must match the signed-in account's email (null for accounts without one).
           && data().email == request.auth.token.get('email', null)
