@@ -3,6 +3,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { useColorScheme } from 'react-native';
 
 import { LaunchScreen } from '@/components/launch-screen';
+import { ToastHost } from '@/components/toast';
 import { Colors, Fonts } from '@/constants/theme';
 import { useAppFonts } from '@/hooks/use-app-fonts';
 import { AuthProvider, useAuth } from '@/hooks/use-auth';
@@ -78,6 +79,7 @@ function RootNavigator() {
           <Stack.Screen name="login" />
         </Stack.Protected>
       </Stack>
+      <ToastHost />
       {/* Cover the navigator while Firebase restores a saved session, so a
           signed-in user doesn't see the login screen flash. */}
       <LaunchScreen ready={!initializing} />

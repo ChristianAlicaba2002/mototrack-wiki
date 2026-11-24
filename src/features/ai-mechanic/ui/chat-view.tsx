@@ -1,10 +1,12 @@
 import { ActivityIndicator, KeyboardAvoidingView, ScrollView, StyleSheet, View } from 'react-native';
+import Animated, { FadeIn } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useConfirmDrawer } from '@/components/confirm-drawer';
 import { ChevronLeftIcon, TrashIcon } from '@/components/icons/line-icons';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { showToast } from '@/components/toast';
 import { Fonts, Spacing } from '@/constants/theme';
 import { Button, ErrorMessage, IconButton, ScreenHeader, TextAction } from '@/features/garage/ui/controls';
 import { useTheme } from '@/hooks/use-theme';
@@ -13,6 +15,12 @@ import type { ChatViewModel } from '../model/use-chat';
 import { Composer } from './composer';
 import { ExamplePrompts } from './example-prompts';
 import { MessageList } from './message-list';
+
+const MIN_DELETING_MS = 700;
+
+function wait(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 type ChatViewProps = ChatViewModel & {
   back: () => void;
@@ -50,7 +58,10 @@ export function ChatView({
       confirmLabel: 'Delete chat',
       tone: 'danger',
       onConfirm: async () => {
-        if (await remove()) back();
+        const [removed] = await Promise.all([remove(), wait(MIN_DELETING_MS)]);
+        if (!removed) return;
+        back();
+        showToast('Chat deleted');
       },
     });
   }
@@ -118,7 +129,25 @@ export function ChatView({
           )}
         </SafeAreaView>
       </KeyboardAvoidingView>
+      {deleting ? <DeletingOverlay /> : null}
     </ThemedView>
+  );
+}
+
+function DeletingOverlay() {
+  const theme = useTheme();
+  return (
+    <Animated.View
+      entering={FadeIn.duration(180)}
+      accessible
+      accessibilityRole="progressbar"
+      accessibilityLabel="Deleting chat"
+      style={[StyleSheet.absoluteFill, styles.overlay, { backgroundColor: theme.background }]}>
+      <ActivityIndicator size="large" color={theme.textSecondary} />
+      <ThemedText type="eyebrow" themeColor="textSecondary">
+        Deleting chat
+      </ThemedText>
+    </Animated.View>
   );
 }
 
@@ -137,6 +166,11 @@ function NoBikeHint({ openGarage }: { openGarage: () => void }) {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
+  },
+  overlay: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.three,
   },
   loader: {
     marginTop: Spacing.five,
