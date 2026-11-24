@@ -17,7 +17,7 @@ import { ErrorMessage, IconButton } from '@/features/garage/ui/controls';
 import { useTheme } from '@/hooks/use-theme';
 
 import type { SettingsViewModel } from '../model/settings-view-model';
-import { ProfileCard } from './profile-card';
+import { ProfileSummary } from './profile-summary';
 import { RowProgress, SettingsGroup, SettingsRow, ToggleRow } from './settings-list';
 
 /** Settings is a narrow list; on tablets keep it at a comfortable reading width. */
@@ -74,7 +74,7 @@ export function SettingsView({
       />
       <SafeAreaView edges={['left', 'right', 'bottom']} style={styles.root}>
         <ScrollView contentContainerStyle={styles.content}>
-          <ProfileCard
+          <ProfileSummary
             name={name}
             email={email}
             photoURL={photoURL}
