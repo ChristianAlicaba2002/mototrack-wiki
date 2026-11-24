@@ -47,6 +47,7 @@ export function ServiceFormView({
   values,
   errors,
   odometerHint,
+  nextDueHint,
   minimumDate,
   maximumDate,
   loadState,
@@ -143,6 +144,7 @@ export function ServiceFormView({
                   maxLength={String(BIKE_LIMITS.odometerMax).length + 2}
                   editable={!busy}
                 />
+                {nextDueHint ? <NextDueNote text={nextDueHint} /> : null}
               </Section>
 
               <Section title="Cost & notes" plain>
@@ -229,6 +231,21 @@ function TypePicker({
           {error}
         </ThemedText>
       ) : null}
+    </View>
+  );
+}
+
+/** When this type of service comes round again, as a ruled note under the odometer. */
+function NextDueNote({ text }: { text: string }) {
+  const theme = useTheme();
+  return (
+    <View style={[styles.nextDue, { borderLeftColor: theme.line }]} accessibilityLiveRegion="polite">
+      <ThemedText type="eyebrow" themeColor="textSecondary">
+        Next due
+      </ThemedText>
+      <ThemedText type="small" themeColor="textSecondary">
+        {text}
+      </ThemedText>
     </View>
   );
 }
@@ -321,6 +338,11 @@ const styles = StyleSheet.create({
   },
   field: {
     gap: Spacing.two,
+  },
+  nextDue: {
+    gap: Spacing.one,
+    borderLeftWidth: 2,
+    paddingLeft: Spacing.three - 4,
   },
   pills: {
     flexDirection: 'row',
