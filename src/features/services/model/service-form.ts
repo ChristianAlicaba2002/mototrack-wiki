@@ -2,7 +2,7 @@ import { BIKE_LIMITS, parseWholeNumber } from '@/features/garage/model/bike-form
 import type { ServiceInput } from '@/lib/firestore/services';
 import type { ServiceRecord, ServiceType } from '@/lib/firestore/types';
 
-// Pure form logic: raw text values in, field errors and a validated ServiceInput out.
+// Pure form logic: raw text values in, field errors and a validated ServiceFormInput out.
 // Limits mirror firestore.rules so the user sees a message instead of a
 // permission-denied error.
 
@@ -36,6 +36,9 @@ export const SERVICE_TYPE_ORDER: readonly ServiceType[] = [
   'repair',
   'other',
 ];
+
+/** What the form produces; the view model adds nextDueKm from the rider's intervals. */
+export type ServiceFormInput = Omit<ServiceInput, 'nextDueKm'>;
 
 export type ServiceFormValues = {
   type: ServiceType | null;
@@ -117,7 +120,7 @@ export function validateServiceForm(
   bikeId: string,
   bikeYear?: number,
   now: Date = new Date()
-): { errors: ServiceFormErrors; input: ServiceInput | null } {
+): { errors: ServiceFormErrors; input: ServiceFormInput | null } {
   const errors: ServiceFormErrors = {};
 
   if (values.type === null) errors.type = 'Choose what was done.';
