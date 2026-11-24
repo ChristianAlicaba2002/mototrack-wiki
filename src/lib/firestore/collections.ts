@@ -5,6 +5,7 @@ import {
   type FirestoreDataConverter,
   type QueryDocumentSnapshot,
   type QuerySnapshot,
+  type SnapshotOptions,
 } from 'firebase/firestore';
 
 import { db } from '@/lib/firebase';
@@ -27,7 +28,7 @@ export type WithId<T> = T & { id: string };
 function converter<T extends DocumentData>(): FirestoreDataConverter<T, DocumentData> {
   return {
     toFirestore: (data) => data as DocumentData,
-    fromFirestore: (snapshot: QueryDocumentSnapshot) => snapshot.data() as T,
+    fromFirestore: (snapshot: QueryDocumentSnapshot, options?: SnapshotOptions) => snapshot.data(options) as T,
   };
 }
 
