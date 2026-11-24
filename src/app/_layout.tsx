@@ -72,6 +72,7 @@ function RootNavigator() {
           <Stack.Screen name="service-intervals" />
           <Stack.Screen name="wiki-spec" />
           <Stack.Screen name="wiki-guide" />
+          <Stack.Screen name="chat" />
         </Stack.Protected>
         <Stack.Protected guard={!signedIn}>
           <Stack.Screen name="login" />
