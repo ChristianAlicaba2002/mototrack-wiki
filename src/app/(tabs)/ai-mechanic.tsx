@@ -1,9 +1,3 @@
-import { PlaceholderCard, TabScreen } from '@/components/screen/tab-screen';
+import { ChatListScreen } from '@/features/ai-mechanic/ui/chat-list-screen';
 
-export default function AiMechanicScreen() {
-  return (
-    <TabScreen summary="Describe a problem and get troubleshooting help.">
-      <PlaceholderCard title="Coming soon" description="Chat with an AI assistant about your bike's symptoms here." />
-    </TabScreen>
-  );
-}
+export default ChatListScreen;
