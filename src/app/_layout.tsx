@@ -68,6 +68,7 @@ function RootNavigator() {
           <Stack.Screen name="service-form" options={{ presentation: 'modal' }} />
           <Stack.Screen name="expenses" />
           <Stack.Screen name="settings" />
+          <Stack.Screen name="delete-account" />
           <Stack.Screen name="service-intervals" />
           <Stack.Screen name="wiki-spec" />
           <Stack.Screen name="wiki-guide" />
