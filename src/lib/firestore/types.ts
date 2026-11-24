@@ -160,7 +160,7 @@ export type Chat = {
 
 /**
  * users/{uid}/chats/{chatId}/messages/{messageId}. Append-only.
- * The app may only create 'user' messages; 'assistant' messages are written by the backend.
+ * The app creates both 'user' messages and 'assistant' replies, since it calls Groq directly.
  */
 export type ChatMessage = {
   role: 'user' | 'assistant';

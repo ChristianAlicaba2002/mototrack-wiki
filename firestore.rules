@@ -11,7 +11,8 @@ rules_version = '2';
 //   users/{uid}/services/{serviceId}         owner only, bikeId must be one of the owner's bikes
 //   users/{uid}/documents/{documentId}       owner only, file lives in Storage under the same ids
 //   users/{uid}/chats/{chatId}               owner only
-//   users/{uid}/chats/{chatId}/messages/{id} owner only, append-only
+//   users/{uid}/chats/{chatId}/messages/{id} owner only, append-only; the app writes both the
+//                                            user's messages and the assistant's replies
 //   wiki/{articleId}                         read-only for signed-in users
 //
 // Anything not matched below is denied.
@@ -263,14 +264,14 @@ service cloud.firestore {
         allow create: if isOwner(uid) && validChat() && validCreateTimestamps();
         allow update: if isOwner(uid) && validChat() && validUpdateTimestamps();
 
-        // Append-only. The app only writes the user's own messages; assistant
-        // replies are written by a backend with the Admin SDK, which bypasses
-        // these rules. Messages can be deleted, e.g. when the chat is deleted.
+        // Append-only. The app writes the user's messages and the assistant's
+        // replies, since it calls the AI provider directly (no backend).
+        // Messages can be deleted, e.g. when the chat is deleted.
         match /messages/{messageId} {
           allow read, delete: if isOwner(uid);
           allow create: if isOwner(uid)
             && hasExactly(['role', 'text', 'createdAt'])
-            && data().role == 'user'
+            && data().role in ['user', 'assistant']
             && isText(data().text, 4000)
             && data().createdAt == request.time;
           allow update: if false;
