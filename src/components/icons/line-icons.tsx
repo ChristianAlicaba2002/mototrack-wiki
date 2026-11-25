@@ -275,3 +275,31 @@ export function BellIcon({ size, color }: IconProps) {
     </Icon>
   );
 }
+
+export function CameraIcon({ size, color }: IconProps) {
+  return (
+    <Icon size={size}>
+      <Path d="M4 8.5A2.5 2.5 0 0 1 6.5 6h1.6l1.4-2h5l1.4 2h1.6A2.5 2.5 0 0 1 20 8.5v9a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 17.5z" {...stroke(color)} />
+      <Circle cx={12} cy={12.5} r={3.5} {...stroke(color)} />
+    </Icon>
+  );
+}
+
+export function ImageIcon({ size, color }: IconProps) {
+  return (
+    <Icon size={size}>
+      <Rect x={3.5} y={4.5} width={17} height={15} rx={2.5} {...stroke(color)} />
+      <Circle cx={9} cy={10} r={1.8} {...stroke(color)} />
+      <Path d="m4 17.5 5-4.5 3.5 3 3-2.5 4.5 4" {...stroke(color)} />
+    </Icon>
+  );
+}
+
+export function DocumentIcon({ size, color }: IconProps) {
+  return (
+    <Icon size={size}>
+      <Path d="M7 3.5h7l4 4v11a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-13a2 2 0 0 1 2-2z" {...stroke(color)} />
+      <Path d="M14 3.5v4h4M8.5 12h7M8.5 15.5h5" {...stroke(color)} />
+    </Icon>
+  );
+}
