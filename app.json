@@ -30,6 +30,14 @@
     "plugins": [
       "expo-router",
       [
+        "expo-image-picker",
+        {
+          "photosPermission": "MotoTrack opens your photos so you can save pictures of your OR/CR, insurance and license in the document vault.",
+          "cameraPermission": "MotoTrack uses the camera so you can photograph your OR/CR, insurance and license for the document vault.",
+          "microphonePermission": false
+        }
+      ],
+      [
         "expo-splash-screen",
         {
           "backgroundColor": "#F4F1EA",
