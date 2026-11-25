@@ -8,6 +8,7 @@ import type { WithId } from '@/lib/firestore/collections';
 import type { ChatMessage } from '@/lib/firestore/types';
 
 import type { ChatViewModel } from '../model/use-chat';
+import { MarkdownText } from './markdown-text';
 
 type MessageListProps = {
   messages: WithId<ChatMessage>[];
@@ -39,7 +40,7 @@ function MessageBlock({ message }: { message: WithId<ChatMessage> }) {
       <ThemedText type="eyebrow" style={{ color: isUser ? theme.textSecondary : theme.brand }}>
         {isUser ? 'You' : 'Mechanic'}
       </ThemedText>
-      <ThemedText selectable>{message.text}</ThemedText>
+      {isUser ? <ThemedText selectable>{message.text}</ThemedText> : <MarkdownText text={message.text} />}
     </View>
   );
 }
