@@ -70,6 +70,26 @@ export function subscribeToAllServices(
   return onSnapshot(q, (snapshot) => onChange(withIds(snapshot)), onError);
 }
 
+const servicesSinceQuery = (uid: string, since: Date) =>
+  query(servicesCollection(uid), where('date', '>=', Timestamp.fromDate(since)), orderBy('date', 'desc'));
+
+/**
+ * Live services across all bikes dated on or after `since`, most recent first.
+ * A range and order on the same single field need no composite index.
+ */
+export function subscribeToServicesSince(
+  uid: string,
+  since: Date,
+  onChange: (services: WithId<ServiceRecord>[]) => void,
+  onError: (error: Error) => void
+): Unsubscribe {
+  return onSnapshot(servicesSinceQuery(uid, since), (snapshot) => onChange(withIds(snapshot)), onError);
+}
+
+export async function fetchServicesSince(uid: string, since: Date): Promise<WithId<ServiceRecord>[]> {
+  return withIds(await getDocsFromServer(servicesSinceQuery(uid, since)));
+}
+
 export function subscribeToService(
   uid: string,
   serviceId: string,
