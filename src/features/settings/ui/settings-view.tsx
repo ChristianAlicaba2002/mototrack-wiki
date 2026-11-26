@@ -127,12 +127,12 @@ export function SettingsView({
 
           <SettingsGroup
             title="Reminders"
-            footnote="Reminders aren’t sent yet. Your choices are saved and used once they are.">
+            footnote="Service reminders come from this phone, even offline. Document expiry reminders aren’t sent yet; your choice is saved for when they are.">
             <PushRow permission={pushPermission} enabling={enablingPush} onEnable={enablePush} disabled={busy} />
             <ToggleRow
               icon={(c) => <BellIcon size={18} color={c} />}
               label="Service due"
-              description="When a service is coming up or overdue"
+              description="When a service is coming up or overdue, and when the odometer needs updating"
               value={notificationPrefs.serviceDue}
               onChange={(value) => setNotificationPref('serviceDue', value)}
               disabled={!prefsLoaded || busy}
