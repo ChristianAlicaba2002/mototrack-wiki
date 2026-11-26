@@ -7,7 +7,15 @@ import type { WithId } from '@/lib/firestore/collections';
 import { fetchDocuments, subscribeToDocuments } from '@/lib/firestore/documents';
 import type { VaultDocument } from '@/lib/firestore/types';
 
-import { attentionCount, sortDocuments } from './documents';
+import {
+  attentionCount,
+  EXPIRY_STATUS_LABELS,
+  filterDocuments,
+  sortDocuments,
+  STATUS_FILTER_ORDER,
+  type StatusFilter,
+  statusCounts,
+} from './documents';
 import { toVaultErrorMessage } from './errors';
 import { openDocument, openDocumentForm } from './navigation';
 
@@ -23,6 +31,7 @@ export function useVaultViewModel() {
   const [documents, setDocuments] = useState<WithId<VaultDocument>[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [filter, setFilter] = useState<StatusFilter>('all');
 
   useEffect(() => {
     if (!uid) return;
@@ -32,12 +41,21 @@ export function useVaultViewModel() {
         setDocuments(next);
         setError(null);
       },
-      (e) => setError(toVaultErrorMessage(e))
+      (e) => setError(toVaultErrorMessage(e, 'load'))
     );
   }, [uid]);
 
   const sorted = useMemo(() => sortDocuments(documents ?? []), [documents]);
   const attention = useMemo(() => attentionCount(documents ?? []), [documents]);
+  const counts = useMemo(() => statusCounts(documents ?? []), [documents]);
+  // A filter whose last document was deleted or renewed falls back to everything.
+  const activeFilter: StatusFilter = filter !== 'all' && counts[filter] === 0 ? 'all' : filter;
+  const visible = useMemo(() => filterDocuments(sorted, activeFilter), [sorted, activeFilter]);
+  /** Only the statuses that have documents, so every pill leads somewhere. */
+  const filterOptions = STATUS_FILTER_ORDER.filter((f) => f === 'all' || counts[f] > 0).map((f) => ({
+    value: f,
+    label: `${f === 'all' ? 'All' : EXPIRY_STATUS_LABELS[f]} ${counts[f]}`,
+  }));
   const bikeNames = useMemo(() => new Map(bikes.map((b) => [b.id, bikeDisplayName(b)])), [bikes]);
 
   async function refresh() {
@@ -48,7 +66,7 @@ export function useVaultViewModel() {
       setDocuments(fresh);
       setError(null);
     } catch (e) {
-      setError(toVaultErrorMessage(e));
+      setError(toVaultErrorMessage(e, 'load'));
     } finally {
       setRefreshing(false);
     }
@@ -56,8 +74,12 @@ export function useVaultViewModel() {
 
   return {
     loading: documents === null && error === null,
-    documents: sorted,
+    documents: visible,
     hasDocuments: sorted.length > 0,
+    filter: activeFilter,
+    /** Hidden when every document has the same status: there's nothing to filter. */
+    filterOptions: filterOptions.length > 2 ? filterOptions : [],
+    setFilter,
     expiredCount: attention.expired,
     expiringSoonCount: attention.soon,
     /** e.g. "Honda Click 125i"; undefined for documents not tied to a bike, or a deleted one. */
