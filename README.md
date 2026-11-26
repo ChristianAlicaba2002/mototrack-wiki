@@ -103,6 +103,7 @@ All user data lives under the signed-in user's own document. Firestore and Stora
 | `users/{uid}` | Profile (created on first sign-in) | Owner |
 | `users/{uid}/bikes/{bikeId}` | Make, model, year, plate, odometer, photo path | Owner |
 | `users/{uid}/services/{serviceId}` | Maintenance log entry for one of the owner's bikes | Owner |
+| `users/{uid}/devices/{deviceId}` | FCM push token for one phone (Android), removed on sign-out | Owner |
 | `users/{uid}/documents/{documentId}` | Vault document (registration, insurance, license, receipt) | Owner |
 | `users/{uid}/documents/{documentId}/photoChunks/{photoId}_{n}` | The document's photo as base64 text, up to 8 chunks of 900 KB | Owner |
 | `users/{uid}/chats/{chatId}` | AI Mechanic conversation | Owner |
