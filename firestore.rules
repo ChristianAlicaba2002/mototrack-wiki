@@ -10,6 +10,7 @@ rules_version = '2';
 //                                            owner only, append-only, matches the bike's odometerKm
 //   users/{uid}/services/{serviceId}         owner only, bikeId must be one of the owner's bikes
 //   users/{uid}/documents/{documentId}       owner only; its photo is base64 chunks in photoChunks/{photoId}_{n}
+//   users/{uid}/devices/{deviceId}           owner only; FCM push token for one phone
 //   users/{uid}/chats/{chatId}               owner only
 //   users/{uid}/chats/{chatId}/messages/{id} owner only, append-only; the app writes both the
 //                                            user's messages and the assistant's replies
@@ -264,6 +265,25 @@ service cloud.firestore {
             && request.resource.data.data.size() <= 900000;
           allow update: if false;
         }
+      }
+
+      // ---------- devices (push notifications) ----------
+
+      // One phone that can receive push notifications. The id is a random
+      // per-install id the app keeps; token is the native FCM token.
+      // Keep platforms in sync with PUSH_PLATFORMS (types.ts).
+      match /devices/{deviceId} {
+        function validDevice() {
+          return hasExactly(['token', 'platform', 'createdAt', 'updatedAt'])
+            && isText(data().token, 4096)
+            && data().platform in ['android'];
+        }
+
+        allow read, delete: if isOwner(uid);
+        allow create: if isOwner(uid)
+          && deviceId.matches('[A-Za-z0-9_-]{8,64}')
+          && validDevice() && validCreateTimestamps();
+        allow update: if isOwner(uid) && validDevice() && validUpdateTimestamps();
       }
 
       // ---------- chats (AI mechanic) ----------
