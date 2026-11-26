@@ -110,3 +110,50 @@ export function attentionCount(documents: Pick<VaultDocument, 'expiresAt'>[], no
   }
   return { expired, soon };
 }
+
+/** Short status names for badges and filters. */
+export const EXPIRY_STATUS_LABELS: Record<ExpiryStatus['kind'], string> = {
+  expired: 'Expired',
+  soon: 'Expiring soon',
+  valid: 'Valid',
+  none: 'No expiry',
+};
+
+/** The vault list filter: everything, or one expiry status. */
+export type StatusFilter = 'all' | ExpiryStatus['kind'];
+
+/** Filter order, most urgent first. */
+export const STATUS_FILTER_ORDER: readonly StatusFilter[] = ['all', 'expired', 'soon', 'valid', 'none'];
+
+/** How many documents are in each status, plus the total under 'all'. */
+export function statusCounts(
+  documents: Pick<VaultDocument, 'expiresAt'>[],
+  now: Date = new Date()
+): Record<StatusFilter, number> {
+  const counts: Record<StatusFilter, number> = { all: documents.length, expired: 0, soon: 0, valid: 0, none: 0 };
+  for (const d of documents) counts[expiryStatus(d.expiresAt, now).kind] += 1;
+  return counts;
+}
+
+export function filterDocuments<T extends Pick<VaultDocument, 'expiresAt'>>(
+  documents: T[],
+  filter: StatusFilter,
+  now: Date = new Date()
+): T[] {
+  if (filter === 'all') return documents;
+  return documents.filter((d) => expiryStatus(d.expiresAt, now).kind === filter);
+}
+
+/** The DocumentInput that keeps a saved document's details as they are, e.g. when only its photo changes. */
+export function toDocumentInput(
+  document: VaultDocument,
+  existingBikeIds: readonly string[]
+): { type: VaultDocument['type']; title: string; bikeId: string | null; expiresAt: Date | null } {
+  return {
+    type: document.type,
+    title: document.title,
+    // A bike that was deleted since can't be saved (firestore.rules); drop the link.
+    bikeId: document.bikeId && existingBikeIds.includes(document.bikeId) ? document.bikeId : null,
+    expiresAt: document.expiresAt?.toDate() ?? null,
+  };
+}
