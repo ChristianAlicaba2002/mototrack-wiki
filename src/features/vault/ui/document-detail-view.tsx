@@ -1,9 +1,11 @@
 import { Image } from 'expo-image';
-import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
+import { useState } from 'react';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { BottomDrawer, useCloseDrawer } from '@/components/bottom-drawer';
 import { useConfirmDrawer } from '@/components/confirm-drawer';
-import { ChevronLeftIcon, DocumentIcon } from '@/components/icons/line-icons';
+import { CameraIcon, ChevronLeftIcon, DocumentIcon, ExpandIcon, ImageIcon } from '@/components/icons/line-icons';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Fonts, Spacing } from '@/constants/theme';
@@ -12,7 +14,8 @@ import { useTheme } from '@/hooks/use-theme';
 
 import type { DocumentDetailViewModel } from '../model/document-detail-view-model';
 import { DOCUMENT_TYPE_LABELS, formatDate, formatExpiry } from '../model/documents';
-import { useExpiryColor } from './parts';
+import type { PhotoSource } from '../model/pick-photo';
+import { StatusBadge, useExpiryColor } from './parts';
 
 const CONTENT_MAX_WIDTH = 560;
 
@@ -24,18 +27,28 @@ export function DocumentDetailView({
   photoUrl,
   photoFailed,
   deleting,
+  replacing,
+  replaceProgress,
+  checkingPhoto,
+  busy,
   error,
   edit,
+  viewPhoto,
+  replacePhoto,
   remove,
   back,
 }: DocumentDetailViewModel) {
   const theme = useTheme();
   const { confirm, drawer } = useConfirmDrawer();
+  const [sourceDrawerOpen, setSourceDrawerOpen] = useState(false);
   const expiryColor = useExpiryColor(document?.expiresAt ?? null);
 
   return (
     <ThemedView style={styles.root}>
       {drawer}
+      <BottomDrawer open={sourceDrawerOpen} onClosed={() => setSourceDrawerOpen(false)} dismissLabel="Cancel">
+        <PhotoSourceChoices onChoose={replacePhoto} />
+      </BottomDrawer>
       <SafeAreaView style={styles.root} edges={['top', 'left', 'right', 'bottom']}>
         <ScreenHeader
           title={document?.title ?? 'Document'}
@@ -45,7 +58,7 @@ export function DocumentDetailView({
               variant="plain"
               accessibilityLabel="Back"
               onPress={back}
-              disabled={deleting}
+              disabled={busy}
               icon={(c) => <ChevronLeftIcon size={22} color={c} />}
             />
           }
@@ -60,13 +73,24 @@ export function DocumentDetailView({
           </View>
         ) : (
           <ScrollView contentContainerStyle={styles.content}>
-            <View
-              style={[styles.photo, { backgroundColor: theme.backgroundSelected, borderColor: theme.line }]}
-              accessible
-              accessibilityRole="image"
-              accessibilityLabel={`Photo of ${document.title}`}>
+            <Pressable
+              onPress={viewPhoto}
+              disabled={!photoUrl || replacing}
+              style={({ pressed }) => [
+                styles.photo,
+                { backgroundColor: theme.backgroundSelected, borderColor: theme.line },
+                pressed && styles.pressed,
+              ]}
+              accessibilityRole={photoUrl ? 'imagebutton' : 'image'}
+              accessibilityLabel={`Photo of ${document.title}`}
+              accessibilityHint={photoUrl ? 'Opens the photo full screen' : undefined}>
               {photoUrl ? (
-                <Image source={{ uri: photoUrl }} style={StyleSheet.absoluteFill} contentFit="contain" transition={150} />
+                <>
+                  <Image source={{ uri: photoUrl }} style={StyleSheet.absoluteFill} contentFit="contain" transition={150} />
+                  <View style={[styles.expand, { backgroundColor: theme.background, borderColor: theme.line }]}>
+                    <ExpandIcon size={16} color={theme.text} />
+                  </View>
+                </>
               ) : photoFailed ? (
                 <View style={styles.photoMessage}>
                   <DocumentIcon size={28} color={theme.textSecondary} />
@@ -77,6 +101,11 @@ export function DocumentDetailView({
               ) : (
                 <ActivityIndicator color={theme.textSecondary} />
               )}
+              {replacing ? <UploadOverlay progress={replaceProgress ?? 0} checking={checkingPhoto} /> : null}
+            </Pressable>
+
+            <View style={styles.statusRow}>
+              <StatusBadge expiresAt={document.expiresAt} />
             </View>
 
             <View style={[styles.facts, { borderTopColor: theme.text }]}>
@@ -93,11 +122,20 @@ export function DocumentDetailView({
 
             {error ? <ErrorMessage>{error}</ErrorMessage> : null}
             <View style={styles.actions}>
-              <Button label="Edit document" variant="secondary" onPress={edit} disabled={deleting} />
+              <Button
+                label="Replace photo"
+                variant="secondary"
+                icon={(c) => <CameraIcon size={18} color={c} />}
+                loading={replacing}
+                disabled={busy}
+                onPress={() => setSourceDrawerOpen(true)}
+              />
+              <Button label="Edit details" variant="secondary" onPress={edit} disabled={busy} />
               <Button
                 label="Delete document"
                 variant="danger"
                 loading={deleting}
+                disabled={replacing}
                 onPress={() =>
                   confirm({
                     title: `Delete “${document.title}”?`,
@@ -113,6 +151,60 @@ export function DocumentDetailView({
         )}
       </SafeAreaView>
     </ThemedView>
+  );
+}
+
+/** Camera or gallery, for the replacement photo. */
+function PhotoSourceChoices({ onChoose }: { onChoose: (source: PhotoSource) => void }) {
+  const close = useCloseDrawer();
+  return (
+    <View style={styles.sourceSheet}>
+      <View style={styles.sourceText}>
+        <ThemedText style={styles.sheetTitle} accessibilityRole="header">
+          Replace photo
+        </ThemedText>
+        <ThemedText themeColor="textSecondary">
+          The new photo takes the old one’s place. Type, motorcycle and expiry stay the same.
+        </ThemedText>
+      </View>
+      <View style={styles.actions}>
+        <Button
+          label="Take a photo"
+          icon={(c) => <CameraIcon size={18} color={c} />}
+          onPress={() => close(() => onChoose('camera'))}
+        />
+        <Button
+          label="Choose from gallery"
+          variant="secondary"
+          icon={(c) => <ImageIcon size={18} color={c} />}
+          onPress={() => close(() => onChoose('library'))}
+        />
+      </View>
+    </View>
+  );
+}
+
+/** Dims the photo while the replacement is checked, then shows the upload percentage. */
+function UploadOverlay({ progress, checking }: { progress: number; checking: boolean }) {
+  const theme = useTheme();
+  const percent = Math.round(progress * 100);
+  return (
+    <View
+      style={[StyleSheet.absoluteFill, styles.overlay]}
+      accessible
+      accessibilityRole="progressbar"
+      accessibilityLabel={checking ? 'Checking the new photo' : 'Uploading the new photo'}
+      accessibilityValue={checking ? undefined : { min: 0, max: 100, now: percent }}>
+      <ActivityIndicator color="#FFFFFF" />
+      <ThemedText type="smallBold" style={styles.overlayText}>
+        {checking ? 'Checking the photo…' : `Uploading ${percent}%`}
+      </ThemedText>
+      {checking ? null : (
+        <View style={styles.progressTrack}>
+          <View style={[styles.progressFill, { width: `${percent}%`, backgroundColor: theme.accent }]} />
+        </View>
+      )}
+    </View>
   );
 }
 
@@ -164,6 +256,55 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  pressed: {
+    opacity: 0.85,
+  },
+  expand: {
+    position: 'absolute',
+    right: Spacing.two,
+    bottom: Spacing.two,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    borderWidth: StyleSheet.hairlineWidth,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  overlay: {
+    backgroundColor: 'rgba(0, 0, 0, 0.55)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.two,
+  },
+  overlayText: {
+    color: '#FFFFFF',
+  },
+  progressTrack: {
+    width: '60%',
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    overflow: 'hidden',
+  },
+  progressFill: {
+    height: '100%',
+  },
+  statusRow: {
+    flexDirection: 'row',
+    marginTop: -Spacing.two,
+  },
+  sourceSheet: {
+    gap: Spacing.four,
+  },
+  sourceText: {
+    gap: Spacing.two,
+  },
+  sheetTitle: {
+    fontFamily: Fonts.display,
+    fontSize: 28,
+    lineHeight: 32,
+    letterSpacing: -0.2,
   },
   photoMessage: {
     alignItems: 'center',
