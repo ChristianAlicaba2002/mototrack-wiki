@@ -95,8 +95,9 @@ const vaultDoc = (overrides = {}) => ({
   bikeId: null,
   type: 'license',
   title: "Driver's license",
-  storagePath: `users/${ALICE}/documents/doc1/license.pdf`,
-  contentType: 'application/pdf',
+  photoId: 'p1',
+  photoChunks: 1,
+  contentType: 'image/jpeg',
   sizeBytes: 204800,
   expiresAt: null,
   createdAt: now(),
@@ -423,23 +424,24 @@ describe('users/{uid}/services', () => {
 });
 
 describe('users/{uid}/documents', () => {
-  test('owner can store document metadata', async () => {
+  const chunkPath = (docId = 'doc1', chunkId = 'p1_0') => `users/alice/documents/${docId}/photoChunks/${chunkId}`;
+  const seedChunk = (docId = 'doc1', chunkId = 'p1_0') => seed(chunkPath(docId, chunkId), { data: 'aGVsbG8=' });
+
+  test('owner can store a document once its photo is saved', async () => {
+    await seedChunk();
     await assertSucceeds(setDoc(doc(asAlice(), 'users/alice/documents/doc1'), vaultDoc()));
   });
 
-  test('storagePath must match the owner and document id', async () => {
-    const db = asAlice();
-    await assertFails(
-      setDoc(
-        doc(db, 'users/alice/documents/doc1'),
-        vaultDoc({ storagePath: 'users/bob/documents/doc1/license.pdf' })
-      )
-    );
-    await assertFails(setDoc(doc(db, 'users/alice/documents/doc2'), vaultDoc()));
+  test('a document must point at a saved photo', async () => {
+    await assertFails(setDoc(doc(asAlice(), 'users/alice/documents/doc1'), vaultDoc()));
+    // A photo saved under another document doesn't count.
+    await seedChunk('doc2');
+    await assertFails(setDoc(doc(asAlice(), 'users/alice/documents/doc1'), vaultDoc()));
   });
 
   test('can be linked to one of the owner\'s bikes', async () => {
     await seedBike();
+    await seedChunk();
     await assertSucceeds(
       setDoc(doc(asAlice(), 'users/alice/documents/doc1'), vaultDoc({ bikeId: 'bike1', type: 'registration' }))
     );
@@ -453,11 +455,38 @@ describe('users/{uid}/documents', () => {
     );
   });
 
-  test('validates content type, size and bike', async () => {
+  test('validates content type, size, chunk count and bike', async () => {
+    await seedChunk();
     const ref = doc(asAlice(), 'users/alice/documents/doc1');
-    await assertFails(setDoc(ref, vaultDoc({ contentType: 'application/zip' })));
-    await assertFails(setDoc(ref, vaultDoc({ sizeBytes: 10 * 1024 * 1024 + 1 })));
+    await assertFails(setDoc(ref, vaultDoc({ contentType: 'application/pdf' })));
+    await assertFails(setDoc(ref, vaultDoc({ sizeBytes: 5400001 })));
+    await assertFails(setDoc(ref, vaultDoc({ photoChunks: 9 })));
+    await assertFails(setDoc(ref, vaultDoc({ photoId: 'Bad/Id' })));
     await assertFails(setDoc(ref, vaultDoc({ bikeId: 'missing' })));
+  });
+
+  test('owner can save, read and delete photo chunks', async () => {
+    const ref = doc(asAlice(), chunkPath());
+    await assertSucceeds(setDoc(ref, { data: 'aGVsbG8=' }));
+    await assertSucceeds(getDoc(ref));
+    await assertSucceeds(deleteDoc(ref));
+  });
+
+  test('photo chunks are size-limited, well-named and never edited', async () => {
+    const db = asAlice();
+    await assertFails(setDoc(doc(db, chunkPath()), { data: 'a'.repeat(900001) }));
+    await assertFails(setDoc(doc(db, chunkPath()), { data: '' }));
+    await assertFails(setDoc(doc(db, chunkPath()), { data: 'aGVsbG8=', extra: true }));
+    await assertFails(setDoc(doc(db, chunkPath('doc1', 'p1_8')), { data: 'aGVsbG8=' }));
+    await seedChunk();
+    await assertFails(setDoc(doc(db, chunkPath()), { data: 'b3RoZXI=' }));
+  });
+
+  test('other users can\'t read or write photo chunks', async () => {
+    await seedChunk();
+    await assertFails(getDoc(doc(asBob(), chunkPath())));
+    await assertFails(setDoc(doc(asBob(), chunkPath('doc1', 'p2_0')), { data: 'aGVsbG8=' }));
+    await assertFails(deleteDoc(doc(asBob(), chunkPath())));
   });
 });
 
