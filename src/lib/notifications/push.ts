@@ -42,6 +42,9 @@ async function ensureChannel(): Promise<void> {
   await Notifications.setNotificationChannelAsync(REMINDERS_CHANNEL_ID, {
     name: 'Reminders',
     description: 'Service due and document expiry reminders',
+    // AndroidImportance is exported (build/index.js), but as a `declare enum` behind
+    // `export *` in the .d.ts files, which eslint-plugin-import can't follow.
+    // eslint-disable-next-line import/namespace
     importance: Notifications.AndroidImportance.HIGH,
     lightColor: '#C8102E',
   });
