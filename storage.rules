@@ -3,7 +3,7 @@ rules_version = '2';
 // MotoTrack Cloud Storage security rules.
 //
 //   users/{uid}/bikes/{bikeId}/{fileName}          bike photos, owner only, images up to 5 MB
-//   users/{uid}/documents/{documentId}/{fileName}  vault files, owner only, PDF or images up to 10 MB
+//   users/{uid}/documents/{documentId}/{fileName}  unused: vault photos now live in Firestore (photoChunks)
 //   wiki/**                                        read-only for signed-in users
 //
 // The ids match the Firestore documents that point at these files
