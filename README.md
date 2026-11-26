@@ -13,15 +13,21 @@ Built with Expo (React Native) and TypeScript on Firebase, designed to run entir
 
 ## Screenshots
 
-| Home | Garage | Service log | Vault |
+| Sign in | Create account | Service log | Update odometer |
 | :---: | :---: | :---: | :---: |
-| <img src="docs/screenshots/home.png" width="200" alt="Home dashboard with the active bike, what's due next and this month's spending"> | <img src="docs/screenshots/garage.png" width="200" alt="Garage with the rider's motorcycles and odometer"> | <img src="docs/screenshots/service-log.png" width="200" alt="Service history timeline for one bike"> | <img src="docs/screenshots/vault.png" width="200" alt="Document vault listing papers by expiry status"> |
+| <img src="docs/screenshots/login.jpg" width="200" alt="Sign-in screen with email, password and Google"> | <img src="docs/screenshots/register.jpg" width="200" alt="Create-account screen"> | <img src="docs/screenshots/service-log.png" width="200" alt="A bike's service log with spending, what's due next and a timeline"> | <img src="docs/screenshots/update-odometer.png" width="200" alt="Updating the odometer, with the reading history"> |
 
-| Document viewer | Wiki | AI Mechanic | Settings |
+| Edit motorcycle | Vault | Add a document | Settings |
 | :---: | :---: | :---: | :---: |
-| <img src="docs/screenshots/document-viewer.png" width="200" alt="Full-screen zoomable photo of a document"> | <img src="docs/screenshots/wiki.png" width="200" alt="Wiki with spec sheets and DIY guides"> | <img src="docs/screenshots/ai-mechanic.png" width="200" alt="AI Mechanic chat answering a question about the rider's bike"> | <img src="docs/screenshots/settings.png" width="200" alt="Settings with reminder and notification options"> |
+| <img src="docs/screenshots/edit-motorcycle.png" width="200" alt="Editing a motorcycle's make, model, specs and plate"> | <img src="docs/screenshots/vault.png" width="200" alt="The document vault, empty"> | <img src="docs/screenshots/add-document.png" width="200" alt="Adding a document with a photo, type, motorcycle and expiry date"> | <img src="docs/screenshots/settings.png" width="200" alt="Settings with push notifications and reminder toggles"> |
 
-**Demo:** [watch a 1-minute walkthrough](docs/screenshots/demo.mp4)
+| Wiki | Wiki filters | Spec sheet | AI Mechanic |
+| :---: | :---: | :---: | :---: |
+| <img src="docs/screenshots/wiki.png" width="200" alt="Wiki listing spec sheets for popular models"> | <img src="docs/screenshots/wiki-filters.png" width="200" alt="Wiki filters by category and by your bike"> | <img src="docs/screenshots/spec-sheet.png" width="200" alt="Spec sheet with fluids, tire pressure, torque and service intervals"> | <img src="docs/screenshots/ai-mechanic.png" width="200" alt="AI Mechanic home with suggested questions"> |
+
+| New chat | Chat |
+| :---: | :---: |
+| <img src="docs/screenshots/new-chat.png" width="200" alt="Starting a new AI Mechanic chat"> | <img src="docs/screenshots/chat.png" width="200" alt="AI Mechanic checking whether the bike is a real model before answering"> |
 
 ## Features
 
