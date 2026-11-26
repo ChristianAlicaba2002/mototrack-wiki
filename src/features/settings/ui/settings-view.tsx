@@ -127,7 +127,7 @@ export function SettingsView({
 
           <SettingsGroup
             title="Reminders"
-            footnote="Service reminders come from this phone, even offline. Document expiry reminders aren’t sent yet; your choice is saved for when they are.">
+            footnote="Reminders come from this phone, so they arrive even offline.">
             <PushRow permission={pushPermission} enabling={enablingPush} onEnable={enablePush} disabled={busy} />
             <ToggleRow
               icon={(c) => <BellIcon size={18} color={c} />}
@@ -140,7 +140,7 @@ export function SettingsView({
             <ToggleRow
               icon={(c) => <CalendarIcon size={18} color={c} />}
               label="Document expiry"
-              description="Before registration, insurance or license expires"
+              description="30, 15 and 7 days before an OR/CR, insurance or license expires"
               value={notificationPrefs.documentExpiry}
               onChange={(value) => setNotificationPref('documentExpiry', value)}
               disabled={!prefsLoaded || busy}
