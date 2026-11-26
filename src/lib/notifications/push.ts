@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import Constants, { ExecutionEnvironment } from 'expo-constants';
+import { isRunningInExpoGo } from 'expo';
 import * as Notifications from 'expo-notifications';
 import { Linking, Platform } from 'react-native';
 
@@ -37,7 +37,9 @@ export function notificationsSupported(): boolean {
 /** The platform to save an FCM token for, or null where there's no FCM token (iOS, web, Expo Go). */
 export function pushPlatform(): PushPlatform | null {
   if (Platform.OS !== 'android') return null;
-  if (Constants.executionEnvironment === ExecutionEnvironment.StoreClient) return null;
+  // Same check expo-notifications uses: in Expo Go on Android every push API
+  // (even addPushTokenListener) throws, so push must be skipped entirely.
+  if (isRunningInExpoGo()) return null;
   return 'android';
 }
 
