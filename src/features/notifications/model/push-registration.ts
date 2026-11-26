@@ -8,6 +8,7 @@ import {
   getPushPermission,
   getPushToken,
   hasAskedBefore,
+  notificationsSupported,
   onPushTokenChange,
   pushPlatform,
   type PushPermission,
@@ -50,7 +51,8 @@ export function usePushRegistration() {
   const uid = user?.uid;
 
   useEffect(() => {
-    if (!uid || !pushPlatform()) return;
+    // Asking works wherever notifications do (reminders are local); the FCM token is Android-only.
+    if (!uid || !notificationsSupported()) return;
     let cancelled = false;
 
     (async () => {
@@ -60,9 +62,11 @@ export function usePushRegistration() {
       if (!cancelled) await registerThisDevice(uid);
     })().catch(logFailure);
 
-    const stopTokenUpdates = onPushTokenChange((token) => {
-      registerThisDevice(uid, token).catch(logFailure);
-    });
+    const stopTokenUpdates = pushPlatform()
+      ? onPushTokenChange((token) => {
+          registerThisDevice(uid, token).catch(logFailure);
+        })
+      : () => {};
     const appState = AppState.addEventListener('change', (state) => {
       if (state === 'active') registerThisDevice(uid).catch(logFailure);
     });

@@ -5,9 +5,10 @@ import { Linking, Platform } from 'react-native';
 
 import type { PushPlatform } from '@/lib/firestore/types';
 
-// Push notifications through Firebase Cloud Messaging (FCM), Android only for
-// now. Needs a development or release build: Expo Go has no remote push on
-// Android since SDK 53.
+// Notifications. Two levels of support:
+// - Showing notifications (local reminders): Android and iOS, including Expo Go.
+// - An FCM token for server push: Android only, and only in a development or
+//   release build (Expo Go has no remote push on Android since SDK 53).
 
 /** Must match the expo-notifications `defaultChannel` in app.json. */
 export const REMINDERS_CHANNEL_ID = 'reminders';
@@ -15,7 +16,7 @@ export const REMINDERS_CHANNEL_ID = 'reminders';
 const DEVICE_ID_KEY = 'mototrack.pushDeviceId';
 const ASKED_KEY = 'mototrack.pushPermissionAsked';
 
-/** 'unsupported': this build can't get an FCM token (web, iOS for now, or Expo Go). */
+/** 'unsupported': this platform can't show notifications (web). */
 export type PushPermission = 'granted' | 'undetermined' | 'denied' | 'unsupported';
 
 /** Show reminders that arrive while the app is open, like they would in the background. */
@@ -28,6 +29,12 @@ Notifications.setNotificationHandler({
   }),
 });
 
+/** Whether this platform can show notifications at all. */
+export function notificationsSupported(): boolean {
+  return Platform.OS === 'android' || Platform.OS === 'ios';
+}
+
+/** The platform to save an FCM token for, or null where there's no FCM token (iOS, web, Expo Go). */
 export function pushPlatform(): PushPlatform | null {
   if (Platform.OS !== 'android') return null;
   if (Constants.executionEnvironment === ExecutionEnvironment.StoreClient) return null;
@@ -39,6 +46,7 @@ export function pushPlatform(): PushPlatform | null {
  * token can only be fetched after one is created.
  */
 async function ensureChannel(): Promise<void> {
+  if (Platform.OS !== 'android') return;
   await Notifications.setNotificationChannelAsync(REMINDERS_CHANNEL_ID, {
     name: 'Reminders',
     description: 'Service due and document expiry reminders',
@@ -51,7 +59,7 @@ async function ensureChannel(): Promise<void> {
 }
 
 export async function getPushPermission(): Promise<PushPermission> {
-  if (!pushPlatform()) return 'unsupported';
+  if (!notificationsSupported()) return 'unsupported';
   const { status } = await Notifications.getPermissionsAsync();
   return status === 'granted' ? 'granted' : status === 'denied' ? 'denied' : 'undetermined';
 }
@@ -61,7 +69,7 @@ export async function getPushPermission(): Promise<PushPermission> {
  * again; send them to the app's system settings instead.
  */
 export async function requestPushPermission(): Promise<PushPermission> {
-  if (!pushPlatform()) return 'unsupported';
+  if (!notificationsSupported()) return 'unsupported';
   await ensureChannel();
   const current = await Notifications.getPermissionsAsync();
   if (current.status === 'granted') return 'granted';
@@ -85,6 +93,11 @@ export async function hasAskedBefore(): Promise<boolean> {
 
 async function setAsked(): Promise<void> {
   await AsyncStorage.setItem(ASKED_KEY, '1').catch(() => {});
+}
+
+/** Makes sure the reminders channel exists before showing or scheduling a notification. */
+export async function prepareNotifications(): Promise<void> {
+  await ensureChannel();
 }
 
 /** The native FCM registration token. Call only once permission is granted. */

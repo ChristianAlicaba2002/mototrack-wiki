@@ -6,6 +6,8 @@ import { LaunchScreen } from '@/components/launch-screen';
 import { ToastHost } from '@/components/toast';
 import { Colors, Fonts } from '@/constants/theme';
 import { usePushRegistration } from '@/features/notifications/model/push-registration';
+import { useNotificationTaps } from '@/features/notifications/model/use-notification-taps';
+import { useServiceReminders } from '@/features/reminders/model/use-service-reminders';
 import { useAppFonts } from '@/hooks/use-app-fonts';
 import { AuthProvider, useAuth } from '@/hooks/use-auth';
 
@@ -59,6 +61,10 @@ function RootNavigator() {
   const signedIn = user !== null;
   // Asks for notification permission and keeps this phone's FCM token saved.
   usePushRegistration();
+  // Service-due and odometer reminders, scheduled on this phone.
+  useServiceReminders();
+  // Tapping a reminder opens its screen; only once signed in, so the screen exists.
+  useNotificationTaps(signedIn && !initializing);
 
   return (
     <>

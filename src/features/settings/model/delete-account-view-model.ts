@@ -1,6 +1,7 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
 
+import { clearRemindersOnThisPhone } from '@/features/reminders/model/use-service-reminders';
 import { useAuth } from '@/hooks/use-auth';
 import { deleteSignedInUser, reauthenticateWithGoogle } from '@/lib/firebase/google-sign-in';
 import { reauthenticateWithPassword, type SignInMethod, signInMethodOf } from '@/lib/firebase/sign-in-method';
@@ -72,6 +73,7 @@ export function useDeleteAccountViewModel() {
       }
       setPhase('deleting');
       await deleteUserData(user.uid);
+      await clearRemindersOnThisPhone();
       // The app returns to the login screen once the user is gone.
       await deleteSignedInUser(user);
     } catch (e) {
