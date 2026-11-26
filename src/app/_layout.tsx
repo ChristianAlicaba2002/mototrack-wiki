@@ -7,6 +7,7 @@ import { ToastHost } from '@/components/toast';
 import { Colors, Fonts } from '@/constants/theme';
 import { usePushRegistration } from '@/features/notifications/model/push-registration';
 import { useNotificationTaps } from '@/features/notifications/model/use-notification-taps';
+import { useDocumentReminders } from '@/features/reminders/model/use-document-reminders';
 import { useServiceReminders } from '@/features/reminders/model/use-service-reminders';
 import { useAppFonts } from '@/hooks/use-app-fonts';
 import { AuthProvider, useAuth } from '@/hooks/use-auth';
@@ -63,6 +64,8 @@ function RootNavigator() {
   usePushRegistration();
   // Service-due and odometer reminders, scheduled on this phone.
   useServiceReminders();
+  // Vault documents: 30, 15 and 7 days before they expire.
+  useDocumentReminders();
   // Tapping a reminder opens its screen; only once signed in, so the screen exists.
   useNotificationTaps(signedIn && !initializing);
 
