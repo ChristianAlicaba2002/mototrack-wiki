@@ -9,7 +9,7 @@ rules_version = '2';
 //   users/{uid}/bikes/{bikeId}/odometerReadings/{id}
 //                                            owner only, append-only, matches the bike's odometerKm
 //   users/{uid}/services/{serviceId}         owner only, bikeId must be one of the owner's bikes
-//   users/{uid}/documents/{documentId}       owner only, file lives in Storage under the same ids
+//   users/{uid}/documents/{documentId}       owner only; its photo is base64 chunks in photoChunks/{photoId}_{n}
 //   users/{uid}/chats/{chatId}               owner only
 //   users/{uid}/chats/{chatId}/messages/{id} owner only, append-only; the app writes both the
 //                                            user's messages and the assistant's replies
@@ -227,28 +227,43 @@ service cloud.firestore {
       // ---------- documents (vault) ----------
 
       match /documents/{documentId} {
+        // The photo is stored in Firestore as base64 chunks (photoChunks below),
+        // since Cloud Storage needs a paid plan. Keep the limits in sync with
+        // PHOTO_CHUNK_CHARS, MAX_PHOTO_CHUNKS and DOCUMENT_CONTENT_TYPES (types.ts).
         function validDocument() {
           return hasExactly([
-              'bikeId', 'type', 'title', 'storagePath', 'contentType',
+              'bikeId', 'type', 'title', 'photoId', 'photoChunks', 'contentType',
               'sizeBytes', 'expiresAt', 'createdAt', 'updatedAt'
             ])
             && isOptionalBike(uid, data().bikeId)
             && data().type in ['registration', 'insurance', 'license', 'receipt', 'other']
             && isText(data().title, 120)
-            // File must be stored under this document's Storage folder.
-            && data().storagePath is string
-            && data().storagePath.matches('users/' + uid + '/documents/' + documentId + '/[^/]{1,200}')
-            // Keep in sync with storage.rules.
-            && data().contentType in [
-              'application/pdf', 'image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'
-            ]
-            && data().sizeBytes is int && data().sizeBytes > 0 && data().sizeBytes <= 10 * 1024 * 1024
+            && data().photoId is string
+            && data().photoId.matches('[a-z0-9]{1,40}')
+            && data().photoChunks is int && data().photoChunks >= 1 && data().photoChunks <= 8
+            // The document may only point at a photo whose chunks are saved.
+            && exists(/databases/$(database)/documents/users/$(uid)/documents/$(documentId)/photoChunks/$(data().photoId + '_0'))
+            && data().contentType in ['image/jpeg', 'image/png', 'image/webp']
+            && data().sizeBytes is int && data().sizeBytes > 0 && data().sizeBytes <= 5400000
             && isOptionalTimestamp(data().expiresAt);
         }
 
         allow read, delete: if isOwner(uid);
         allow create: if isOwner(uid) && validDocument() && validCreateTimestamps();
         allow update: if isOwner(uid) && validDocument() && validUpdateTimestamps();
+
+        // One piece of a photo's base64 text, named {photoId}_{index}. Written
+        // once before the document points at it; never edited.
+        match /photoChunks/{chunkId} {
+          allow read, delete: if isOwner(uid);
+          allow create: if isOwner(uid)
+            && chunkId.matches('[a-z0-9]{1,40}_[0-7]')
+            && request.resource.data.keys().hasOnly(['data'])
+            && request.resource.data.data is string
+            && request.resource.data.data.size() > 0
+            && request.resource.data.data.size() <= 900000;
+          allow update: if false;
+        }
       }
 
       // ---------- chats (AI mechanic) ----------
