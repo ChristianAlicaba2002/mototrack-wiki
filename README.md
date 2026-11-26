@@ -103,12 +103,13 @@ All user data lives under the signed-in user's own document. Firestore and Stora
 | `users/{uid}` | Profile (created on first sign-in) | Owner |
 | `users/{uid}/bikes/{bikeId}` | Make, model, year, plate, odometer, photo path | Owner |
 | `users/{uid}/services/{serviceId}` | Maintenance log entry for one of the owner's bikes | Owner |
-| `users/{uid}/documents/{documentId}` | Vault file metadata (registration, insurance, license, receipt) | Owner |
+| `users/{uid}/documents/{documentId}` | Vault document (registration, insurance, license, receipt) | Owner |
+| `users/{uid}/documents/{documentId}/photoChunks/{photoId}_{n}` | The document's photo as base64 text, up to 8 chunks of 900 KB | Owner |
 | `users/{uid}/chats/{chatId}` | AI Mechanic conversation | Owner |
 | `users/{uid}/chats/{chatId}/messages/{messageId}` | Messages; append-only, the app writes only `user` messages | Owner |
 | `wiki/{docId}` | Spec sheets and DIY guides, seeded from [`wiki/`](wiki/) | Read-only, signed-in users |
 
-Files in Cloud Storage use the same ids: bike photos go under `users/{uid}/bikes/{bikeId}/` (images, up to 5 MB) and vault files under `users/{uid}/documents/{documentId}/` (PDF or images, up to 10 MB). Wiki images go under `wiki/` and are read-only.
+Files in Cloud Storage use the same ids: bike photos go under `users/{uid}/bikes/{bikeId}/` (images, up to 5 MB). Vault photos are stored in Firestore instead (`photoChunks` above, JPEG/PNG/WebP up to about 5 MB) so the vault works on the free Spark plan, which has no Cloud Storage. Wiki images go under `wiki/` and are read-only.
 
 - Rules: [`firestore.rules`](firestore.rules), [`storage.rules`](storage.rules); indexes: [`firestore.indexes.json`](firestore.indexes.json)
 - TypeScript types and typed collection references: [`src/lib/firestore/`](src/lib/firestore/)

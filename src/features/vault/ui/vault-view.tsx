@@ -12,13 +12,16 @@ import type { VaultDocument } from '@/lib/firestore/types';
 
 import { DOCUMENT_TYPE_LABELS, formatExpiry } from '../model/documents';
 import type { VaultViewModel } from '../model/vault-view-model';
-import { DocumentThumb, ExpiryText } from './parts';
+import { ChoicePills, DocumentThumb, ExpiryText, StatusBadge } from './parts';
 
 /** Presentational only — all state and actions come from the view model. */
 export function VaultView({
   loading,
   documents,
   hasDocuments,
+  filter,
+  filterOptions,
+  setFilter,
   expiredCount,
   expiringSoonCount,
   bikeName,
@@ -62,6 +65,14 @@ export function VaultView({
       ) : (
         <>
           <AttentionBanner expired={expiredCount} soon={expiringSoonCount} />
+          {filterOptions.length > 0 ? (
+            <ChoicePills
+              options={filterOptions}
+              value={filter}
+              onChange={setFilter}
+              accessibilityLabel="Filter documents by status"
+            />
+          ) : null}
           <View>
             {documents.map((document) => (
               <DocumentRow
@@ -121,7 +132,7 @@ function DocumentRow({
         { borderTopColor: theme.line },
         pressed && { backgroundColor: theme.backgroundSelected },
       ]}>
-      <DocumentThumb storagePath={document.storagePath} />
+      <DocumentThumb document={document} />
       <View style={styles.rowText}>
         <ThemedText type="eyebrow" themeColor="textSecondary" numberOfLines={1}>
           {meta}
@@ -129,7 +140,10 @@ function DocumentRow({
         <ThemedText style={styles.rowTitle} numberOfLines={1}>
           {document.title}
         </ThemedText>
-        <ExpiryText expiresAt={document.expiresAt} />
+        <View style={styles.rowStatus}>
+          <StatusBadge expiresAt={document.expiresAt} />
+          {document.expiresAt ? <ExpiryText expiresAt={document.expiresAt} style={styles.rowExpiry} /> : null}
+        </View>
       </View>
       <ChevronRightIcon size={18} color={theme.textSecondary} />
     </Pressable>
@@ -196,6 +210,15 @@ const styles = StyleSheet.create({
   rowText: {
     flex: 1,
     gap: 2,
+  },
+  rowStatus: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.two,
+    marginTop: 2,
+  },
+  rowExpiry: {
+    flexShrink: 1,
   },
   rowTitle: {
     fontFamily: Fonts.sansSemiBold,

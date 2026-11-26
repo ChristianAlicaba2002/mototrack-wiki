@@ -119,34 +119,47 @@ export type ServiceRecord = {
 export const DOCUMENT_TYPES = ['registration', 'insurance', 'license', 'receipt', 'other'] as const;
 export type DocumentType = (typeof DOCUMENT_TYPES)[number];
 
-/** Allowed vault file types; also enforced by storage.rules. */
-export const DOCUMENT_CONTENT_TYPES = [
-  'application/pdf',
-  'image/jpeg',
-  'image/png',
-  'image/webp',
-  'image/heic',
-  'image/heif',
-] as const;
+/**
+ * Vault photo formats. Photos are stored in Firestore as base64 text (Cloud
+ * Storage needs a paid plan), and these are the formats the image picker
+ * returns that every platform can display. Keep in sync with firestore.rules.
+ */
+export const DOCUMENT_CONTENT_TYPES = ['image/jpeg', 'image/png', 'image/webp'] as const;
 export type DocumentContentType = (typeof DOCUMENT_CONTENT_TYPES)[number];
 
-export const MAX_DOCUMENT_BYTES = 10 * 1024 * 1024;
+/** Base64 characters per photo chunk; a Firestore document holds at most 1 MiB. Keep in sync with firestore.rules. */
+export const PHOTO_CHUNK_CHARS = 900_000;
+/** A photo may span at most this many chunks (about 5 MB of image). Keep in sync with firestore.rules. */
+export const MAX_PHOTO_CHUNKS = 8;
+/** The largest photo, in bytes, that fits in MAX_PHOTO_CHUNKS once base64-encoded. */
+export const MAX_DOCUMENT_BYTES = Math.floor((PHOTO_CHUNK_CHARS * MAX_PHOTO_CHUNKS * 3) / 4);
 export const MAX_BIKE_PHOTO_BYTES = 5 * 1024 * 1024;
 
-/** users/{uid}/documents/{documentId}: metadata for a file in the vault. */
+/** users/{uid}/documents/{documentId}: a paper in the vault. Its photo is in photoChunks. */
 export type VaultDocument = {
   /** Id of one of the owner's bikes, or null for documents not tied to a bike (e.g. a license). */
   bikeId: string | null;
   type: DocumentType;
   title: string;
-  /** Storage path from documentFilePath() using this document's id. */
-  storagePath: string;
+  /**
+   * Names the current photo's chunks: `${photoId}_${index}` in photoChunks.
+   * New for every photo, so replacing one never overwrites the old chunks
+   * before the document points at the new ones.
+   */
+  photoId: string;
+  /** How many chunks the photo is split into, 1 to MAX_PHOTO_CHUNKS. */
+  photoChunks: number;
   contentType: DocumentContentType;
-  /** Integer, 1 byte to 10 MB. */
+  /** Size of the image itself (not the base64 text), in bytes. */
   sizeBytes: number;
   expiresAt: Timestamp | null;
   createdAt: Timestamp;
   updatedAt: Timestamp;
+};
+
+/** users/{uid}/documents/{documentId}/photoChunks/{photoId}_{index}: one piece of a photo's base64 text. */
+export type PhotoChunk = {
+  data: string;
 };
 
 /** users/{uid}/chats/{chatId}: an AI mechanic conversation. */

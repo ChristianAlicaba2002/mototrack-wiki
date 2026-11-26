@@ -54,7 +54,7 @@
     "typecheck": "tsc --noEmit",
     "doctor": "expo-doctor",
     "seed:wiki": "node --env-file-if-exists=.env scripts/seed-wiki.mjs",
-    "test:rules": "pnpm dlx firebase-tools@15.36.0 emulators:exec --only firestore,storage --project demo-mototrack \"node --test --test-concurrency=1 'tests/rules/*.test.mjs'\""
+    "test:rules": "pnpm dlx firebase-tools@15.36.0 emulators:exec --only firestore,storage --project demo-mototrack \"node --test --test-reporter=spec --test-concurrency=1 'tests/rules/*.test.mjs'\""
   },
   "private": true,
   "packageManager": "pnpm@11.28.11"

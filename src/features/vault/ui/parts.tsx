@@ -7,8 +7,10 @@ import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
 import { Radius } from '@/features/garage/ui/controls';
 import { useTheme } from '@/hooks/use-theme';
+import type { WithId } from '@/lib/firestore/collections';
+import type { VaultDocument } from '@/lib/firestore/types';
 
-import { expiryStatus, formatExpiry } from '../model/documents';
+import { EXPIRY_STATUS_LABELS, expiryStatus, formatExpiry } from '../model/documents';
 import { useDocumentUrl } from '../model/use-document-url';
 
 /** Red when expired, brand red when expiring soon, grey otherwise. */
@@ -18,6 +20,28 @@ export function useExpiryColor(expiresAt: Timestamp | null): string {
   if (kind === 'expired') return theme.danger;
   if (kind === 'soon') return theme.brand;
   return theme.textSecondary;
+}
+
+/** A small pill naming the expiry status: Valid, Expiring soon, Expired or No expiry. */
+export function StatusBadge({ expiresAt }: { expiresAt: Timestamp | null }) {
+  const theme = useTheme();
+  const kind = expiryStatus(expiresAt).kind;
+  const palette = {
+    expired: { background: theme.danger, text: theme.background, border: theme.danger },
+    soon: { background: theme.brandSoft, text: theme.brand, border: theme.brand },
+    valid: { background: 'transparent', text: theme.success, border: theme.success },
+    none: { background: 'transparent', text: theme.textSecondary, border: theme.line },
+  }[kind];
+  return (
+    <View
+      style={[styles.badge, { backgroundColor: palette.background, borderColor: palette.border }]}
+      accessible
+      accessibilityLabel={`Status: ${EXPIRY_STATUS_LABELS[kind]}`}>
+      <ThemedText type="eyebrow" style={{ color: palette.text }} numberOfLines={1}>
+        {EXPIRY_STATUS_LABELS[kind]}
+      </ThemedText>
+    </View>
+  );
 }
 
 /** "Expires in 12 days", coloured by urgency. */
@@ -31,9 +55,9 @@ export function ExpiryText({ expiresAt, style }: { expiresAt: Timestamp | null; 
 }
 
 /** A small preview of the document photo, or a document icon while it loads or if it can't. */
-export function DocumentThumb({ storagePath, size = 56 }: { storagePath: string; size?: number }) {
+export function DocumentThumb({ document, size = 56 }: { document: WithId<VaultDocument>; size?: number }) {
   const theme = useTheme();
-  const { url } = useDocumentUrl(storagePath);
+  const { url } = useDocumentUrl(document);
   return (
     <View
       style={[
@@ -98,6 +122,13 @@ export function ChoicePills<T extends string | null>({
 }
 
 const styles = StyleSheet.create({
+  badge: {
+    alignSelf: 'flex-start',
+    paddingHorizontal: Spacing.two,
+    paddingVertical: 2,
+    borderRadius: Radius.field,
+    borderWidth: 1,
+  },
   thumb: {
     borderRadius: Radius.field,
     borderWidth: StyleSheet.hairlineWidth,

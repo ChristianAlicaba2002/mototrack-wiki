@@ -15,6 +15,7 @@ import type {
   Chat,
   ChatMessage,
   OdometerReading,
+  PhotoChunk,
   ServiceRecord,
   UserProfile,
   VaultDocument,
@@ -53,6 +54,9 @@ export const servicesCollection = (uid: string) =>
 
 export const documentsCollection = (uid: string) =>
   collection(db, 'users', uid, 'documents').withConverter(converter<VaultDocument>());
+
+export const photoChunksCollection = (uid: string, documentId: string) =>
+  collection(db, 'users', uid, 'documents', documentId, 'photoChunks').withConverter(converter<PhotoChunk>());
 
 export const chatsCollection = (uid: string) =>
   collection(db, 'users', uid, 'chats').withConverter(converter<Chat>());

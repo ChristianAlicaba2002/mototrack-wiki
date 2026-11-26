@@ -2,6 +2,7 @@ import {
   deleteDoc,
   doc,
   getDoc,
+  getDocs,
   getDocsFromServer,
   onSnapshot,
   orderBy,
@@ -11,19 +12,23 @@ import {
   Timestamp,
   type Unsubscribe,
   updateDoc,
+  writeBatch,
 } from 'firebase/firestore';
-import { deleteObject, getDownloadURL, ref, uploadBytesResumable } from 'firebase/storage';
 
-import { storage } from '@/lib/firebase';
+import { db } from '@/lib/firebase';
 
-import { documentsCollection, type WithId, withIds } from './collections';
-import { documentFilePath } from './storage-paths';
+import { documentsCollection, photoChunksCollection, type WithId, withIds } from './collections';
 import {
   DOCUMENT_CONTENT_TYPES,
   type DocumentContentType,
   MAX_DOCUMENT_BYTES,
+  MAX_PHOTO_CHUNKS,
+  PHOTO_CHUNK_CHARS,
   type VaultDocument,
 } from './types';
+
+// The vault keeps each photo in Firestore, split into base64 chunks under the
+// document (Cloud Storage isn't available on the free Spark plan).
 
 /** The fields a rider fills in for a document. */
 export type DocumentInput = Pick<VaultDocument, 'bikeId' | 'type' | 'title'> & {
@@ -31,17 +36,20 @@ export type DocumentInput = Pick<VaultDocument, 'bikeId' | 'type' | 'title'> & {
   expiresAt: Date | null;
 };
 
-/** A local photo to upload, e.g. from expo-image-picker. */
+/** A photo to save, from expo-image-picker with `base64: true`. */
 export type DocumentFile = {
+  /** For showing the photo before it's saved. */
   uri: string;
+  /** The image's bytes as base64 text, without a `data:` prefix. */
+  base64: string;
   /** From the picker; may be missing on some Android devices. */
   mimeType?: string | null;
 };
 
-/** Thrown before uploading when the file breaks a rule the server would reject anyway. */
+/** Thrown before saving when the photo breaks a rule the server would reject anyway. */
 export class DocumentFileError extends Error {
   constructor(
-    public readonly reason: 'too-large' | 'unsupported-type' | 'empty',
+    public readonly reason: 'too-large' | 'unsupported-type' | 'empty' | 'unreadable',
     message: string
   ) {
     super(message);
@@ -49,62 +57,97 @@ export class DocumentFileError extends Error {
   }
 }
 
-const EXTENSIONS: Record<DocumentContentType, string> = {
-  'application/pdf': 'pdf',
-  'image/jpeg': 'jpg',
-  'image/png': 'png',
-  'image/webp': 'webp',
-  'image/heic': 'heic',
-  'image/heif': 'heif',
-};
-
 const documentDoc = (uid: string, documentId: string) => doc(documentsCollection(uid), documentId);
 
+const chunkDoc = (uid: string, documentId: string, photoId: string, index: number) =>
+  doc(photoChunksCollection(uid, documentId), `${photoId}_${index}`);
+
 function toContentType(mimeType: string | null | undefined): DocumentContentType {
-  // Camera photos are JPEG; the picker leaves mimeType empty on some Android devices.
+  // The picker returns JPEG base64 for camera photos and leaves mimeType empty on some Android devices.
   const type = (mimeType ?? 'image/jpeg').toLowerCase();
   if ((DOCUMENT_CONTENT_TYPES as readonly string[]).includes(type)) return type as DocumentContentType;
-  throw new DocumentFileError('unsupported-type', 'Use a JPEG, PNG, WebP or HEIC photo.');
+  throw new DocumentFileError('unsupported-type', 'MotoTrack can’t use that kind of image. Take a photo instead.');
 }
 
+/** Bytes of the image a base64 string encodes. */
+function decodedSize(base64: string): number {
+  const padding = base64.endsWith('==') ? 2 : base64.endsWith('=') ? 1 : 0;
+  return Math.floor((base64.length * 3) / 4) - padding;
+}
+
+/** A unique name for a new photo's chunks. */
+function newPhotoId(): string {
+  return `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`;
+}
+
+type SavedPhoto = Pick<VaultDocument, 'photoId' | 'photoChunks' | 'contentType' | 'sizeBytes'>;
+
 /**
- * Uploads a file to this document's Storage folder. The name is unique per
- * upload, so replacing a photo never overwrites the old one before the
- * Firestore document points at the new one.
+ * Writes the photo's chunks one at a time, reporting progress after each.
+ * One chunk per write keeps every request well under Firestore's 10 MiB limit.
  */
-async function uploadFile(
+async function savePhoto(
   uid: string,
   documentId: string,
   file: DocumentFile,
   onProgress?: (fraction: number) => void
-): Promise<{ storagePath: string; contentType: DocumentContentType; sizeBytes: number }> {
+): Promise<SavedPhoto> {
   const contentType = toContentType(file.mimeType);
-  const blob = await (await fetch(file.uri)).blob();
-  if (blob.size === 0) throw new DocumentFileError('empty', 'That photo is empty. Try taking it again.');
-  if (blob.size > MAX_DOCUMENT_BYTES) {
-    throw new DocumentFileError('too-large', 'That photo is over 10 MB. Try a smaller one.');
+  const base64 = file.base64;
+  if (!base64) {
+    throw new DocumentFileError('unreadable', 'MotoTrack couldn’t open that photo. Take a new one or choose a different photo.');
+  }
+  const sizeBytes = decodedSize(base64);
+  if (sizeBytes <= 0) throw new DocumentFileError('empty', 'That photo is empty. Try taking it again.');
+  const chunkCount = Math.ceil(base64.length / PHOTO_CHUNK_CHARS);
+  if (sizeBytes > MAX_DOCUMENT_BYTES || chunkCount > MAX_PHOTO_CHUNKS) {
+    const limitMb = Math.floor(MAX_DOCUMENT_BYTES / (1024 * 1024));
+    throw new DocumentFileError(
+      'too-large',
+      `That photo is too big to save (the limit is about ${limitMb} MB). Take the photo a little farther away, or choose a smaller one.`
+    );
   }
 
-  const storagePath = documentFilePath(uid, documentId, `${Date.now()}.${EXTENSIONS[contentType]}`);
-  const task = uploadBytesResumable(ref(storage, storagePath), blob, { contentType });
-  await new Promise<void>((resolve, reject) => {
-    task.on(
-      'state_changed',
-      (snapshot) => onProgress?.(snapshot.totalBytes > 0 ? snapshot.bytesTransferred / snapshot.totalBytes : 0),
-      reject,
-      () => resolve()
-    );
-  });
-  return { storagePath, contentType, sizeBytes: blob.size };
+  const photoId = newPhotoId();
+  const saved: SavedPhoto = { photoId, photoChunks: chunkCount, contentType, sizeBytes };
+  onProgress?.(0);
+  try {
+    for (let i = 0; i < chunkCount; i++) {
+      const data = base64.slice(i * PHOTO_CHUNK_CHARS, (i + 1) * PHOTO_CHUNK_CHARS);
+      await setDoc(chunkDoc(uid, documentId, photoId, i), { data });
+      onProgress?.((i + 1) / chunkCount);
+    }
+  } catch (e) {
+    await deletePhoto(uid, documentId, saved).catch(() => {});
+    throw e;
+  }
+  return saved;
 }
 
-/** Deletes a Storage file, ignoring one that's already gone. */
-async function deleteFile(path: string): Promise<void> {
-  try {
-    await deleteObject(ref(storage, path));
-  } catch (e) {
-    if ((e as { code?: string } | null)?.code !== 'storage/object-not-found') throw e;
+/** Deletes a photo's chunks; ones that are already gone are fine. */
+async function deletePhoto(
+  uid: string,
+  documentId: string,
+  photo: Pick<VaultDocument, 'photoId' | 'photoChunks'>
+): Promise<void> {
+  const batch = writeBatch(db);
+  for (let i = 0; i < photo.photoChunks; i++) batch.delete(chunkDoc(uid, documentId, photo.photoId, i));
+  await batch.commit();
+}
+
+/** The photo as a `data:` URI that expo-image can show. Only the owner can read it (firestore.rules). */
+export async function getDocumentPhoto(
+  uid: string,
+  documentId: string,
+  photo: Pick<VaultDocument, 'photoId' | 'photoChunks' | 'contentType'>
+): Promise<string> {
+  const chunks = await Promise.all(
+    Array.from({ length: photo.photoChunks }, (_, i) => getDoc(chunkDoc(uid, documentId, photo.photoId, i)))
+  );
+  if (chunks.some((c) => !c.exists())) {
+    throw new DocumentFileError('unreadable', 'This document’s photo is missing. Use “Replace photo” to add it again.');
   }
+  return `data:${photo.contentType};base64,${chunks.map((c) => c.data()!.data).join('')}`;
 }
 
 const toFields = (input: DocumentInput) => ({
@@ -146,14 +189,9 @@ export async function getDocument(uid: string, documentId: string): Promise<With
   return snapshot.exists() ? { ...snapshot.data(), id: snapshot.id } : null;
 }
 
-/** A short-lived URL to show the file. Only the owner can get one (storage.rules). */
-export function getDocumentFileUrl(storagePath: string): Promise<string> {
-  return getDownloadURL(ref(storage, storagePath));
-}
-
 /**
- * Uploads the photo, then saves the document. If saving fails, the uploaded
- * file is removed so nothing is left behind without a document pointing at it.
+ * Saves the photo's chunks, then the document. If saving the document fails,
+ * the chunks are removed so nothing is left behind.
  */
 export async function createDocument(
   uid: string,
@@ -162,24 +200,24 @@ export async function createDocument(
   onProgress?: (fraction: number) => void
 ): Promise<string> {
   const docRef = doc(documentsCollection(uid));
-  const uploaded = await uploadFile(uid, docRef.id, file, onProgress);
+  const photo = await savePhoto(uid, docRef.id, file, onProgress);
   try {
     await setDoc(docRef, {
       ...toFields(input),
-      ...uploaded,
+      ...photo,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     });
   } catch (e) {
-    await deleteFile(uploaded.storagePath).catch(() => {});
+    await deletePhoto(uid, docRef.id, photo).catch(() => {});
     throw e;
   }
   return docRef.id;
 }
 
 /**
- * Saves edits. With a new photo, it's uploaded first, the document is pointed
- * at it, and only then is the old file deleted.
+ * Saves edits. With a new photo, its chunks are saved first, the document is
+ * pointed at them, and only then are the old chunks deleted.
  */
 export async function updateDocument(
   uid: string,
@@ -192,23 +230,31 @@ export async function updateDocument(
     await updateDoc(documentDoc(uid, current.id), { ...toFields(input), updatedAt: serverTimestamp() });
     return;
   }
-  const uploaded = await uploadFile(uid, current.id, file, onProgress);
+  const photo = await savePhoto(uid, current.id, file, onProgress);
   try {
     await updateDoc(documentDoc(uid, current.id), {
       ...toFields(input),
-      ...uploaded,
+      ...photo,
       updatedAt: serverTimestamp(),
     });
   } catch (e) {
-    await deleteFile(uploaded.storagePath).catch(() => {});
+    await deletePhoto(uid, current.id, photo).catch(() => {});
     throw e;
   }
-  // Best effort: the document already points at the new file.
-  await deleteFile(current.storagePath).catch(() => {});
+  // Best effort: the document already points at the new photo.
+  await deletePhoto(uid, current.id, current).catch(() => {});
 }
 
-/** Deletes the file, then the document. */
+/**
+ * Deletes every photo chunk under the document (including any left over from
+ * an interrupted replace), then the document.
+ */
 export async function deleteDocument(uid: string, document: WithId<VaultDocument>): Promise<void> {
-  await deleteFile(document.storagePath);
+  const chunks = await getDocs(photoChunksCollection(uid, document.id));
+  if (!chunks.empty) {
+    const batch = writeBatch(db);
+    for (const chunk of chunks.docs) batch.delete(chunk.ref);
+    await batch.commit();
+  }
   await deleteDoc(documentDoc(uid, document.id));
 }

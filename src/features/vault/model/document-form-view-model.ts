@@ -1,4 +1,3 @@
-import * as ImagePicker from 'expo-image-picker';
 import { useEffect, useMemo, useState } from 'react';
 
 import { bikeDisplayName } from '@/features/garage/model/active-bike';
@@ -7,7 +6,6 @@ import { useAuth } from '@/hooks/use-auth';
 import type { WithId } from '@/lib/firestore/collections';
 import {
   createDocument,
-  type DocumentFile,
   type DocumentInput,
   getDocument,
   updateDocument,
@@ -17,19 +15,15 @@ import type { DocumentType, VaultDocument } from '@/lib/firestore/types';
 import { BIKE_DOCUMENT_TYPES, DOCUMENT_TYPE_LABELS, EXPIRING_DOCUMENT_TYPES } from './documents';
 import { toVaultErrorMessage } from './errors';
 import { closeVaultScreen } from './navigation';
+import { type PhotoSource, type PickedPhoto, pickDocumentPhoto } from './pick-photo';
+import { verifyDocumentPhoto } from './verify-document';
 import { useDocumentUrl } from './use-document-url';
 
 export const DOCUMENT_TITLE_MAX = 120;
 
-/** Phone photos of papers are readable at 70% quality and a fraction of the size. */
-const PHOTO_QUALITY = 0.7;
-const PICKER_OPTIONS: ImagePicker.ImagePickerOptions = { mediaTypes: ['images'], quality: PHOTO_QUALITY };
-
 /** Expiry dates the picker allows: far enough back for an old receipt, ahead for a 10-year license. */
 export const EXPIRY_MIN_DATE = new Date(2000, 0, 1);
 export const EXPIRY_MAX_DATE = new Date(new Date().getFullYear() + 15, 11, 31);
-
-export type PickedPhoto = DocumentFile & { width: number; height: number };
 
 export type DocumentFormValues = {
   type: DocumentType;
@@ -57,6 +51,12 @@ function toValues(document: VaultDocument): DocumentFormValues {
   };
 }
 
+/** The base64 part of a `data:…;base64,` URI. */
+function dataUriBase64(uri: string | null): string | null {
+  const comma = uri?.indexOf(',') ?? -1;
+  return uri && comma >= 0 ? uri.slice(comma + 1) : null;
+}
+
 /** Add a document to the vault (no id), or edit one. */
 export function useDocumentFormViewModel(documentId: string | undefined) {
   const { user } = useAuth();
@@ -72,9 +72,11 @@ export function useDocumentFormViewModel(documentId: string | undefined) {
   const [submitted, setSubmitted] = useState(false);
   /** null while idle; 0–1 while uploading. */
   const [progress, setProgress] = useState<number | null>(null);
+  /** True while the photo is being checked against the chosen type. */
+  const [checking, setChecking] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const { url: existingPhotoUrl } = useDocumentUrl(existing?.storagePath);
+  const { url: existingPhotoUrl } = useDocumentUrl(existing);
 
   // Edit: load the document once.
   useEffect(() => {
@@ -87,7 +89,7 @@ export function useDocumentFormViewModel(documentId: string | undefined) {
         if (document) setValues(toValues(document));
       },
       (e) => {
-        if (!cancelled) setLoadError(toVaultErrorMessage(e));
+        if (!cancelled) setLoadError(toVaultErrorMessage(e, 'load'));
       }
     );
     return () => {
@@ -120,7 +122,7 @@ export function useDocumentFormViewModel(documentId: string | undefined) {
           : 'loading'
         : 'ready';
 
-  const busy = progress !== null;
+  const busy = checking || progress !== null;
   const titleError =
     current && current.title.trim().length > DOCUMENT_TITLE_MAX
       ? `Keep the title under ${DOCUMENT_TITLE_MAX} characters.`
@@ -132,36 +134,19 @@ export function useDocumentFormViewModel(documentId: string | undefined) {
   }
 
   function setType(type: DocumentType) {
+    // A "this isn't your OR/CR" message no longer applies once the type changes.
+    setError(null);
     const patch: Partial<DocumentFormValues> = { type };
     if (!touched.bike) patch.bikeId = BIKE_DOCUMENT_TYPES.includes(type) ? (activeBike?.id ?? null) : null;
     if (!touched.expiry) patch.hasExpiry = EXPIRING_DOCUMENT_TYPES.includes(type);
     update(patch);
   }
 
-  async function pick(source: 'camera' | 'library') {
+  async function pick(source: PhotoSource) {
     setError(null);
-    try {
-      if (source === 'camera') {
-        const permission = await ImagePicker.requestCameraPermissionsAsync();
-        if (!permission.granted) {
-          setError(
-            permission.canAskAgain
-              ? 'MotoTrack needs the camera to photograph your document.'
-              : 'Camera access is off for MotoTrack. Turn it on in your phone’s settings, or choose a photo from the gallery.'
-          );
-          return;
-        }
-      }
-      const result =
-        source === 'camera'
-          ? await ImagePicker.launchCameraAsync(PICKER_OPTIONS)
-          : await ImagePicker.launchImageLibraryAsync(PICKER_OPTIONS);
-      if (result.canceled) return;
-      const asset = result.assets[0];
-      setPhoto({ uri: asset.uri, mimeType: asset.mimeType, width: asset.width, height: asset.height });
-    } catch {
-      setError(source === 'camera' ? 'Couldn’t open the camera.' : 'Couldn’t open your photos.');
-    }
+    const result = await pickDocumentPhoto(source);
+    if (result.kind === 'picked') setPhoto(result.photo);
+    else if (result.kind === 'error') setError(result.message);
   }
 
   async function save() {
@@ -178,13 +163,26 @@ export function useDocumentFormViewModel(documentId: string | undefined) {
     };
 
     setError(null);
+
+    // Check the photo is the chosen paper: a new photo, or a saved one whose type just changed.
+    const base64 = photo?.base64 ?? (existing && existing.type !== current.type ? dataUriBase64(existingPhotoUrl) : null);
+    if (base64) {
+      setChecking(true);
+      const check = await verifyDocumentPhoto(current.type, base64);
+      setChecking(false);
+      if (check.kind === 'mismatch') {
+        setError(check.message);
+        return;
+      }
+    }
+
     setProgress(0);
     try {
       if (existing) await updateDocument(uid, existing, input, photo, setProgress);
       else await createDocument(uid, input, photo!, setProgress);
       closeVaultScreen();
     } catch (e) {
-      setError(toVaultErrorMessage(e));
+      setError(toVaultErrorMessage(e, 'save'));
     } finally {
       setProgress(null);
     }
@@ -201,6 +199,7 @@ export function useDocumentFormViewModel(documentId: string | undefined) {
     titleError,
     photoError,
     progress,
+    checking,
     busy,
     error: error ?? loadError,
     setType,
