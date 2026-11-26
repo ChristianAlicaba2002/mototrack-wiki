@@ -14,6 +14,7 @@ import {
   documentsCollection,
   messagesCollection,
   odometerReadingsCollection,
+  photoChunksCollection,
   servicesCollection,
   userDoc,
 } from './collections';
@@ -39,8 +40,7 @@ async function deleteFile(path: string): Promise<void> {
 }
 
 /**
- * Deletes everything a rider has stored: bike photos and vault files in
- * Storage, then every Firestore document under users/{uid}, then the profile.
+ * Deletes everything a rider has stored: bike photos in Storage, then every Firestore document under users/{uid}, then the profile.
  * Does not delete the Auth user; the caller does that last.
  *
  * Safe to run again after a failure part-way: whatever is left is found and
@@ -56,21 +56,20 @@ export async function deleteUserData(uid: string): Promise<void> {
   ]);
 
   // Files first: once the documents pointing at them are gone, nothing records their paths.
-  const filePaths = [
-    ...bikes.docs.map((d) => d.data().photoPath),
-    ...documents.docs.map((d) => d.data().storagePath),
-  ].filter((path): path is string => Boolean(path));
+  const filePaths = bikes.docs.map((d) => d.data().photoPath).filter((path): path is string => Boolean(path));
   await Promise.all(filePaths.map(deleteFile));
 
-  const [readings, messages] = await Promise.all([
+  const [readings, messages, photoChunks] = await Promise.all([
     Promise.all(bikes.docs.map((bike) => getDocs(odometerReadingsCollection(uid, bike.id)))),
     Promise.all(chats.docs.map((chat) => getDocs(messagesCollection(uid, chat.id)))),
+    Promise.all(documents.docs.map((d) => getDocs(photoChunksCollection(uid, d.id)))),
   ]);
 
   // Children before parents, so a failure never leaves a child whose parent is gone.
   await deleteInChunks([
     ...readings.flatMap((snapshot) => snapshot.docs.map((d) => d.ref)),
     ...messages.flatMap((snapshot) => snapshot.docs.map((d) => d.ref)),
+    ...photoChunks.flatMap((snapshot) => snapshot.docs.map((d) => d.ref)),
     ...services.docs.map((d) => d.ref),
     ...documents.docs.map((d) => d.ref),
   ]);
