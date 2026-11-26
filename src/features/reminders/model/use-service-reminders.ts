@@ -1,6 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useRef, useState } from 'react';
-import { AppState } from 'react-native';
 
 import { resolveIntervals } from '@/features/services/model/intervals';
 import { useAuth } from '@/hooks/use-auth';
@@ -10,9 +9,10 @@ import { subscribeToAllServices } from '@/lib/firestore/services';
 import { type Bike, DEFAULT_NOTIFICATION_PREFS, type ServiceRecord, type UserProfile } from '@/lib/firestore/types';
 import { subscribeToUserProfile } from '@/lib/firestore/user-profile';
 import { cancelAllNotifications, cancelNotification, notifyAt, notifyNow, scheduledIds } from '@/lib/notifications/local';
-import { getPushPermission, notificationsSupported } from '@/lib/notifications/push';
+import { notificationsSupported } from '@/lib/notifications/push';
 
 import { odometerReminder, odometerReminderDate, odometerReminderId, serviceAlerts } from './reminders';
+import { useNotificationsGranted } from './use-notifications-granted';
 
 /** Enough history to find the latest service of every type on every bike. */
 const SERVICES_LIMIT = 500;
@@ -87,20 +87,9 @@ export function useServiceReminders() {
   const [services, setServices] = useState<WithId<ServiceRecord>[] | null>(null);
   const [profile, setProfile] = useState<UserProfile | null | undefined>(undefined);
   const [lastReadingAt, setLastReadingAt] = useState<Record<string, Date>>({});
-  const [granted, setGranted] = useState(false);
+  const granted = useNotificationsGranted(uid);
   /** Runs one sync at a time, in order. */
   const queue = useRef<Promise<void>>(Promise.resolve());
-
-  // Permission: checked now and whenever the app comes back to the front.
-  useEffect(() => {
-    if (!uid || !notificationsSupported()) return;
-    const check = () => getPushPermission().then((p) => setGranted(p === 'granted'), () => setGranted(false));
-    check();
-    const appState = AppState.addEventListener('change', (state) => {
-      if (state === 'active') check();
-    });
-    return () => appState.remove();
-  }, [uid]);
 
   useEffect(() => {
     if (!uid) return;
