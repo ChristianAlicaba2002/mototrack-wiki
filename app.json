@@ -15,6 +15,7 @@
     },
     "android": {
       "package": "com.mototrack.wiki",
+      "googleServicesFile": "./src/google-services.json",
       "adaptiveIcon": {
         "backgroundColor": "#C8102E",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -44,6 +45,14 @@
           "dark": {
             "backgroundColor": "#131211"
           }
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/android-icon-monochrome.png",
+          "color": "#C8102E",
+          "defaultChannel": "reminders"
         }
       ]
     ],

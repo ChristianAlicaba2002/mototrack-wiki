@@ -490,6 +490,49 @@ describe('users/{uid}/documents', () => {
   });
 });
 
+describe('users/{uid}/devices', () => {
+  const device = (overrides = {}) => ({
+    token: 'fcm-token-abc:123',
+    platform: 'android',
+    createdAt: now(),
+    updatedAt: now(),
+    ...overrides,
+  });
+
+  test('owner can save, refresh and remove a phone\'s token', async () => {
+    const ref = doc(asAlice(), 'users/alice/devices/install1234');
+    await assertSucceeds(setDoc(ref, device()));
+    await assertSucceeds(updateDoc(ref, { token: 'fcm-token-new', updatedAt: now() }));
+    await assertSucceeds(getDoc(ref));
+    await assertSucceeds(deleteDoc(ref));
+  });
+
+  test('validates the token, platform, id and fields', async () => {
+    const db = asAlice();
+    const ref = doc(db, 'users/alice/devices/install1234');
+    await assertFails(setDoc(ref, device({ token: '' })));
+    await assertFails(setDoc(ref, device({ token: 'x'.repeat(4097) })));
+    await assertFails(setDoc(ref, device({ platform: 'web' })));
+    await assertFails(setDoc(ref, device({ extra: true })));
+    await assertFails(setDoc(ref, device({ createdAt: Timestamp.now() })));
+    await assertFails(setDoc(doc(db, 'users/alice/devices/short'), device()));
+  });
+
+  test('update keeps createdAt', async () => {
+    const ref = doc(asAlice(), 'users/alice/devices/install1234');
+    await assertSucceeds(setDoc(ref, device()));
+    await assertFails(updateDoc(ref, { createdAt: Timestamp.now(), updatedAt: now() }));
+  });
+
+  test('other users can\'t read, write or remove it', async () => {
+    const t = Timestamp.now();
+    await seed('users/alice/devices/install1234', device({ createdAt: t, updatedAt: t }));
+    await assertFails(getDoc(doc(asBob(), 'users/alice/devices/install1234')));
+    await assertFails(setDoc(doc(asBob(), 'users/alice/devices/install9999'), device()));
+    await assertFails(deleteDoc(doc(asBob(), 'users/alice/devices/install1234')));
+  });
+});
+
 describe('users/{uid}/chats and messages', () => {
   test('owner can create a chat and send user messages', async () => {
     const db = asAlice();

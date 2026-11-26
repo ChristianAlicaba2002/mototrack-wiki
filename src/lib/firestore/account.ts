@@ -11,6 +11,7 @@ import { db, storage } from '@/lib/firebase';
 import {
   bikesCollection,
   chatsCollection,
+  devicesCollection,
   documentsCollection,
   messagesCollection,
   odometerReadingsCollection,
@@ -48,11 +49,12 @@ async function deleteFile(path: string): Promise<void> {
  * leaves the user signed in with a working (if emptier) app.
  */
 export async function deleteUserData(uid: string): Promise<void> {
-  const [bikes, services, documents, chats] = await Promise.all([
+  const [bikes, services, documents, chats, devices] = await Promise.all([
     getDocs(bikesCollection(uid)),
     getDocs(servicesCollection(uid)),
     getDocs(documentsCollection(uid)),
     getDocs(chatsCollection(uid)),
+    getDocs(devicesCollection(uid)),
   ]);
 
   // Files first: once the documents pointing at them are gone, nothing records their paths.
@@ -71,6 +73,7 @@ export async function deleteUserData(uid: string): Promise<void> {
     ...messages.flatMap((snapshot) => snapshot.docs.map((d) => d.ref)),
     ...photoChunks.flatMap((snapshot) => snapshot.docs.map((d) => d.ref)),
     ...services.docs.map((d) => d.ref),
+    ...devices.docs.map((d) => d.ref),
     ...documents.docs.map((d) => d.ref),
   ]);
   await deleteInChunks([...bikes.docs.map((d) => d.ref), ...chats.docs.map((d) => d.ref)]);

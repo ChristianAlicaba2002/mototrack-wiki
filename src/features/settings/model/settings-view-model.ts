@@ -2,11 +2,13 @@ import Constants from 'expo-constants';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 
+import { unregisterThisDevice, usePushPermission } from '@/features/notifications/model/push-registration';
 import { openServiceIntervals } from '@/features/services/model/navigation';
 import { useAuth } from '@/hooks/use-auth';
 import { signOut } from '@/lib/firebase/google-sign-in';
 import { type SignInMethod, signInMethodOf } from '@/lib/firebase/sign-in-method';
 import { DEFAULT_NOTIFICATION_PREFS, type NotificationPrefs } from '@/lib/firestore/types';
+import type { PushPermission } from '@/lib/notifications/push';
 import { setNotificationPrefs, subscribeToUserProfile } from '@/lib/firestore/user-profile';
 
 import { openDeleteAccount } from './delete-account-view-model';
@@ -28,6 +30,11 @@ export type SettingsViewModel = {
   /** False until the saved preferences have loaded; the switches are disabled until then. */
   prefsLoaded: boolean;
   error: string | null;
+  /** Whether this phone can get push notifications; null while checking. */
+  pushPermission: PushPermission | null;
+  enablingPush: boolean;
+  /** Shows the system prompt, or opens the phone's settings if the rider said no before. */
+  enablePush: () => void;
   signOut: () => void;
   setNotificationPref: (key: keyof NotificationPrefs, value: boolean) => void;
   /** Opens the delete-account screen, which confirms it's you first. */
@@ -75,11 +82,14 @@ export function useSettingsViewModel(): SettingsViewModel {
   }, [uid]);
 
   const notificationPrefs = pendingPrefs ?? savedPrefs ?? DEFAULT_NOTIFICATION_PREFS;
+  const push = usePushPermission();
 
   const handleSignOut = async () => {
     setError(null);
     setSigningOut(true);
     try {
+      // While still signed in: the rules only let the owner remove the token.
+      if (uid) await unregisterThisDevice(uid);
       await signOut();
     } catch {
       setError('Could not sign out. Check your connection and try again.');
@@ -115,6 +125,9 @@ export function useSettingsViewModel(): SettingsViewModel {
     notificationPrefs,
     prefsLoaded: savedPrefs !== null,
     error,
+    pushPermission: push.permission,
+    enablingPush: push.enabling,
+    enablePush: () => void push.enable(),
     signOut: () => void handleSignOut(),
     setNotificationPref: (key, value) => void handleSetPref(key, value),
     openDeleteAccount,

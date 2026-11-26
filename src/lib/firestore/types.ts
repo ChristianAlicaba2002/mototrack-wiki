@@ -259,3 +259,20 @@ export type WikiGuide = WikiDocBase & {
 };
 
 export type WikiDoc = WikiSpec | WikiGuide;
+
+/** Platforms that register for push. Keep in sync with firestore.rules. */
+export const PUSH_PLATFORMS = ['android'] as const;
+export type PushPlatform = (typeof PUSH_PLATFORMS)[number];
+
+/**
+ * users/{uid}/devices/{deviceId}: one phone that can receive push
+ * notifications. deviceId is a random id kept on the phone for this install,
+ * so a refreshed token replaces its own entry instead of adding another.
+ */
+export type PushDevice = {
+  /** The native FCM registration token. */
+  token: string;
+  platform: PushPlatform;
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+};

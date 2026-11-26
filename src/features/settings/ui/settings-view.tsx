@@ -20,6 +20,44 @@ import type { SettingsViewModel } from '../model/settings-view-model';
 import { ProfileSummary } from './profile-summary';
 import { RowProgress, SettingsGroup, SettingsRow, ToggleRow } from './settings-list';
 
+const PUSH_COPY: Record<'granted' | 'undetermined' | 'denied', { description: string; hint?: string }> = {
+  granted: { description: 'On for this phone' },
+  undetermined: { description: 'Tap to let MotoTrack send reminders to this phone', hint: 'Asks for permission' },
+  denied: {
+    description: 'Off. Tap to turn them on in your phone’s settings',
+    hint: 'Opens your phone’s settings for MotoTrack',
+  },
+};
+
+/** Whether this phone gets push notifications, with a way to turn them on. Hidden where push isn't available. */
+function PushRow({
+  permission,
+  enabling,
+  onEnable,
+  disabled,
+}: {
+  permission: SettingsViewModel['pushPermission'];
+  enabling: boolean;
+  onEnable: () => void;
+  disabled: boolean;
+}) {
+  if (permission === null || permission === 'unsupported') return null;
+  const copy = PUSH_COPY[permission];
+  const on = permission === 'granted';
+  return (
+    <SettingsRow
+      icon={(c) => <BellIcon size={18} color={c} />}
+      label="Push notifications"
+      description={copy.description}
+      onPress={on ? undefined : onEnable}
+      disabled={disabled || enabling}
+      chevron={!on}
+      accessibilityHint={copy.hint}
+      trailing={enabling ? <RowProgress /> : undefined}
+    />
+  );
+}
+
 /** Settings is a narrow list; on tablets keep it at a comfortable reading width. */
 const CONTENT_MAX_WIDTH = 560;
 
@@ -35,6 +73,9 @@ export function SettingsView({
   notificationPrefs,
   prefsLoaded,
   error,
+  pushPermission,
+  enablingPush,
+  enablePush,
   signOut,
   setNotificationPref,
   openDeleteAccount,
@@ -87,6 +128,7 @@ export function SettingsView({
           <SettingsGroup
             title="Reminders"
             footnote="Reminders aren’t sent yet. Your choices are saved and used once they are.">
+            <PushRow permission={pushPermission} enabling={enablingPush} onEnable={enablePush} disabled={busy} />
             <ToggleRow
               icon={(c) => <BellIcon size={18} color={c} />}
               label="Service due"

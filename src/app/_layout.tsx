@@ -5,6 +5,7 @@ import { useColorScheme } from 'react-native';
 import { LaunchScreen } from '@/components/launch-screen';
 import { ToastHost } from '@/components/toast';
 import { Colors, Fonts } from '@/constants/theme';
+import { usePushRegistration } from '@/features/notifications/model/push-registration';
 import { useAppFonts } from '@/hooks/use-app-fonts';
 import { AuthProvider, useAuth } from '@/hooks/use-auth';
 
@@ -56,6 +57,8 @@ export default function RootLayout() {
 function RootNavigator() {
   const { user, initializing } = useAuth();
   const signedIn = user !== null;
+  // Asks for notification permission and keeps this phone's FCM token saved.
+  usePushRegistration();
 
   return (
     <>
