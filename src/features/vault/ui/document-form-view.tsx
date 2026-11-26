@@ -49,6 +49,7 @@ export function DocumentFormView({
   titleError,
   photoError,
   progress,
+  checking,
   busy,
   error,
   setType,
@@ -188,6 +189,7 @@ export function DocumentFormView({
             <View style={[styles.footer, { borderColor: theme.line, backgroundColor: theme.background }]}>
               <View style={styles.footerInner}>
                 {error ? <ErrorMessage>{error}</ErrorMessage> : null}
+                {checking ? <CheckingPhoto /> : null}
                 {progress !== null ? <UploadProgress progress={progress} /> : null}
                 <Button
                   label={isEdit ? 'Save changes' : 'Save document'}
@@ -267,6 +269,17 @@ function PhotoPicker({
           {error}
         </ThemedText>
       ) : null}
+    </View>
+  );
+}
+
+/** Shown while the photo is checked against the chosen document type. */
+function CheckingPhoto() {
+  return (
+    <View style={styles.progress} accessible accessibilityLabel="Checking the photo" accessibilityState={{ busy: true }}>
+      <ThemedText type="readout" themeColor="textSecondary">
+        Checking the photo…
+      </ThemedText>
     </View>
   );
 }
