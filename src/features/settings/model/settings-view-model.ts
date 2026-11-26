@@ -3,6 +3,7 @@ import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 
 import { unregisterThisDevice, usePushPermission } from '@/features/notifications/model/push-registration';
+import { clearRemindersOnThisPhone } from '@/features/reminders/model/use-service-reminders';
 import { openServiceIntervals } from '@/features/services/model/navigation';
 import { useAuth } from '@/hooks/use-auth';
 import { signOut } from '@/lib/firebase/google-sign-in';
@@ -90,6 +91,7 @@ export function useSettingsViewModel(): SettingsViewModel {
     try {
       // While still signed in: the rules only let the owner remove the token.
       if (uid) await unregisterThisDevice(uid);
+      await clearRemindersOnThisPhone();
       await signOut();
     } catch {
       setError('Could not sign out. Check your connection and try again.');
