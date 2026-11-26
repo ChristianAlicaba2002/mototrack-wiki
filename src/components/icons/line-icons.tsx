@@ -303,3 +303,11 @@ export function DocumentIcon({ size, color }: IconProps) {
     </Icon>
   );
 }
+
+export function ExpandIcon({ size, color }: IconProps) {
+  return (
+    <Icon size={size}>
+      <Path d="M14.5 4H20v5.5M20 4l-6.5 6.5M9.5 20H4v-5.5M4 20l6.5-6.5" {...stroke(color)} />
+    </Icon>
+  );
+}
