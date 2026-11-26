@@ -71,6 +71,10 @@ function RootNavigator() {
           <Stack.Screen name="settings" />
           <Stack.Screen name="document" />
           <Stack.Screen name="document-form" options={{ presentation: 'modal' }} />
+          <Stack.Screen
+            name="document-viewer"
+            options={{ presentation: 'transparentModal', animation: 'fade', contentStyle: { backgroundColor: 'transparent' } }}
+          />
           <Stack.Screen name="delete-account" />
           <Stack.Screen name="service-intervals" />
           <Stack.Screen name="wiki-spec" />
